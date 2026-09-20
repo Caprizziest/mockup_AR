@@ -1,33 +1,31 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ArDataService } from './services/ar-data.service';
-import { Customer, Invoice, Payment, InvoiceStatus, PaymentMethod } from './models/ar.models';
-import { MinimalArComponent } from './minimal-design/minimal-ar';
-import { V3ArComponent } from './v3-design/v3-ar';
-import { V4ArComponent } from './v4-design/v4-ar';
+import { ArDataService } from '../services/ar-data.service';
+import { Customer, Invoice, Payment, InvoiceStatus, PaymentMethod } from '../models/ar.models';
 
-type ActiveView = 'dashboard' | 'invoices' | 'invoice-create' | 'invoice-detail' | 'customers' | 'customer-detail' | 'aging-report';
+export type V4ActiveView =
+  | 'dashboard'
+  | 'invoices'
+  | 'invoice-create'
+  | 'invoice-detail'
+  | 'customers'
+  | 'customer-detail'
+  | 'aging-report';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-v4-ar',
   standalone: true,
-  imports: [CommonModule, FormsModule, MinimalArComponent, V3ArComponent, V4ArComponent],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  imports: [CommonModule, FormsModule],
+  templateUrl: './v4-ar.html',
+  styleUrl: './v4-ar.css'
 })
-export class App {
+export class V4ArComponent {
   readonly arService = inject(ArDataService);
-
-  // Active Design Version: 'classic' (V1), 'minimal' (V2), 'v3' (Focused V3), 'v4' (Enterprise ERP V4)
-  designMode = signal<'classic' | 'minimal' | 'v3' | 'v4'>('v4');
-
-  toggleDesignMode(mode: 'classic' | 'minimal' | 'v3' | 'v4') {
-    this.designMode.set(mode);
-  }
+  readonly switchMode = output<'classic' | 'minimal' | 'v3' | 'v4'>();
 
   // Current Active View
-  activeView = signal<ActiveView>('dashboard');
+  activeView = signal<V4ActiveView>('dashboard');
   sidebarMobileOpen = signal<boolean>(false);
 
   // Selection state
@@ -36,8 +34,8 @@ export class App {
   customerActiveTab = signal<'invoices' | 'payments' | 'profile'>('invoices');
 
   // Filters & Search
+  invoiceCategoryFilter = signal<'ALL' | 'OUTSTANDING' | 'OVERDUE' | 'PAID' | 'OTHER'>('ALL');
   invoiceSearchQuery = signal<string>('');
-  invoiceStatusFilter = signal<string>('ALL');
   customerSearchQuery = signal<string>('');
   customerFilter = signal<'ALL' | 'OVERDUE' | 'HOLD'>('ALL');
   agingAsOfDate = signal<string>(this.arService.today);
@@ -87,11 +85,7 @@ export class App {
   voidInvoiceNumber = signal<string>('');
   voidReason = signal<string>('');
 
-  // Filter state for simplified categories:
-  // 'ALL' | 'OUTSTANDING' (Sent & Partial not overdue) | 'OVERDUE' | 'PAID' | 'OTHER' (Draft / Void)
-  invoiceCategoryFilter = signal<string>('ALL');
-
-  // Invoices filtered by clean simplified category
+  // Filtered Invoices
   filteredInvoices = computed(() => {
     const q = this.invoiceSearchQuery().toLowerCase().trim();
     const cat = this.invoiceCategoryFilter();
@@ -102,24 +96,15 @@ export class App {
 
       if (!matchesQuery) return false;
       if (cat === 'ALL') return true;
-      if (cat === 'OUTSTANDING') {
-        // Active unpaid / partial that is not void and not overdue
-        return (inv.status === 'Sent' || inv.status === 'Partial') && inv.balanceDue > 0;
-      }
-      if (cat === 'OVERDUE') {
-        return inv.status === 'Overdue';
-      }
-      if (cat === 'PAID') {
-        return inv.status === 'Paid';
-      }
-      if (cat === 'OTHER') {
-        return inv.status === 'Draft' || inv.status === 'Void';
-      }
+      if (cat === 'OUTSTANDING') return (inv.status === 'Sent' || inv.status === 'Partial') && inv.balanceDue > 0;
+      if (cat === 'OVERDUE') return inv.status === 'Overdue';
+      if (cat === 'PAID') return inv.status === 'Paid';
+      if (cat === 'OTHER') return inv.status === 'Draft' || inv.status === 'Void';
       return true;
     });
   });
 
-  // Invoice Category Counts for Quick Badges
+  // Invoice Category Counts
   invoiceCategoryCounts = computed(() => {
     const list = this.arService.invoices();
     return {
@@ -131,7 +116,19 @@ export class App {
     };
   });
 
-  // Overdue Invoices for Priority List
+  // Summary of filtered invoices
+  filteredSummary = computed(() => {
+    const list = this.filteredInvoices();
+    const totalAmount = list.reduce((sum, i) => sum + i.total, 0);
+    const balanceDue = list.reduce((sum, i) => sum + i.balanceDue, 0);
+    return {
+      count: list.length,
+      totalAmount,
+      balanceDue
+    };
+  });
+
+  // Priority Overdue Invoices
   priorityOverdueInvoices = computed(() => {
     return this.arService.invoices()
       .filter(i => i.status === 'Overdue')
@@ -148,7 +145,6 @@ export class App {
         cust.code.toLowerCase().includes(q) ||
         cust.contactPerson.toLowerCase().includes(q);
 
-      const balance = this.arService.getCustomerBalance(cust.id);
       const hasOverdue = this.arService.invoices().some(i => i.customerId === cust.id && i.status === 'Overdue');
 
       if (filter === 'OVERDUE') return matchesQuery && hasOverdue;
@@ -212,7 +208,7 @@ export class App {
   }
 
   // Navigation handlers
-  navigateTo(view: ActiveView) {
+  navigateTo(view: V4ActiveView) {
     this.activeView.set(view);
     this.sidebarMobileOpen.set(false);
   }
@@ -232,7 +228,7 @@ export class App {
     this.navigateTo('customer-detail');
   }
 
-  // --- Invoice Create Actions ---
+  // Invoice Create Actions
   startCreateInvoice(preselectedCustomerId?: string) {
     const custId = preselectedCustomerId || (this.arService.customers()[0]?.id ?? '');
     this.invoiceFormCustomerId.set(custId);
@@ -242,7 +238,7 @@ export class App {
     this.invoiceFormSourceType.set('generic');
     this.invoiceFormNotes.set('');
     this.invoiceFormLineItems.set([
-      { description: 'Professional Accounting Implementation Retainer', quantity: 1, unitPrice: 25000000 }
+      { description: 'Hotel Group Event Accommodation Retainer', quantity: 1, unitPrice: 25000000 }
     ]);
     this.navigateTo('invoice-create');
   }
@@ -286,34 +282,20 @@ export class App {
       saveAs
     });
 
-    this.showToast(`Invoice ${created.invoiceNumber} created successfully as ${saveAs}!`);
+    this.showToast(`Invoice ${created.invoiceNumber} recorded as ${saveAs}.`);
     this.viewInvoice(created);
   }
 
-  // Issue Draft Invoice explicitly (Flow step: Draft -> Sent)
   issueDraftInvoice(inv: Invoice) {
     const success = this.arService.issueInvoice(inv.id);
     if (success) {
-      this.showToast(`Invoice ${inv.invoiceNumber} berhasil diterbitkan dan status beralih ke Sent / Outstanding!`);
+      this.showToast(`Invoice ${inv.invoiceNumber} issued to client.`);
       const refreshed = this.arService.invoices().find(i => i.id === inv.id);
       if (refreshed) this.selectedInvoice.set(refreshed);
     }
   }
 
-  // Helper untuk Lifecycle Stepper (1: Draft, 2: Sent/Outstanding, 3: Partial/In-Payment, 4: Paid)
-  getInvoiceWorkflowStep(status: InvoiceStatus): number {
-    switch (status) {
-      case 'Draft': return 1;
-      case 'Sent': return 2;
-      case 'Overdue': return 2; // Overdue berada di stage penagihan/sent
-      case 'Partial': return 3;
-      case 'Paid': return 4;
-      case 'Void': return 0; // Void adalah status terminal pembatalan
-      default: return 2;
-    }
-  }
-
-  // --- Payment Modal Actions ---
+  // Payment Modal Actions
   openPaymentModal(targetCustomerId?: string, targetInvoiceId?: string) {
     const customers = this.arService.customers();
     const custId = targetCustomerId || (customers[0]?.id ?? '');
@@ -364,7 +346,6 @@ export class App {
     this.loadInvoicesForPayment(customerId);
   }
 
-  // Auto-allocate payment amount across oldest invoices first
   autoAllocateOldestFirst() {
     const totalAmount = this.paymentAmount();
     if (totalAmount <= 0) {
@@ -387,7 +368,7 @@ export class App {
     });
 
     this.paymentAllocations.set(updated);
-    this.showToast(`Auto-allocated ${this.formatMoney(totalAmount - remaining)} across open invoices.`);
+    this.showToast(`Auto-allocated ${this.formatMoney(totalAmount - remaining)} across open accounts.`);
   }
 
   submitPayment() {
@@ -417,17 +398,15 @@ export class App {
     });
 
     this.showPaymentModal.set(false);
-    this.showToast(`Payment ${payment.paymentNumber} recorded successfully!`);
+    this.showToast(`Payment receipt ${payment.paymentNumber} posted successfully.`);
 
     if (this.selectedInvoice()) {
       const refreshed = this.arService.invoices().find(i => i.id === this.selectedInvoice()!.id);
-      if (refreshed) {
-        this.selectedInvoice.set(refreshed);
-      }
+      if (refreshed) this.selectedInvoice.set(refreshed);
     }
   }
 
-  // --- Void Invoice Actions ---
+  // Void Invoice Actions
   openVoidModal(inv: Invoice) {
     this.voidInvoiceId.set(inv.id);
     this.voidInvoiceNumber.set(inv.invoiceNumber);
@@ -438,14 +417,14 @@ export class App {
   confirmVoidInvoice() {
     const reason = this.voidReason().trim();
     if (!reason) {
-      this.showToast('Please provide a valid reason for voiding this invoice.');
+      this.showToast('Please provide a reason for voiding this invoice.');
       return;
     }
 
     const success = this.arService.voidInvoice(this.voidInvoiceId(), reason);
     if (success) {
       this.showVoidModal.set(false);
-      this.showToast(`Invoice ${this.voidInvoiceNumber()} voided (audit trail preserved).`);
+      this.showToast(`Invoice ${this.voidInvoiceNumber()} voided with audit log.`);
       if (this.selectedInvoice()?.id === this.voidInvoiceId()) {
         const refreshed = this.arService.invoices().find(i => i.id === this.voidInvoiceId());
         if (refreshed) this.selectedInvoice.set(refreshed);
@@ -453,7 +432,7 @@ export class App {
     }
   }
 
-  // --- Customer Creation Actions ---
+  // Customer Creation Actions
   openNewCustomerModal() {
     this.customerFormName.set('');
     this.customerFormContact.set('');
@@ -485,11 +464,11 @@ export class App {
     });
 
     this.showCustomerModal.set(false);
-    this.showToast(`Customer ${newCust.name} (${newCust.code}) created successfully!`);
+    this.showToast(`Customer ${newCust.name} (${newCust.code}) created successfully.`);
     this.viewCustomer(newCust);
   }
 
-  // --- PDF Preview Modal ---
+  // PDF Preview Modal
   openPdfPreview(inv?: Invoice) {
     if (inv) this.selectedInvoice.set(inv);
     this.showPdfModal.set(true);

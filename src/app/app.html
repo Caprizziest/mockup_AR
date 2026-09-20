@@ -1,344 +1,1797 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- Toggle between Classic V1, Minimalist V2, Focused V3, and ERP V4 Component -->
+<ng-container *ngIf="designMode() === 'v4'">
+  <app-v4-ar (switchMode)="toggleDesignMode($event)"></app-v4-ar>
+</ng-container>
 
-<style>
-  :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --vivid-pink: oklch(69.02% 0.277 332.77);
-    --hot-red: oklch(61.42% 0.238 15.34);
-    --orange-red: oklch(63.32% 0.24 31.68);
+<ng-container *ngIf="designMode() === 'v3'">
+  <app-v3-ar (switchMode)="toggleDesignMode($event)"></app-v3-ar>
+</ng-container>
 
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
+<ng-container *ngIf="designMode() === 'minimal'">
+  <app-minimal-ar (switchToClassic)="toggleDesignMode('classic')" (switchMode)="toggleDesignMode($event)"></app-minimal-ar>
+</ng-container>
 
-    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
-      180deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
+<div class="app-container" *ngIf="designMode() === 'classic'">
 
-    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
-      90deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --pill-accent: var(--bright-blue);
-
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    display: block;
-    height: 100dvh;
-  }
-
-  h1 {
-    font-size: 3.125rem;
-    color: var(--gray-900);
-    font-weight: 500;
-    line-height: 100%;
-    letter-spacing: -0.125rem;
-    margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-  }
-
-  p {
-    margin: 0;
-    color: var(--gray-700);
-  }
-
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-
-  .angular-logo {
-    max-width: 9.2rem;
-  }
-
-  .content {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 3rem;
-  }
-
-  .content h1 {
-    margin-top: 1.75rem;
-  }
-
-  .content p {
-    margin-top: 1.5rem;
-  }
-
-  .divider {
-    width: 1px;
-    background: var(--red-to-pink-to-purple-vertical-gradient);
-    margin-inline: 0.5rem;
-  }
-
-  .pill-group {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    --pill-accent: var(--bright-blue);
-    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
-    color: var(--pill-accent);
-    padding-inline: 0.75rem;
-    padding-block: 0.375rem;
-    border-radius: 2.75rem;
-    border: 0;
-    transition: background 0.3s ease;
-    font-family: var(--inter-font);
-    font-size: 0.875rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.4rem;
-    letter-spacing: -0.00875rem;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .pill:hover {
-    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
-  }
-
-  .pill-group .pill:nth-child(6n + 1) {
-    --pill-accent: var(--bright-blue);
-  }
-  .pill-group .pill:nth-child(6n + 2) {
-    --pill-accent: var(--electric-violet);
-  }
-  .pill-group .pill:nth-child(6n + 3) {
-    --pill-accent: var(--french-violet);
-  }
-
-  .pill-group .pill:nth-child(6n + 4),
-  .pill-group .pill:nth-child(6n + 5),
-  .pill-group .pill:nth-child(6n + 6) {
-    --pill-accent: var(--hot-red);
-  }
-
-  .pill-group svg {
-    margin-inline-start: 0.25rem;
-  }
-
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.73rem;
-    margin-top: 1.5rem;
-  }
-
-  .social-links path {
-    transition: fill 0.3s ease;
-    fill: var(--gray-400);
-  }
-
-  .social-links a:hover svg path {
-    fill: var(--gray-900);
-  }
-
-  @media screen and (max-width: 650px) {
-    .content {
-      flex-direction: column;
-      width: max-content;
-    }
-
-    .divider {
-      height: 1px;
-      width: 100%;
-      background: var(--red-to-pink-to-purple-horizontal-gradient);
-      margin-block: 1.5rem;
-    }
-  }
-</style>
-
-<main class="main">
-  <div class="content">
-    <div class="left-side">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 982 239"
-        fill="none"
-        class="angular-logo"
-      >
-        <g clip-path="url(#a)">
-          <path
-            fill="url(#b)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-          <path
-            fill="url(#c)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-        </g>
-        <defs>
-          <radialGradient
-            id="c"
-            cx="0"
-            cy="0"
-            r="1"
-            gradientTransform="rotate(118.122 171.182 60.81) scale(205.794)"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#FF41F8" />
-            <stop offset=".707" stop-color="#FF41F8" stop-opacity=".5" />
-            <stop offset="1" stop-color="#FF41F8" stop-opacity="0" />
-          </radialGradient>
-          <linearGradient
-            id="b"
-            x1="0"
-            x2="982"
-            y1="192"
-            y2="192"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#F0060B" />
-            <stop offset="0" stop-color="#F0070C" />
-            <stop offset=".526" stop-color="#CC26D5" />
-            <stop offset="1" stop-color="#7702FF" />
-          </linearGradient>
-          <clipPath id="a"><path fill="#fff" d="M0 0h982v239H0z" /></clipPath>
-        </defs>
-      </svg>
-      <h1>Hello, {{ title() }}</h1>
-      <p>Congratulations! Your app is running. 🎉</p>
-    </div>
-    <div class="divider" role="separator" aria-label="Divider"></div>
-    <div class="right-side">
-      <div class="pill-group">
-        @for (item of [
-          { title: 'Explore the Docs', link: 'https://angular.dev' },
-          { title: 'Learn with Tutorials', link: 'https://angular.dev/tutorials' },
-          { title: 'Prompt and best practices for AI', link: 'https://angular.dev/ai/develop-with-ai'},
-          { title: 'CLI Docs', link: 'https://angular.dev/tools/cli' },
-          { title: 'Angular Language Service', link: 'https://angular.dev/tools/language-service' },
-          { title: 'Angular DevTools', link: 'https://angular.dev/tools/devtools' },
-        ]; track item.title) {
-          <a
-            class="pill"
-            [href]="item.link"
-            target="_blank"
-            rel="noopener"
-          >
-            <span>{{ item.title }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="14"
-              viewBox="0 -960 960 960"
-              width="14"
-              fill="currentColor"
-            >
-              <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
-              />
-            </svg>
-          </a>
-        }
+  <!-- ==================== SIDEBAR (Dark Theme) ==================== -->
+  <aside class="app-sidebar" [class.show-mobile]="sidebarMobileOpen()">
+    <div class="sidebar-header">
+      <div class="brand-badge">
+        <i class="bi bi-wallet2"></i>
       </div>
-      <div class="social-links">
-        <a
-          href="https://github.com/angular/angular"
-          aria-label="Github"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="25"
-            height="24"
-            viewBox="0 0 25 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Github"
-          >
-            <path
-              d="M12.3047 0C5.50634 0 0 5.50942 0 12.3047C0 17.7423 3.52529 22.3535 8.41332 23.9787C9.02856 24.0946 9.25414 23.7142 9.25414 23.3871C9.25414 23.0949 9.24389 22.3207 9.23876 21.2953C5.81601 22.0377 5.09414 19.6444 5.09414 19.6444C4.53427 18.2243 3.72524 17.8449 3.72524 17.8449C2.61064 17.082 3.81137 17.0973 3.81137 17.0973C5.04697 17.1835 5.69604 18.3647 5.69604 18.3647C6.79321 20.2463 8.57636 19.7029 9.27978 19.3881C9.39052 18.5924 9.70736 18.0499 10.0591 17.7423C7.32641 17.4347 4.45429 16.3765 4.45429 11.6618C4.45429 10.3185 4.9311 9.22133 5.72065 8.36C5.58222 8.04931 5.16694 6.79833 5.82831 5.10337C5.82831 5.10337 6.85883 4.77319 9.2121 6.36459C10.1965 6.09082 11.2424 5.95546 12.2883 5.94931C13.3342 5.95546 14.3801 6.09082 15.3644 6.36459C17.7023 4.77319 18.7328 5.10337 18.7328 5.10337C19.3942 6.79833 18.9789 8.04931 18.8559 8.36C19.6403 9.22133 20.1171 10.3185 20.1171 11.6618C20.1171 16.3888 17.2409 17.4296 14.5031 17.7321C14.9338 18.1012 15.3337 18.8559 15.3337 20.0084C15.3337 21.6552 15.3183 22.978 15.3183 23.3779C15.3183 23.7009 15.5336 24.0854 16.1642 23.9623C21.0871 22.3484 24.6094 17.7341 24.6094 12.3047C24.6094 5.50942 19.0999 0 12.3047 0Z"
-            />
-          </svg>
-        </a>
-        <a
-          href="https://x.com/angular"
-          aria-label="X"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="X"
-          >
-            <path
-              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-            />
-          </svg>
-        </a>
-        <a
-          href="https://www.youtube.com/channel/UCbn1OgGei-DV7aSRo_HaAiw"
-          aria-label="Youtube"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="29"
-            height="20"
-            viewBox="0 0 29 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Youtube"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M27.4896 1.52422C27.9301 1.96749 28.2463 2.51866 28.4068 3.12258C29.0004 5.35161 29.0004 10 29.0004 10C29.0004 10 29.0004 14.6484 28.4068 16.8774C28.2463 17.4813 27.9301 18.0325 27.4896 18.4758C27.0492 18.9191 26.5 19.2389 25.8972 19.4032C23.6778 20 14.8068 20 14.8068 20C14.8068 20 5.93586 20 3.71651 19.4032C3.11363 19.2389 2.56449 18.9191 2.12405 18.4758C1.68361 18.0325 1.36732 17.4813 1.20683 16.8774C0.613281 14.6484 0.613281 10 0.613281 10C0.613281 10 0.613281 5.35161 1.20683 3.12258C1.36732 2.51866 1.68361 1.96749 2.12405 1.52422C2.56449 1.08095 3.11363 0.76113 3.71651 0.596774C5.93586 0 14.8068 0 14.8068 0C14.8068 0 23.6778 0 25.8972 0.596774C26.5 0.76113 27.0492 1.08095 27.4896 1.52422ZM19.3229 10L11.9036 5.77905V14.221L19.3229 10Z"
-            />
-          </svg>
-        </a>
+      <div>
+        <h1 class="brand-name">AR Core</h1>
+        <div class="brand-sub">Accounts Receivable V1</div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-title">Main Navigation</div>
+
+      <button type="button" class="sidebar-link" [class.active]="activeView() === 'dashboard'"
+        (click)="navigateTo('dashboard')">
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Dashboard</span>
+      </button>
+
+      <button type="button" class="sidebar-link"
+        [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create'"
+        (click)="navigateTo('invoices')">
+        <i class="bi bi-receipt"></i>
+        <span>Invoices</span>
+        <span class="badge bg-danger ms-auto rounded-pill"
+          *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
+          {{ arService.dashboardMetrics().overdueInvoicesCount }}
+        </span>
+      </button>
+
+      <button type="button" class="sidebar-link"
+        [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'"
+        (click)="navigateTo('customers')">
+        <i class="bi bi-building"></i>
+        <span>Customers</span>
+        <span class="badge bg-secondary ms-auto rounded-pill">
+          {{ arService.customers().length }}
+        </span>
+      </button>
+
+      <button type="button" class="sidebar-link" [class.active]="activeView() === 'aging-report'"
+        (click)="navigateTo('aging-report')">
+        <i class="bi bi-hourglass-split"></i>
+        <span>Aging Report</span>
+      </button>
+
+      <div class="nav-section-title mt-3">Quick Actions</div>
+
+      <button type="button" class="sidebar-link text-white-50" (click)="startCreateInvoice()">
+        <i class="bi bi-plus-circle-fill text-primary"></i>
+        <span>+ New Invoice</span>
+      </button>
+
+      <button type="button" class="sidebar-link text-white-50" (click)="openPaymentModal()">
+        <i class="bi bi-cash-stack text-success"></i>
+        <span>Record Payment</span>
+      </button>
+    </div>
+
+    <!-- Design Comparison Switcher in Classic Sidebar Footer -->
+    <div class="p-3 border-top" style="border-color: #1e293b !important;">
+      <div class="text-white-50 text-xs mb-2"
+        style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Design Comparison</div>
+      <div class="design-version-toggle w-100"
+        style="background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12);">
+        <button type="button" class="design-version-btn flex-fill active"
+          style="background: #ffffff; color: #0f172a;">Classic V1</button>
+        <button type="button" class="design-version-btn flex-fill text-white-50"
+          (click)="toggleDesignMode('minimal')">Minimal V2</button>
+        <button type="button" class="design-version-btn flex-fill text-white-50"
+          (click)="toggleDesignMode('v3')">Focused V3</button>
+        <button type="button" class="design-version-btn flex-fill text-white-50"
+          (click)="toggleDesignMode('v4')">ERP V4</button>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar">FO</div>
+      <div class="overflow-hidden">
+        <div class="fw-semibold text-white text-truncate text-sm" style="font-size: 0.85rem;">Finance Officer</div>
+        <div class="text-muted text-xs" style="font-size: 0.72rem;">PT Sistem Akuntansi</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN WRAPPER ==================== -->
+  <div class="main-wrapper">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="navbar-left">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" (click)="toggleSidebarMobile()">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div>
+          <h2 class="page-title">
+            <ng-container [ngSwitch]="activeView()">
+              <span *ngSwitchCase="'dashboard'">AR Overview Dashboard</span>
+              <span *ngSwitchCase="'invoices'">Accounts Receivable Invoices</span>
+              <span *ngSwitchCase="'invoice-create'">Create New Invoice</span>
+              <span *ngSwitchCase="'invoice-detail'">Invoice {{ selectedInvoice()?.invoiceNumber }}</span>
+              <span *ngSwitchCase="'customers'">Customer Directory</span>
+              <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
+              <span *ngSwitchCase="'aging-report'">AR Aging Analysis</span>
+            </ng-container>
+          </h2>
+          <div class="breadcrumb-sub">
+            Accrual Basis Financial System &bull; Active Date: <span class="fw-semibold text-dark">{{ arService.today
+              }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="navbar-right">
+        <!-- Contrast Switcher in Topbar -->
+        <div class="design-version-toggle d-none d-md-inline-flex me-2">
+          <button type="button" class="design-version-btn active">Classic V1</button>
+          <button type="button" class="design-version-btn" (click)="toggleDesignMode('minimal')">Minimal V2</button>
+          <button type="button" class="design-version-btn" (click)="toggleDesignMode('v3')">Focused V3</button>
+          <button type="button" class="design-version-btn" (click)="toggleDesignMode('v4')">ERP V4</button>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+          (click)="openPaymentModal()">
+          <i class="bi bi-cash-coin"></i>
+          <span class="d-none d-sm-inline">Record Payment</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-2"
+          (click)="startCreateInvoice()">
+          <i class="bi bi-plus-lg"></i>
+          <span class="d-none d-sm-inline">New Invoice</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <main class="page-content">
+
+      <!-- ==================== 1. DASHBOARD VIEW ==================== -->
+      <section *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-4">
+
+        <!-- 4 KPI Stat Cards -->
+        <div class="row g-3">
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Total Outstanding</div>
+                <div class="stat-value">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
+                <div class="stat-meta text-primary fw-medium">
+                  <i class="bi bi-receipt"></i> {{ arService.dashboardMetrics().openInvoicesCount }} open invoices
+                </div>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-blue">
+                <i class="bi bi-wallet2"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Total Overdue</div>
+                <div class="stat-value text-danger">{{ formatMoney(arService.dashboardMetrics().totalOverdue) }}</div>
+                <div class="stat-meta text-danger fw-medium">
+                  <i class="bi bi-exclamation-triangle-fill"></i> {{ arService.dashboardMetrics().overdueInvoicesCount
+                  }} accounts past due
+                </div>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-red">
+                <i class="bi bi-clock-history"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Collected (Sep 2026)</div>
+                <div class="stat-value text-success">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}
+                </div>
+                <div class="stat-meta text-success fw-medium">
+                  <i class="bi bi-check2-circle"></i> {{ arService.dashboardMetrics().paidThisMonthCount }} settled
+                  payments
+                </div>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-green">
+                <i class="bi bi-cash-stack"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div>
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-value">{{ arService.customers().length }}</div>
+                <div class="stat-meta text-muted">
+                  <i class="bi bi-people-fill"></i> Corporate & City Ledger
+                </div>
+              </div>
+              <div class="stat-icon-wrapper stat-icon-amber">
+                <i class="bi bi-building"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aging Overview Distribution Card -->
+        <div class="ar-card">
+          <div class="ar-card-header">
+            <div>
+              <h3 class="ar-card-title">AR Aging Buckets Overview</h3>
+              <p class="text-muted mb-0 small">Point-in-time breakdown of open receivables as of {{ arService.today }}
+              </p>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" (click)="navigateTo('aging-report')">
+              Full Aging Report <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+          <div class="ar-card-body">
+            <div class="row g-3 text-center mb-3">
+              <div class="col">
+                <div class="text-muted small fw-semibold">Current (Not Due)</div>
+                <div class="fs-5 fw-bold text-success">{{ formatMoney(agingData().grandTotal.current) }}</div>
+              </div>
+              <div class="col border-start">
+                <div class="text-muted small fw-semibold">1 - 30 Days</div>
+                <div class="fs-5 fw-bold text-primary">{{ formatMoney(agingData().grandTotal.days1_30) }}</div>
+              </div>
+              <div class="col border-start">
+                <div class="text-muted small fw-semibold">31 - 60 Days</div>
+                <div class="fs-5 fw-bold text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</div>
+              </div>
+              <div class="col border-start">
+                <div class="text-muted small fw-semibold">61 - 90 Days</div>
+                <div class="fs-5 fw-bold text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</div>
+              </div>
+              <div class="col border-start">
+                <div class="text-muted small fw-semibold">90+ Days (High Risk)</div>
+                <div class="fs-5 fw-bold text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</div>
+              </div>
+            </div>
+
+            <!-- Visual distribution progress bar -->
+            <div class="progress" style="height: 14px; border-radius: 7px; overflow: hidden;">
+              <div class="progress-bar bg-success" role="progressbar"
+                [style.width.%]="(agingData().grandTotal.current / (agingData().grandTotal.totalOutstanding || 1)) * 100"
+                title="Current">
+              </div>
+              <div class="progress-bar bg-primary" role="progressbar"
+                [style.width.%]="(agingData().grandTotal.days1_30 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
+                title="1-30 Days">
+              </div>
+              <div class="progress-bar bg-warning" role="progressbar"
+                [style.width.%]="(agingData().grandTotal.days31_60 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
+                title="31-60 Days">
+              </div>
+              <div class="progress-bar bg-danger" role="progressbar"
+                [style.width.%]="((agingData().grandTotal.days61_90 + agingData().grandTotal.days90Plus) / (agingData().grandTotal.totalOutstanding || 1)) * 100"
+                title="60+ Days Overdue">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Section: Priority Attention & Activity Feed -->
+        <div class="row g-4">
+          <!-- Priority Attention (Overdue Invoices) -->
+          <div class="col-12 col-xl-7">
+            <div class="ar-card h-100">
+              <div class="ar-card-header">
+                <div>
+                  <h3 class="ar-card-title d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-circle text-danger"></i>
+                    Priority Collections Attention
+                  </h3>
+                  <p class="text-muted mb-0 small">Overdue invoices requiring immediate follow-up</p>
+                </div>
+                <span class="badge bg-danger rounded-pill">{{ priorityOverdueInvoices().length }} accounts</span>
+              </div>
+              <div class="table-responsive">
+                <table class="ar-table">
+                  <thead>
+                    <tr>
+                      <th>Invoice #</th>
+                      <th>Customer</th>
+                      <th>Due Date</th>
+                      <th>Overdue By</th>
+                      <th>Balance Due</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let inv of priorityOverdueInvoices()">
+                      <td>
+                        <a href="javascript:void(0)" class="fw-bold text-decoration-none text-primary"
+                          (click)="viewInvoice(inv)">
+                          {{ inv.invoiceNumber }}
+                        </a>
+                      </td>
+                      <td>
+                        <div class="fw-medium">{{ inv.customerName }}</div>
+                      </td>
+                      <td>{{ inv.dueDate }}</td>
+                      <td>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">
+                          {{ getDaysPastDue(inv.dueDate) }} days
+                        </span>
+                      </td>
+                      <td class="fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                          (click)="openPaymentModal(inv.customerId, inv.id)">
+                          Pay
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="priorityOverdueInvoices().length === 0">
+                      <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-1"></i>
+                        No overdue invoices found. Excellent collection standing!
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Feed -->
+          <div class="col-12 col-xl-5">
+            <div class="ar-card h-100">
+              <div class="ar-card-header">
+                <h3 class="ar-card-title d-flex align-items-center gap-2">
+                  <i class="bi bi-activity text-primary"></i>
+                  Recent AR Activity
+                </h3>
+                <span class="text-muted small">Real-time audit events</span>
+              </div>
+              <div class="ar-card-body p-3">
+                <div class="activity-item" *ngFor="let log of arService.activityLogs()">
+                  <div class="activity-dot" [ngClass]="{
+                    'bg-primary-subtle text-primary': log.badgeType === 'info',
+                    'bg-success-subtle text-success': log.badgeType === 'success',
+                    'bg-warning-subtle text-warning': log.badgeType === 'warning',
+                    'bg-danger-subtle text-danger': log.badgeType === 'danger',
+                    'bg-secondary-subtle text-secondary': log.badgeType === 'secondary'
+                  }">
+                    <i class="bi bi-dot fs-3"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                      <span class="fw-medium text-dark small">{{ log.description }}</span>
+                    </div>
+                    <div class="text-muted" style="font-size: 0.72rem;">
+                      {{ log.timestamp }}
+                      <span *ngIf="log.amount" class="ms-2 fw-semibold text-dark">
+                        ({{ formatMoney(log.amount) }})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==================== 2. INVOICE LIST VIEW (Simplified Status Categories) ==================== -->
+      <section *ngIf="activeView() === 'invoices'" class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <!-- 4 Clean Filter Tabs -->
+          <div class="d-flex flex-wrap gap-2">
+            <button class="category-filter-btn" [class.active]="invoiceCategoryFilter() === 'ALL'"
+              (click)="invoiceCategoryFilter.set('ALL')">
+              Semua Faktur
+              <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1">{{ invoiceCategoryCounts().all
+                }}</span>
+            </button>
+            <button class="category-filter-btn" [class.active-outstanding]="invoiceCategoryFilter() === 'OUTSTANDING'"
+              (click)="invoiceCategoryFilter.set('OUTSTANDING')">
+              <i class="bi bi-hourglass text-primary"></i> Outstanding (Dalam Termin)
+              <span class="badge bg-primary-subtle text-primary rounded-pill ms-1">{{
+                invoiceCategoryCounts().outstanding }}</span>
+            </button>
+            <button class="category-filter-btn" [class.active-overdue]="invoiceCategoryFilter() === 'OVERDUE'"
+              (click)="invoiceCategoryFilter.set('OVERDUE')">
+              <i class="bi bi-exclamation-triangle-fill text-danger"></i> Overdue (Jatuh Tempo)
+              <span class="badge bg-danger-subtle text-danger rounded-pill ms-1">{{ invoiceCategoryCounts().overdue
+                }}</span>
+            </button>
+            <button class="category-filter-btn" [class.active-paid]="invoiceCategoryFilter() === 'PAID'"
+              (click)="invoiceCategoryFilter.set('PAID')">
+              <i class="bi bi-check-circle-fill text-success"></i> Lunas (Paid)
+              <span class="badge bg-success-subtle text-success rounded-pill ms-1">{{ invoiceCategoryCounts().paid
+                }}</span>
+            </button>
+            <button class="category-filter-btn" [class.active]="invoiceCategoryFilter() === 'OTHER'"
+              (click)="invoiceCategoryFilter.set('OTHER')">
+              Draft & Void
+              <span class="badge bg-secondary-subtle text-secondary rounded-pill ms-1">{{ invoiceCategoryCounts().other
+                }}</span>
+            </button>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center">
+            <div class="input-group input-group-sm" style="max-width: 300px;">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" placeholder="Cari invoice # / customer..."
+                [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
+            </div>
+            <button type="button" class="btn btn-sm btn-primary text-nowrap" (click)="startCreateInvoice()">
+              <i class="bi bi-plus-lg"></i> + Faktur Baru
+            </button>
+          </div>
+        </div>
+
+        <!-- Invoices Table Card -->
+        <div class="ar-card">
+          <div class="table-responsive">
+            <table class="ar-table">
+              <thead>
+                <tr>
+                  <th>No. Faktur</th>
+                  <th>Pelanggan</th>
+                  <th>Tgl Terbit</th>
+                  <th>Jatuh Tempo</th>
+                  <th>Total Faktur</th>
+                  <th>Terbayar</th>
+                  <th>Sisa Tagihan</th>
+                  <th>Status & Kondisi</th>
+                  <th class="text-end">Aksi Cepat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of filteredInvoices()">
+                  <td>
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none"
+                      (click)="viewInvoice(inv)">
+                      {{ inv.invoiceNumber }}
+                    </a>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ inv.customerName }}</div>
+                    <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-light text-secondary border small"
+                      style="font-size: 0.65rem;">
+                      City Ledger
+                    </span>
+                  </td>
+                  <td>{{ inv.issueDate }}</td>
+                  <td>
+                    <span [class.text-danger]="inv.status === 'Overdue'" [class.fw-bold]="inv.status === 'Overdue'">
+                      {{ inv.dueDate }}
+                    </span>
+                    <div *ngIf="inv.status === 'Overdue'" class="text-danger small" style="font-size: 0.7rem;">
+                      Lewat {{ getDaysPastDue(inv.dueDate) }} hari
+                    </div>
+                  </td>
+                  <td class="fw-semibold">{{ formatMoney(inv.total) }}</td>
+                  <td class="text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                  <td class="fw-bold" [class.text-danger]="inv.balanceDue > 0"
+                    [class.text-success]="inv.balanceDue === 0">
+                    {{ formatMoney(inv.balanceDue) }}
+                  </td>
+                  <td>
+                    <!-- Clear status badge + informative sub-pill -->
+                    <div class="d-flex flex-column gap-1 align-items-start">
+                      <span class="status-badge" [ngClass]="{
+                        'badge-draft': inv.status === 'Draft',
+                        'badge-sent': inv.status === 'Sent',
+                        'badge-partial': inv.status === 'Partial',
+                        'badge-paid': inv.status === 'Paid',
+                        'badge-overdue': inv.status === 'Overdue',
+                        'badge-void': inv.status === 'Void'
+                      }">
+                        {{ inv.status === 'Sent' ? 'Outstanding' : (inv.status === 'Partial' ? 'Sebagian' : inv.status)
+                        }}
+                      </span>
+                      <span *ngIf="inv.status === 'Partial'"
+                        class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle"
+                        style="font-size: 0.68rem;">
+                        Sisa {{ formatMoney(inv.balanceDue) }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-secondary" title="Lihat detail faktur"
+                        (click)="viewInvoice(inv)">
+                        <i class="bi bi-eye"></i> Detail
+                      </button>
+                      <button type="button" class="btn btn-primary" title="Catat pembayaran langsung"
+                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                        (click)="openPaymentModal(inv.customerId, inv.id)">
+                        <i class="bi bi-cash-stack"></i> Bayar
+                      </button>
+                      <button type="button" class="btn btn-outline-success" title="Terbitkan Draft Faktur"
+                        *ngIf="inv.status === 'Draft'" (click)="issueDraftInvoice(inv)">
+                        <i class="bi bi-send"></i> Terbitkan
+                      </button>
+                      <button type="button" class="btn btn-outline-danger" title="Batalkan Faktur (Void)"
+                        *ngIf="inv.status !== 'Void'" (click)="openVoidModal(inv)">
+                        <i class="bi bi-slash-circle"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredInvoices().length === 0">
+                  <td colspan="9" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                    Tidak ada faktur pada kategori filter ini.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 3. INVOICE DETAIL VIEW (With Interactive Lifecycle Stepper) ==================== -->
+      <section *ngIf="activeView() === 'invoice-detail' && selectedInvoice() as inv" class="d-flex flex-column gap-4">
+        <!-- Back Navigation & Top Actions -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+            (click)="navigateTo('invoices')">
+            <i class="bi bi-arrow-left"></i> Kembali ke Daftar Faktur
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-success btn-sm" *ngIf="inv.status === 'Draft'"
+              (click)="issueDraftInvoice(inv)">
+              <i class="bi bi-send"></i> Terbitkan Sekarang (Sent)
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="openPdfPreview(inv)">
+              <i class="bi bi-printer"></i> Cetak / PDF
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm" *ngIf="inv.status !== 'Void'"
+              (click)="openVoidModal(inv)">
+              <i class="bi bi-slash-circle"></i> Void Faktur
+            </button>
+            <button type="button" class="btn btn-primary btn-sm"
+              *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+              (click)="openPaymentModal(inv.customerId, inv.id)">
+              <i class="bi bi-cash-stack"></i> Catat Pembayaran
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. Visual Lifecycle Stepper for this specific Invoice -->
+        <div class="workflow-stepper" *ngIf="inv.status !== 'Void'">
+          <!-- Step 1: Draft -->
+          <div class="stepper-item" [class.completed]="getInvoiceWorkflowStep(inv.status) > 1"
+            [class.active]="getInvoiceWorkflowStep(inv.status) === 1">
+            <div class="stepper-circle">
+              <i class="bi"
+                [ngClass]="getInvoiceWorkflowStep(inv.status) > 1 ? 'bi-check-lg' : 'bi-file-earmark-text'"></i>
+            </div>
+            <div class="stepper-label">
+              <span class="stepper-title">1. Draft Dibuat</span>
+              <span class="stepper-subtitle">{{ inv.issueDate }}</span>
+            </div>
+          </div>
+
+          <div class="stepper-line" [class.completed]="getInvoiceWorkflowStep(inv.status) >= 2"></div>
+
+          <!-- Step 2: Sent / Outstanding (or Overdue) -->
+          <div class="stepper-item" [class.completed]="getInvoiceWorkflowStep(inv.status) > 2"
+            [class.active]="getInvoiceWorkflowStep(inv.status) === 2 && inv.status !== 'Overdue'"
+            [class.overdue]="inv.status === 'Overdue'">
+            <div class="stepper-circle">
+              <i class="bi"
+                [ngClass]="getInvoiceWorkflowStep(inv.status) > 2 ? 'bi-check-lg' : (inv.status === 'Overdue' ? 'bi-exclamation-triangle-fill' : 'bi-send-check')"></i>
+            </div>
+            <div class="stepper-label">
+              <span class="stepper-title">{{ inv.status === 'Overdue' ? '2. Jatuh Tempo (Overdue)' : '2. Terbit &
+                Ditagih' }}</span>
+              <span class="stepper-subtitle">Jatuh tempo: {{ inv.dueDate }}</span>
+            </div>
+          </div>
+
+          <div class="stepper-line" [class.completed]="getInvoiceWorkflowStep(inv.status) >= 3"></div>
+
+          <!-- Step 3: Partial Payment -->
+          <div class="stepper-item" [class.completed]="getInvoiceWorkflowStep(inv.status) > 3"
+            [class.active]="getInvoiceWorkflowStep(inv.status) === 3">
+            <div class="stepper-circle">
+              <i class="bi" [ngClass]="getInvoiceWorkflowStep(inv.status) > 3 ? 'bi-check-lg' : 'bi-cash-coin'"></i>
+            </div>
+            <div class="stepper-label">
+              <span class="stepper-title">3. Pembayaran Sebagian</span>
+              <span class="stepper-subtitle">{{ inv.amountPaid > 0 ? ('Masuk: ' + formatMoney(inv.amountPaid)) : 'Belum
+                ada dana' }}</span>
+            </div>
+          </div>
+
+          <div class="stepper-line" [class.completed]="getInvoiceWorkflowStep(inv.status) === 4"></div>
+
+          <!-- Step 4: Fully Paid -->
+          <div class="stepper-item" [class.completed]="getInvoiceWorkflowStep(inv.status) === 4"
+            [class.active]="getInvoiceWorkflowStep(inv.status) === 4">
+            <div class="stepper-circle">
+              <i class="bi bi-check-all"></i>
+            </div>
+            <div class="stepper-label">
+              <span class="stepper-title">4. Lunas (Paid)</span>
+              <span class="stepper-subtitle">{{ inv.balanceDue === 0 ? 'Selesai 100%' : 'Menunggu pelunasan' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Action Recommendation Banner (Panduan Next Step yang Sangat Intuitif) -->
+        <div class="next-action-card action-draft" *ngIf="inv.status === 'Draft'">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-info-circle-fill text-warning fs-3"></i>
+            <div>
+              <div class="fw-bold text-dark">Langkah Selanjutnya: Faktur Masih Berupa Draft</div>
+              <div class="small text-secondary">Faktur ini belum diakui sebagai piutang terbuka. Terbitkan sekarang agar
+                masuk ke tagihan aktif.</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-warning text-dark fw-bold btn-sm text-nowrap"
+            (click)="issueDraftInvoice(inv)">
+            <i class="bi bi-send-check"></i> Terbitkan Faktur Sekarang
+          </button>
+        </div>
+
+        <div class="next-action-card action-overdue" *ngIf="inv.status === 'Overdue'">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-exclamation-octagon-fill text-danger fs-3"></i>
+            <div>
+              <div class="fw-bold text-danger">Perhatian Penagihan: Tagihan Jatuh Tempo!</div>
+              <div class="small text-danger-emphasis">
+                Invoice telah lewat batas jatuh tempo {{ getDaysPastDue(inv.dueDate) }} hari (Jatuh tempo: {{
+                inv.dueDate }}). Sisa piutang: <strong>{{ formatMoney(inv.balanceDue) }}</strong>.
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm text-nowrap"
+            (click)="openPaymentModal(inv.customerId, inv.id)">
+            <i class="bi bi-cash-stack"></i> Catat Pembayaran Masuk
+          </button>
+        </div>
+
+        <div class="next-action-card action-pay" *ngIf="inv.status === 'Sent' || inv.status === 'Partial'">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-clock-history text-primary fs-3"></i>
+            <div>
+              <div class="fw-bold text-primary">Langkah Selanjutnya: Menunggu Pembayaran dari {{ inv.customerName }}
+              </div>
+              <div class="small text-secondary">
+                Sisa tagihan yang harus diterima: <strong>{{ formatMoney(inv.balanceDue) }}</strong> (Jatuh tempo: {{
+                inv.dueDate }}).
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm text-nowrap"
+            (click)="openPaymentModal(inv.customerId, inv.id)">
+            <i class="bi bi-cash-stack"></i> Catat Pembayaran Masuk
+          </button>
+        </div>
+
+        <div class="next-action-card action-settled" *ngIf="inv.status === 'Paid'">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-check-circle-fill text-success fs-3"></i>
+            <div>
+              <div class="fw-bold text-success">Faktur Selesai & Lunas Sepenuhnya</div>
+              <div class="small text-secondary">Seluruh kewajiban pembayaran sebesar {{ formatMoney(inv.total) }} telah
+                diterima lunas.</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-success btn-sm text-nowrap" (click)="openPdfPreview(inv)">
+            <i class="bi bi-file-earmark-check"></i> Cetak Tanda Lunas
+          </button>
+        </div>
+
+        <div *ngIf="inv.status === 'Void'" class="alert alert-secondary d-flex align-items-center gap-3 mb-0">
+          <i class="bi bi-slash-circle-fill fs-4 text-muted"></i>
+          <div>
+            <strong>Faktur Dibatalkan (Void) pada {{ inv.voidDate }}:</strong> {{ inv.voidReason }}
+            <div class="small text-muted">Transaksi ini tidak berlaku lagi, namun catatan tetap disimpan permanen untuk
+              kepatuhan audit.</div>
+          </div>
+        </div>
+
+        <!-- Invoice Content Split -->
+        <div class="row g-4">
+          <!-- Main Invoice Information & Line Items -->
+          <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <div class="ar-card">
+              <div class="ar-card-header">
+                <div>
+                  <span class="text-muted small">INVOICE SPECIFICATION</span>
+                  <h3 class="ar-card-title fs-4">{{ inv.invoiceNumber }}</h3>
+                </div>
+                <span class="status-badge" [ngClass]="{
+                  'badge-draft': inv.status === 'Draft',
+                  'badge-sent': inv.status === 'Sent',
+                  'badge-partial': inv.status === 'Partial',
+                  'badge-paid': inv.status === 'Paid',
+                  'badge-overdue': inv.status === 'Overdue',
+                  'badge-void': inv.status === 'Void'
+                }">
+                  {{ inv.status }}
+                </span>
+              </div>
+              <div class="ar-card-body">
+                <div class="row g-4 mb-4">
+                  <div class="col-sm-6">
+                    <div class="text-muted small fw-semibold text-uppercase">Billed To</div>
+                    <div class="fs-5 fw-bold text-dark mt-1">{{ inv.customerName }}</div>
+                    <div class="small text-muted mt-1">Customer ID: {{ inv.customerId }}</div>
+                    <div class="small text-muted" *ngIf="inv.sourceType === 'city_ledger'">Channel: City Ledger
+                      (Hotel/Corporate Credit)</div>
+                  </div>
+                  <div class="col-sm-6 text-sm-end">
+                    <div class="mb-2">
+                      <span class="text-muted small">Issue Date:</span>
+                      <strong class="ms-2 text-dark">{{ inv.issueDate }}</strong>
+                    </div>
+                    <div class="mb-2">
+                      <span class="text-muted small">Due Date:</span>
+                      <strong class="ms-2" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</strong>
+                    </div>
+                    <div>
+                      <span class="text-muted small">Terms:</span>
+                      <span class="ms-2 badge bg-light text-dark border">Net Days</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Line Items Table -->
+                <div class="table-responsive">
+                  <table class="ar-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Item Description</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of inv.lineItems; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td class="fw-medium">{{ item.description }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">{{ formatMoney(item.unitPrice) }}</td>
+                        <td class="text-end fw-bold">{{ formatMoney(item.lineTotal) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div *ngIf="inv.notes" class="mt-4 p-3 bg-light rounded-2 border">
+                  <div class="text-muted small fw-bold text-uppercase">Notes & Payment Instructions</div>
+                  <div class="small text-secondary mt-1">{{ inv.notes }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Linked Payment History applied to this invoice -->
+            <div class="ar-card">
+              <div class="ar-card-header">
+                <h4 class="ar-card-title d-flex align-items-center gap-2">
+                  <i class="bi bi-clock-history text-primary"></i>
+                  Payment History Applied
+                </h4>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                  Total Paid: {{ formatMoney(inv.amountPaid) }}
+                </span>
+              </div>
+              <div class="table-responsive">
+                <table class="ar-table">
+                  <thead>
+                    <tr>
+                      <th>Payment #</th>
+                      <th>Date</th>
+                      <th>Method</th>
+                      <th>Reference #</th>
+                      <th class="text-end">Amount Applied</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let pay of getPaymentsForInvoice(inv.id)">
+                      <td class="fw-bold text-dark">{{ pay.paymentNumber }}</td>
+                      <td>{{ pay.paymentDate }}</td>
+                      <td>
+                        <span class="badge bg-light text-dark border text-uppercase" style="font-size: 0.7rem;">
+                          {{ pay.method.replace('_', ' ') }}
+                        </span>
+                      </td>
+                      <td class="text-secondary small font-monospace">{{ pay.referenceNumber }}</td>
+                      <td class="text-end fw-bold text-success">
+                        + {{ formatMoney(pay.amount) }}
+                      </td>
+                    </tr>
+                    <tr *ngIf="getPaymentsForInvoice(inv.id).length === 0">
+                      <td colspan="5" class="text-center py-4 text-muted">
+                        No payments recorded against this invoice yet.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Summary Sidebar Card -->
+          <div class="col-12 col-lg-4">
+            <div class="ar-card sticky-top" style="top: 90px;">
+              <div class="ar-card-header">
+                <h4 class="ar-card-title">Balance Summary</h4>
+              </div>
+              <div class="ar-card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between small">
+                  <span class="text-muted">Subtotal:</span>
+                  <span class="fw-semibold text-dark">{{ formatMoney(inv.subtotal) }}</span>
+                </div>
+                <div class="d-flex justify-content-between small">
+                  <span class="text-muted">Tax (PPN {{ inv.taxRate }}%):</span>
+                  <span class="fw-semibold text-dark">{{ formatMoney(inv.taxAmount) }}</span>
+                </div>
+                <hr class="my-1">
+                <div class="d-flex justify-content-between fs-5">
+                  <span class="fw-bold text-dark">Total Invoice:</span>
+                  <span class="fw-bold text-dark">{{ formatMoney(inv.total) }}</span>
+                </div>
+                <div class="d-flex justify-content-between small text-success">
+                  <span>Total Amount Paid:</span>
+                  <span class="fw-bold">- {{ formatMoney(inv.amountPaid) }}</span>
+                </div>
+                <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center mt-2">
+                  <span class="fw-bold" [class.text-danger]="inv.balanceDue > 0">Remaining Balance Due:</span>
+                  <span class="fs-4 fw-extrabold" [class.text-danger]="inv.balanceDue > 0"
+                    [class.text-success]="inv.balanceDue === 0">
+                    {{ formatMoney(inv.balanceDue) }}
+                  </span>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                  <button type="button"
+                    class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2"
+                    *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                    (click)="openPaymentModal(inv.customerId, inv.id)">
+                    <i class="bi bi-cash-stack"></i> Record Payment
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" (click)="openPdfPreview(inv)">
+                    <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 4. INVOICE CREATE / EDIT VIEW ==================== -->
+      <section *ngIf="activeView() === 'invoice-create'" class="d-flex flex-column gap-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+            (click)="navigateTo('invoices')">
+            <i class="bi bi-arrow-left"></i> Cancel
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="saveInvoice('Draft')">
+              Save as Draft
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" (click)="saveInvoice('Sent')">
+              Save & Issue Invoice
+            </button>
+          </div>
+        </div>
+
+        <div class="ar-card">
+          <div class="ar-card-header">
+            <div>
+              <h3 class="ar-card-title">New Invoice Creation</h3>
+              <p class="text-muted mb-0 small">Create a receivable transaction on accrual basis</p>
+            </div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+              Auto Sequential: {{ arService.getNextInvoiceNumber() }}
+            </span>
+          </div>
+          <div class="ar-card-body d-flex flex-column gap-4">
+
+            <!-- Customer & Dates Row -->
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Customer / Company *</label>
+                <select class="form-select" [ngModel]="invoiceFormCustomerId()"
+                  (ngModelChange)="onCustomerSelectedForInvoice($event)">
+                  <option *ngFor="let c of arService.customers()" [value]="c.id">
+                    {{ c.name }} ({{ c.code }}) - Net {{ c.dueDays }}d
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Issue Date *</label>
+                <input type="date" class="form-control" [ngModel]="invoiceFormIssueDate()"
+                  (ngModelChange)="invoiceFormIssueDate.set($event)">
+              </div>
+
+              <div class="col-6 col-md-2">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Due Date *</label>
+                <input type="date" class="form-control" [ngModel]="invoiceFormDueDate()"
+                  (ngModelChange)="invoiceFormDueDate.set($event)">
+              </div>
+
+              <div class="col-6 col-md-2">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Tax Rate (%)</label>
+                <select class="form-select" [ngModel]="invoiceFormTaxRate()"
+                  (ngModelChange)="invoiceFormTaxRate.set(+$event)">
+                  <option [value]="11">PPN 11%</option>
+                  <option [value]="0">Tax Exempt 0%</option>
+                </select>
+              </div>
+
+              <div class="col-6 col-md-2">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Source Channel</label>
+                <select class="form-select" [ngModel]="invoiceFormSourceType()"
+                  (ngModelChange)="invoiceFormSourceType.set($event)">
+                  <option value="generic">Standard B2B</option>
+                  <option value="city_ledger">City Ledger</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Line Items Builder -->
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label small fw-bold text-uppercase text-secondary mb-0">Line Items</label>
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="addLineItem()">
+                  <i class="bi bi-plus-lg"></i> Add Item
+                </button>
+              </div>
+
+              <div class="table-responsive border rounded-3 overflow-hidden">
+                <table class="ar-table mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th style="width: 50%;">Description</th>
+                      <th style="width: 15%;" class="text-center">Qty</th>
+                      <th style="width: 20%;" class="text-end">Unit Price (IDR)</th>
+                      <th style="width: 15%;" class="text-end">Line Total</th>
+                      <th style="width: 5%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of invoiceFormLineItems(); let idx = index">
+                      <td>
+                        <input type="text" class="form-control form-control-sm"
+                          placeholder="Service or product description..." [(ngModel)]="item.description">
+                      </td>
+                      <td>
+                        <input type="number" min="1" class="form-control form-control-sm text-center"
+                          [(ngModel)]="item.quantity">
+                      </td>
+                      <td>
+                        <input type="number" min="0" step="10000" class="form-control form-control-sm text-end"
+                          [(ngModel)]="item.unitPrice">
+                      </td>
+                      <td class="text-end fw-bold text-dark">
+                        {{ formatMoney((item.quantity || 0) * (item.unitPrice || 0)) }}
+                      </td>
+                      <td class="text-center">
+                        <button type="button" class="btn btn-sm text-danger" (click)="removeLineItem(idx)"
+                          [disabled]="invoiceFormLineItems().length === 1">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Totals & Notes Row -->
+            <div class="row g-4">
+              <div class="col-12 col-md-7">
+                <label class="form-label small fw-bold text-uppercase text-secondary">Notes & Payment
+                  Instructions</label>
+                <textarea class="form-control" rows="4"
+                  placeholder="e.g. Please transfer to Bank BCA 123-456-7890 a/n PT Sistem Akuntansi..."
+                  [ngModel]="invoiceFormNotes()" (ngModelChange)="invoiceFormNotes.set($event)"></textarea>
+              </div>
+
+              <div class="col-12 col-md-5">
+                <div class="p-3 bg-light rounded-3 border d-flex flex-column gap-2">
+                  <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Subtotal:</span>
+                    <span class="fw-semibold text-dark">{{ formatMoney(invoiceFormSubtotal()) }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Tax ({{ invoiceFormTaxRate() }}%):</span>
+                    <span class="fw-semibold text-dark">{{ formatMoney(invoiceFormTaxAmount()) }}</span>
+                  </div>
+                  <hr class="my-1">
+                  <div class="d-flex justify-content-between fs-5 fw-bold text-dark">
+                    <span>Grand Total:</span>
+                    <span class="text-primary">{{ formatMoney(invoiceFormTotal()) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="ar-card-header justify-content-end gap-2 bg-light border-top">
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+              (click)="navigateTo('invoices')">Cancel</button>
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="saveInvoice('Draft')">Save as
+              Draft</button>
+            <button type="button" class="btn btn-primary btn-sm" (click)="saveInvoice('Sent')">Save & Issue
+              (Sent)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 5. CUSTOMER LIST VIEW ==================== -->
+      <section *ngIf="activeView() === 'customers'" class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-sm" [class.btn-dark]="customerFilter() === 'ALL'"
+              [class.btn-outline-secondary]="customerFilter() !== 'ALL'" (click)="customerFilter.set('ALL')">
+              All Customers ({{ arService.customers().length }})
+            </button>
+            <button class="btn btn-sm" [class.btn-danger]="customerFilter() === 'OVERDUE'"
+              [class.btn-outline-danger]="customerFilter() !== 'OVERDUE'" (click)="customerFilter.set('OVERDUE')">
+              Has Overdue Balance
+            </button>
+            <button class="btn btn-sm" [class.btn-warning]="customerFilter() === 'HOLD'"
+              [class.btn-outline-warning]="customerFilter() !== 'HOLD'" (click)="customerFilter.set('HOLD')">
+              Credit Hold
+            </button>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center">
+            <div class="input-group input-group-sm" style="max-width: 320px;">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search customer, code, contact..."
+                [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
+            </div>
+            <button type="button" class="btn btn-sm btn-primary text-nowrap" (click)="openNewCustomerModal()">
+              <i class="bi bi-person-plus"></i> + New Customer
+            </button>
+          </div>
+        </div>
+
+        <div class="ar-card">
+          <div class="table-responsive">
+            <table class="ar-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Customer / Company</th>
+                  <th>Contact Person</th>
+                  <th>Email / Phone</th>
+                  <th>Credit Terms</th>
+                  <th>Running Balance</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of filteredCustomers()">
+                  <td class="font-monospace fw-semibold text-secondary">{{ c.code }}</td>
+                  <td>
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none"
+                      (click)="viewCustomer(c)">
+                      {{ c.name }}
+                    </a>
+                  </td>
+                  <td>{{ c.contactPerson }}</td>
+                  <td>
+                    <div class="small">{{ c.email }}</div>
+                    <div class="small text-muted">{{ c.phone }}</div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">Net {{ c.dueDays }} Days</span>
+                  </td>
+                  <td>
+                    <div class="fw-bold" [class.text-danger]="arService.getCustomerBalance(c.id) > 0">
+                      {{ formatMoney(arService.getCustomerBalance(c.id)) }}
+                    </div>
+                  </td>
+                  <td>
+                    <span *ngIf="c.status === 'active'"
+                      class="badge bg-success-subtle text-success border border-success-subtle">
+                      Active
+                    </span>
+                    <span *ngIf="c.status === 'credit_hold'"
+                      class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                      Credit Hold
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <button type="button" class="btn btn-outline-secondary" (click)="viewCustomer(c)"
+                        title="View Customer Profile">
+                        <i class="bi bi-arrow-right"></i> Details
+                      </button>
+                      <button type="button" class="btn btn-outline-primary" (click)="startCreateInvoice(c.id)"
+                        title="Create Invoice for Customer">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredCustomers().length === 0">
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    No customers match your search criteria.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 6. CUSTOMER DETAIL VIEW ==================== -->
+      <section *ngIf="activeView() === 'customer-detail' && selectedCustomer() as cust"
+        class="d-flex flex-column gap-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+            (click)="navigateTo('customers')">
+            <i class="bi bi-arrow-left"></i> Back to Customers
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="openPaymentModal(cust.id)">
+              <i class="bi bi-cash-coin"></i> Record Payment
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" (click)="startCreateInvoice(cust.id)">
+              <i class="bi bi-plus-lg"></i> + New Invoice
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer Summary Card -->
+        <div class="ar-card">
+          <div class="ar-card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+              <div>
+                <div class="d-flex align-items-center gap-3">
+                  <h3 class="fs-4 fw-bold text-dark mb-0">{{ cust.name }}</h3>
+                  <span class="badge bg-secondary font-monospace">{{ cust.code }}</span>
+                  <span *ngIf="cust.status === 'active'"
+                    class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                  <span *ngIf="cust.status === 'credit_hold'"
+                    class="badge bg-danger-subtle text-danger border border-danger-subtle">Credit Hold</span>
+                </div>
+                <div class="text-muted small mt-2 d-flex flex-wrap gap-3">
+                  <span><i class="bi bi-person"></i> {{ cust.contactPerson }}</span>
+                  <span><i class="bi bi-envelope"></i> {{ cust.email }}</span>
+                  <span><i class="bi bi-telephone"></i> {{ cust.phone }}</span>
+                  <span><i class="bi bi-geo-alt"></i> {{ cust.address }}</span>
+                </div>
+              </div>
+
+              <div class="text-md-end p-3 bg-light rounded-3 border">
+                <div class="text-muted small fw-bold text-uppercase">Current Outstanding Balance</div>
+                <div class="fs-4 fw-bold" [class.text-danger]="arService.getCustomerBalance(cust.id) > 0">
+                  {{ formatMoney(arService.getCustomerBalance(cust.id)) }}
+                </div>
+                <div class="small text-muted">Credit Limit: {{ formatMoney(cust.creditLimit) }} &bull; Net {{
+                  cust.dueDays }} Days</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer Tabs -->
+        <ul class="ar-nav-tabs">
+          <li class="ar-tab-item" [class.active]="customerActiveTab() === 'invoices'"
+            (click)="customerActiveTab.set('invoices')">
+            Invoices ({{ customerInvoices().length }})
+          </li>
+          <li class="ar-tab-item" [class.active]="customerActiveTab() === 'payments'"
+            (click)="customerActiveTab.set('payments')">
+            Payments Received ({{ customerPayments().length }})
+          </li>
+          <li class="ar-tab-item" [class.active]="customerActiveTab() === 'profile'"
+            (click)="customerActiveTab.set('profile')">
+            Account Profile & Terms
+          </li>
+        </ul>
+
+        <!-- Tab 1: Customer Invoices -->
+        <div class="ar-card" *ngIf="customerActiveTab() === 'invoices'">
+          <div class="table-responsive">
+            <table class="ar-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Issue Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Paid</th>
+                  <th>Balance Due</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of customerInvoices()">
+                  <td class="fw-bold">
+                    <a href="javascript:void(0)" class="text-primary text-decoration-none" (click)="viewInvoice(inv)">
+                      {{ inv.invoiceNumber }}
+                    </a>
+                  </td>
+                  <td>{{ inv.issueDate }}</td>
+                  <td>
+                    <span [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
+                  </td>
+                  <td>{{ formatMoney(inv.total) }}</td>
+                  <td class="text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                  <td class="fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+                  <td>
+                    <span class="status-badge" [ngClass]="{
+                      'badge-draft': inv.status === 'Draft',
+                      'badge-sent': inv.status === 'Sent',
+                      'badge-partial': inv.status === 'Partial',
+                      'badge-paid': inv.status === 'Paid',
+                      'badge-overdue': inv.status === 'Overdue',
+                      'badge-void': inv.status === 'Void'
+                    }">
+                      {{ inv.status }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="viewInvoice(inv)">
+                      View
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="customerInvoices().length === 0">
+                  <td colspan="8" class="text-center py-4 text-muted">
+                    No invoices recorded for this customer yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Customer Payments Received -->
+        <div class="ar-card" *ngIf="customerActiveTab() === 'payments'">
+          <div class="table-responsive">
+            <table class="ar-table">
+              <thead>
+                <tr>
+                  <th>Payment #</th>
+                  <th>Date</th>
+                  <th>Method</th>
+                  <th>Reference #</th>
+                  <th>Invoices Settled</th>
+                  <th class="text-end">Amount Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of customerPayments()">
+                  <td class="fw-bold">{{ p.paymentNumber }}</td>
+                  <td>{{ p.paymentDate }}</td>
+                  <td>
+                    <span class="badge bg-light text-dark border text-uppercase" style="font-size: 0.7rem;">
+                      {{ p.method.replace('_', ' ') }}
+                    </span>
+                  </td>
+                  <td class="font-monospace small">{{ p.referenceNumber }}</td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1">
+                      <span class="badge bg-secondary-subtle text-secondary" *ngFor="let a of p.allocations">
+                        {{ a.invoiceNumber }} ({{ formatMoney(a.allocatedAmount) }})
+                      </span>
+                    </div>
+                  </td>
+                  <td class="text-end fw-bold text-success">{{ formatMoney(p.amount) }}</td>
+                </tr>
+                <tr *ngIf="customerPayments().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    No payments received from this customer yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 3: Customer Profile & Terms -->
+        <div class="ar-card" *ngIf="customerActiveTab() === 'profile'">
+          <div class="ar-card-body">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <h5 class="fw-bold mb-3">Credit Terms & Policy</h5>
+                <dl class="row mb-0">
+                  <dt class="col-sm-5 text-muted small text-uppercase">Credit Limit</dt>
+                  <dd class="col-sm-7 fw-bold">{{ formatMoney(cust.creditLimit) }}</dd>
+
+                  <dt class="col-sm-5 text-muted small text-uppercase">Payment Terms</dt>
+                  <dd class="col-sm-7"><span class="badge bg-light text-dark border">Net {{ cust.dueDays }} Days</span>
+                  </dd>
+
+                  <dt class="col-sm-5 text-muted small text-uppercase">Account Standing</dt>
+                  <dd class="col-sm-7">
+                    <span *ngIf="cust.status === 'active'" class="badge bg-success-subtle text-success">Active
+                      Account</span>
+                    <span *ngIf="cust.status === 'credit_hold'" class="badge bg-danger-subtle text-danger">Credit Hold
+                      Active</span>
+                  </dd>
+
+                  <dt class="col-sm-5 text-muted small text-uppercase">Customer Registered</dt>
+                  <dd class="col-sm-7 text-muted">{{ cust.createdAt }}</dd>
+                </dl>
+              </div>
+
+              <div class="col-md-6 border-start-md">
+                <h5 class="fw-bold mb-3">Operational Notes</h5>
+                <p class="text-secondary small mb-0">{{ cust.notes || 'No specific credit policy notes recorded for this
+                  customer.' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== 7. AGING REPORT VIEW ==================== -->
+      <section *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-4">
+        <!-- Header & Date selector -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <h3 class="fs-4 fw-bold mb-1">Accounts Receivable Aging Analysis</h3>
+            <p class="text-muted mb-0 small">Classifies outstanding balances by days elapsed past invoice due dates</p>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <label class="small text-muted text-nowrap fw-semibold">As of Date:</label>
+            <input type="date" class="form-control form-control-sm" [ngModel]="agingAsOfDate()"
+              (ngModelChange)="agingAsOfDate.set($event)">
+          </div>
+        </div>
+
+        <!-- Aging Bucket Summary Cards -->
+        <div class="row g-3">
+          <div class="col">
+            <div class="p-3 bg-white border rounded-3 text-center shadow-sm">
+              <div class="text-muted small fw-semibold">Current (Not Due)</div>
+              <div class="fs-5 fw-bold text-success mt-1">{{ formatMoney(agingData().grandTotal.current) }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 bg-white border rounded-3 text-center shadow-sm">
+              <div class="text-muted small fw-semibold">1 - 30 Days</div>
+              <div class="fs-5 fw-bold text-primary mt-1">{{ formatMoney(agingData().grandTotal.days1_30) }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 bg-white border rounded-3 text-center shadow-sm">
+              <div class="text-muted small fw-semibold">31 - 60 Days</div>
+              <div class="fs-5 fw-bold text-warning mt-1">{{ formatMoney(agingData().grandTotal.days31_60) }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 bg-white border rounded-3 text-center shadow-sm">
+              <div class="text-muted small fw-semibold">61 - 90 Days</div>
+              <div class="fs-5 fw-bold text-danger mt-1">{{ formatMoney(agingData().grandTotal.days61_90) }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="p-3 bg-white border rounded-3 text-center shadow-sm">
+              <div class="text-muted small fw-semibold">90+ Days (Severe)</div>
+              <div class="fs-5 fw-bold text-danger mt-1">{{ formatMoney(agingData().grandTotal.days90Plus) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Aging Table By Customer -->
+        <div class="ar-card">
+          <div class="table-responsive">
+            <table class="ar-table">
+              <thead>
+                <tr>
+                  <th>Customer Code</th>
+                  <th>Customer Name</th>
+                  <th class="text-end">Current</th>
+                  <th class="text-end">1 - 30 Days</th>
+                  <th class="text-end">31 - 60 Days</th>
+                  <th class="text-end">61 - 90 Days</th>
+                  <th class="text-end">90+ Days</th>
+                  <th class="text-end">Total Outstanding</th>
+                  <th class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let b of agingData().buckets">
+                  <td class="font-monospace text-secondary fw-semibold">{{ b.customerCode }}</td>
+                  <td>
+                    <span class="fw-bold text-dark">{{ b.customerName }}</span>
+                  </td>
+                  <td class="text-end text-success">{{ formatMoney(b.current) }}</td>
+                  <td class="text-end" [class.fw-bold]="b.days1_30 > 0">{{ formatMoney(b.days1_30) }}</td>
+                  <td class="text-end text-warning" [class.fw-bold]="b.days31_60 > 0">{{ formatMoney(b.days31_60) }}
+                  </td>
+                  <td class="text-end text-danger" [class.fw-bold]="b.days61_90 > 0">{{ formatMoney(b.days61_90) }}</td>
+                  <td class="text-end text-danger fw-bold">{{ formatMoney(b.days90Plus) }}</td>
+                  <td class="text-end fw-extrabold">{{ formatMoney(b.totalOutstanding) }}</td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="openPaymentModal(b.customerId)">
+                      Pay
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="agingData().buckets.length === 0">
+                  <td colspan="9" class="text-center py-5 text-muted">
+                    No open receivables found as of {{ agingAsOfDate() }}.
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" class="fw-bold">GRAND TOTAL</td>
+                  <td class="text-end text-success fw-bold">{{ formatMoney(agingData().grandTotal.current) }}</td>
+                  <td class="text-end fw-bold">{{ formatMoney(agingData().grandTotal.days1_30) }}</td>
+                  <td class="text-end text-warning fw-bold">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
+                  <td class="text-end text-danger fw-bold">{{ formatMoney(agingData().grandTotal.days61_90) }}</td>
+                  <td class="text-end text-danger fw-bold">{{ formatMoney(agingData().grandTotal.days90Plus) }}</td>
+                  <td class="text-end text-primary fw-extrabold">{{ formatMoney(agingData().grandTotal.totalOutstanding)
+                    }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="alert alert-info d-flex align-items-center gap-3">
+          <i class="bi bi-info-circle-fill fs-4"></i>
+          <div class="small">
+            <strong>Accounting Methodology Note:</strong> Aging is determined using exact point-in-time calculation
+            (<code>asOfDate - dueDate</code>). Current represents receivables not yet due. Buckets 61-90 and 90+
+            represent high credit risk and should be flagged for collections or allowance for doubtful accounts.
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== RECORD PAYMENT MODAL ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showPaymentModal()" (click)="showPaymentModal.set(false)">
+    <div class="modal-dialog-custom modal-dialog-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div>
+          <h4 class="mb-0 fw-bold fs-5">Record Customer Payment</h4>
+          <span class="text-muted small">Multi-invoice payment settlement and ledger update</span>
+        </div>
+        <button type="button" class="btn-close" (click)="showPaymentModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom d-flex flex-column gap-3">
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Customer</label>
+            <select class="form-select" [ngModel]="paymentCustomerId()"
+              (ngModelChange)="onPaymentCustomerChange($event)">
+              <option *ngFor="let c of arService.customers()" [value]="c.id">
+                {{ c.name }} ({{ c.code }}) - Due: {{ formatMoney(arService.getCustomerBalance(c.id)) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Payment Date</label>
+            <input type="date" class="form-control" [ngModel]="paymentDate()" (ngModelChange)="paymentDate.set($event)">
+          </div>
+
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Payment Method</label>
+            <select class="form-select" [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="cash">Cash</option>
+              <option value="cheque">Cheque / Giro</option>
+            </select>
+          </div>
+
+          <div class="col-6 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Payment Received Amount (IDR)
+              *</label>
+            <input type="number" step="10000" min="1" class="form-control fw-bold fs-5 text-primary"
+              [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set(+$event)">
+          </div>
+
+          <div class="col-6 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Bank / Remittance Ref #</label>
+            <input type="text" class="form-control font-monospace" placeholder="e.g. TRF-92841" [ngModel]="paymentRef()"
+              (ngModelChange)="paymentRef.set($event)">
+          </div>
+        </div>
+
+        <!-- Invoices Allocation Section -->
+        <div>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div>
+              <label class="form-label small fw-bold text-uppercase text-secondary mb-0">Apply Payment to Open
+                Invoices</label>
+              <div class="small text-muted">Distribute the incoming amount across one or multiple invoices</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="autoAllocateOldestFirst()">
+              <i class="bi bi-magic"></i> Auto-Allocate (Oldest First)
+            </button>
+          </div>
+
+          <div class="table-responsive border rounded-3 overflow-hidden">
+            <table class="ar-table mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Due Date</th>
+                  <th class="text-end">Balance Due</th>
+                  <th class="text-end" style="width: 200px;">Amount to Apply (IDR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of paymentAllocations()">
+                  <td class="fw-bold">{{ item.invoiceNumber }}</td>
+                  <td>{{ item.dueDate }}</td>
+                  <td class="text-end text-danger fw-semibold">{{ formatMoney(item.balanceDue) }}</td>
+                  <td>
+                    <input type="number" min="0" [max]="item.balanceDue" step="1000"
+                      class="form-control form-control-sm text-end fw-bold" [(ngModel)]="item.allocatedAmount">
+                  </td>
+                </tr>
+                <tr *ngIf="paymentAllocations().length === 0">
+                  <td colspan="4" class="text-center py-4 text-muted">
+                    No open invoices found for this customer.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Allocation Summary Alert -->
+          <div class="mt-2 p-2 px-3 rounded-2 border d-flex justify-content-between align-items-center small" [ngClass]="{
+              'bg-light text-secondary': unallocatedAmount() === 0,
+              'bg-warning-subtle text-warning-emphasis border-warning-subtle': unallocatedAmount() > 0
+            }">
+            <span>Allocated: <strong>{{ formatMoney(totalAllocatedAmount()) }}</strong> of <strong>{{
+                formatMoney(paymentAmount()) }}</strong></span>
+            <span *ngIf="unallocatedAmount() > 0" class="fw-bold">
+              Unallocated: {{ formatMoney(unallocatedAmount()) }}
+            </span>
+            <span *ngIf="unallocatedAmount() === 0 && totalAllocatedAmount() > 0" class="text-success fw-bold">
+              <i class="bi bi-check-circle-fill"></i> Fully Allocated
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label small fw-bold text-uppercase text-secondary">Notes & Internal Memo</label>
+          <textarea class="form-control" rows="2" placeholder="Optional notes regarding this remittance..."
+            [ngModel]="paymentNotes()" (ngModelChange)="paymentNotes.set($event)"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+          (click)="showPaymentModal.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="submitPayment()">Confirm & Record Payment</button>
       </div>
     </div>
   </div>
-</main>
 
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+  <!-- ==================== VOID INVOICE MODAL ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showVoidModal()" (click)="showVoidModal.set(false)">
+    <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div>
+          <h4 class="mb-0 fw-bold fs-5 text-danger">Void Invoice {{ voidInvoiceNumber() }}</h4>
+          <span class="text-muted small">Accrual Compliance Action</span>
+        </div>
+        <button type="button" class="btn-close" (click)="showVoidModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom d-flex flex-column gap-3">
+        <div class="alert alert-warning small mb-0 d-flex gap-2 align-items-start">
+          <i class="bi bi-exclamation-triangle-fill fs-5 text-warning flex-shrink-0"></i>
+          <div>
+            <strong>Audit Compliance Notice:</strong> In accordance with accounting standards, this invoice will not be
+            hard deleted. It will be marked as <strong>Void</strong>, and your recorded reason will be preserved
+            permanently in the immutable audit log.
+          </div>
+        </div>
 
+        <div>
+          <label class="form-label small fw-bold text-uppercase text-secondary">Reason for Voiding *</label>
+          <textarea class="form-control" rows="3" placeholder="e.g. Invoiced wrong entity; replaced by INV-2026-0099..."
+            [ngModel]="voidReason()" (ngModelChange)="voidReason.set($event)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+          (click)="showVoidModal.set(false)">Cancel</button>
+        <button type="button" class="btn btn-danger btn-sm" (click)="confirmVoidInvoice()">Confirm & Void
+          Invoice</button>
+      </div>
+    </div>
+  </div>
 
-<router-outlet />
+  <!-- ==================== NEW CUSTOMER MODAL ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showCustomerModal()" (click)="showCustomerModal.set(false)">
+    <div class="modal-dialog-custom modal-dialog-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div>
+          <h4 class="mb-0 fw-bold fs-5">Register New Customer</h4>
+          <span class="text-muted small">Corporate Account & Credit Setup</span>
+        </div>
+        <button type="button" class="btn-close" (click)="showCustomerModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom d-flex flex-column gap-3">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Company / Customer Name *</label>
+            <input type="text" class="form-control" placeholder="PT Contoh Solusi Mandiri"
+              [ngModel]="customerFormName()" (ngModelChange)="customerFormName.set($event)">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Contact Person</label>
+            <input type="text" class="form-control" placeholder="Finance Manager" [ngModel]="customerFormContact()"
+              (ngModelChange)="customerFormContact.set($event)">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Billing Email</label>
+            <input type="email" class="form-control" placeholder="billing@contoh.co.id" [ngModel]="customerFormEmail()"
+              (ngModelChange)="customerFormEmail.set($event)">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Phone Number</label>
+            <input type="text" class="form-control" placeholder="+62 21 555 1234" [ngModel]="customerFormPhone()"
+              (ngModelChange)="customerFormPhone.set($event)">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Registered Billing Address</label>
+            <textarea class="form-control" rows="2" placeholder="Gedung Sentra Mulia Lt. 5, Jl. Rasuna Said, Jakarta"
+              [ngModel]="customerFormAddress()" (ngModelChange)="customerFormAddress.set($event)"></textarea>
+          </div>
+          <div class="col-6 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Credit Limit (IDR)</label>
+            <input type="number" step="10000000" class="form-control" [ngModel]="customerFormCreditLimit()"
+              (ngModelChange)="customerFormCreditLimit.set(+$event)">
+          </div>
+          <div class="col-6 col-md-6">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Payment Terms (Net Days)</label>
+            <input type="number" min="0" class="form-control" [ngModel]="customerFormDueDays()"
+              (ngModelChange)="customerFormDueDays.set(+$event)">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Internal Notes & Policy</label>
+            <textarea class="form-control" rows="2"
+              placeholder="Special payment arrangements or city ledger agreements..." [ngModel]="customerFormNotes()"
+              (ngModelChange)="customerFormNotes.set($event)"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+          (click)="showCustomerModal.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" (click)="submitNewCustomer()">Save & Register
+          Customer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PDF / PRINT PREVIEW MODAL ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showPdfModal()" (click)="showPdfModal.set(false)">
+    <div class="modal-dialog-custom modal-dialog-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <div>
+          <h4 class="mb-0 fw-bold fs-5">Invoice Document Preview</h4>
+          <span class="text-muted small">Standard A4 Tax & Commercial Invoicing Layout</span>
+        </div>
+        <button type="button" class="btn-close" (click)="showPdfModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom bg-white p-4" *ngIf="selectedInvoice() as inv">
+        <!-- Printable Invoice Box -->
+        <div class="border p-4 rounded-3 shadow-sm">
+          <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+            <div>
+              <h2 class="fw-extrabold text-primary mb-1">PT SISTEM AKUNTANSI INDONESIA</h2>
+              <div class="text-muted small">Menara Sudirman Lt. 24, Jl. Jend. Sudirman Kav. 60, Jakarta 12190</div>
+              <div class="text-muted small">NPWP: 01.234.567.8-012.000 &bull; Tel: +62 21 520 8899</div>
+            </div>
+            <div class="text-end">
+              <h3 class="fw-bold text-dark mb-0">TAX INVOICE</h3>
+              <div class="font-monospace text-primary fw-bold fs-5">{{ inv.invoiceNumber }}</div>
+              <div class="small text-muted mt-1">Status: <span class="text-uppercase fw-bold">{{ inv.status }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-4">
+            <div class="col-6">
+              <div class="text-muted small fw-bold text-uppercase">Billed To Customer:</div>
+              <div class="fw-bold fs-6 mt-1">{{ inv.customerName }}</div>
+              <div class="small text-muted">ID: {{ inv.customerId }}</div>
+            </div>
+            <div class="col-6 text-end">
+              <div class="small"><span class="text-muted">Invoice Date:</span> <strong>{{ inv.issueDate }}</strong>
+              </div>
+              <div class="small"><span class="text-muted">Due Date:</span> <strong>{{ inv.dueDate }}</strong></div>
+              <div class="small"><span class="text-muted">Payment Terms:</span> <strong>Net Days</strong></div>
+            </div>
+          </div>
+
+          <table class="table table-bordered mb-4">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of inv.lineItems; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.description }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-end">{{ formatMoney(item.unitPrice) }}</td>
+                <td class="text-end fw-bold">{{ formatMoney(item.lineTotal) }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-end fw-semibold">Subtotal:</td>
+                <td class="text-end fw-bold">{{ formatMoney(inv.subtotal) }}</td>
+              </tr>
+              <tr>
+                <td colspan="4" class="text-end fw-semibold">Tax (PPN {{ inv.taxRate }}%):</td>
+                <td class="text-end fw-bold">{{ formatMoney(inv.taxAmount) }}</td>
+              </tr>
+              <tr class="table-primary">
+                <td colspan="4" class="text-end fw-bold">Total Amount Due:</td>
+                <td class="text-end fw-extrabold">{{ formatMoney(inv.total) }}</td>
+              </tr>
+              <tr *ngIf="inv.amountPaid > 0">
+                <td colspan="4" class="text-end text-success fw-semibold">Amount Paid:</td>
+                <td class="text-end text-success fw-bold">- {{ formatMoney(inv.amountPaid) }}</td>
+              </tr>
+              <tr *ngIf="inv.amountPaid > 0">
+                <td colspan="4" class="text-end text-danger fw-bold">Remaining Balance Due:</td>
+                <td class="text-end text-danger fw-extrabold">{{ formatMoney(inv.balanceDue) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="p-3 bg-light rounded-2 border small">
+            <div class="fw-bold mb-1">Bank Payment Instructions:</div>
+            <div>Bank Central Asia (BCA) &bull; A/C: 123-456-7890 &bull; A/N: PT Sistem Akuntansi Indonesia</div>
+            <div class="text-muted mt-1">{{ inv.notes || 'Please remit payment quoting the invoice number as reference.'
+              }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="showPdfModal.set(false)">Close</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+          <i class="bi bi-printer"></i> Print Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST BANNER NOTIFICATION ==================== -->
+  <div class="toast-banner" *ngIf="toastMessage()">
+    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+    <span>{{ toastMessage() }}</span>
+  </div>
+
+</div>

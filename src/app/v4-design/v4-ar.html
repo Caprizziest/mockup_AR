@@ -1,0 +1,992 @@
+<div class="erp-shell">
+
+  <!-- ==================== V4 SIDEBAR ==================== -->
+  <aside class="erp-sidebar" [class.mobile-open]="sidebarMobileOpen()">
+    <div class="erp-sidebar-brand">
+      <div class="erp-brand-text">
+        <span>Galesong AR</span>
+      </div>
+      <span class="erp-version-badge">V4 ERP</span>
+    </div>
+
+    <nav class="erp-nav">
+      <div class="erp-nav-header">Finance & FO</div>
+      <button type="button" class="erp-nav-link" [class.active]="activeView() === 'dashboard'" (click)="navigateTo('dashboard')">
+        <span>Dashboard</span>
+      </button>
+
+      <button type="button" class="erp-nav-link" [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create'" (click)="navigateTo('invoices')">
+        <span>Invoices & Billing</span>
+        <span class="badge bg-danger" *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
+          {{ arService.dashboardMetrics().overdueInvoicesCount }}
+        </span>
+      </button>
+
+      <button type="button" class="erp-nav-link" [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'" (click)="navigateTo('customers')">
+        <span>Customer Folios</span>
+        <span class="badge bg-secondary">{{ arService.customers().length }}</span>
+      </button>
+
+      <div class="erp-nav-header mt-2">Accounting Audit</div>
+      <button type="button" class="erp-nav-link" [class.active]="activeView() === 'aging-report'" (click)="navigateTo('aging-report')">
+        <span>Aging Analysis</span>
+      </button>
+    </nav>
+
+    <!-- 4-Way Version Switcher in Sidebar Footer -->
+    <div class="erp-sidebar-footer">
+      <div class="erp-switcher-label">Design Version</div>
+      <div class="erp-switcher-grid">
+        <button type="button" class="erp-switcher-btn" (click)="switchMode.emit('classic')">V1 Classic</button>
+        <button type="button" class="erp-switcher-btn" (click)="switchMode.emit('minimal')">V2 Minimal</button>
+        <button type="button" class="erp-switcher-btn" (click)="switchMode.emit('v3')">V3 Focused</button>
+        <button type="button" class="erp-switcher-btn active">V4 ERP</button>
+      </div>
+
+      <div class="mt-2 pt-2 border-top border-secondary border-opacity-25" style="font-size: 0.68rem; color: #94a3b8;">
+        <div class="text-white fw-bold">YOSUA JERRY</div>
+        <div>FRONT OFFICE / AR MANAGER</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN WORKSPACE ==================== -->
+  <div class="erp-main">
+
+    <!-- Top Metadata Banner (Galesong Hospitality FO Header) -->
+    <div class="erp-meta-bar">
+      <div class="erp-meta-title">
+        Galesong Hospitality Front Office (FO) &bull; Accounts Receivable Module
+      </div>
+      <div class="erp-meta-tags d-none d-lg-flex">
+        <span>PT. SINAR INDONESIA HOTEL</span>
+        <span>DEPARTEMEN FINANCE & FO</span>
+        <span>CABANG: <strong>PUSAT</strong></span>
+        <span>KOTA: <strong>MAKASSAR</strong></span>
+        <span>USER: <strong>YOSUA JERRY</strong></span>
+        <span>ROLE: <strong>AR MANAGER</strong></span>
+        <span>VER: <strong>V14.0 - RELEASE</strong></span>
+      </div>
+    </div>
+
+    <!-- Operational Toolbar -->
+    <div class="erp-top-toolbar">
+      <div class="d-flex align-items-center gap-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none" (click)="toggleSidebarMobile()">
+          Menu
+        </button>
+        <div>
+          <h2 class="erp-page-heading">
+            <ng-container [ngSwitch]="activeView()">
+              <span *ngSwitchCase="'dashboard'">Dashboard Current Status</span>
+              <span *ngSwitchCase="'invoices'">Accounts Receivable Invoices Ledger</span>
+              <span *ngSwitchCase="'invoice-create'">Create Direct / Folio Billing Invoice</span>
+              <span *ngSwitchCase="'invoice-detail'">Invoice Folio {{ selectedInvoice()?.invoiceNumber }}</span>
+              <span *ngSwitchCase="'customers'">Customer Directory & Corporate Folios</span>
+              <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
+              <span *ngSwitchCase="'aging-report'">Hospitality AR Aging Analysis Schedule</span>
+            </ng-container>
+          </h2>
+          <div class="text-muted" style="font-size: 0.72rem;">
+            Thursday, {{ arService.today }} &bull; Hotel Night Audit Active Period
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- 4-Way Switcher in Topbar -->
+        <div class="erp-switcher-grid d-none d-md-grid me-2" style="background: #e2e8f0; border-color: #cbd5e1;">
+          <button type="button" class="erp-switcher-btn" style="color: #475569;" (click)="switchMode.emit('classic')">V1 Classic</button>
+          <button type="button" class="erp-switcher-btn" style="color: #475569;" (click)="switchMode.emit('minimal')">V2 Minimal</button>
+          <button type="button" class="erp-switcher-btn" style="color: #475569;" (click)="switchMode.emit('v3')">V3 Focused</button>
+          <button type="button" class="erp-switcher-btn active">V4 ERP</button>
+        </div>
+
+        <button type="button" class="erp-btn-secondary" (click)="openPaymentModal()">
+          Record Payment
+        </button>
+        <button type="button" class="erp-btn-primary" (click)="startCreateInvoice()">
+          + New Invoice
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Canvas -->
+    <main class="erp-content">
+
+      <!-- =========================================================
+           1. DASHBOARD VIEW (Solid Color Blocks: Teal, Orange, Purple, Magenta, Red)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-3">
+
+        <!-- Block A: Solid Teal Header Block (Capacity & Operational KPI) -->
+        <div class="erp-box">
+          <div class="row g-0 text-center erp-block-teal">
+            <div class="col-4 py-2 border-end border-light border-opacity-25">
+              <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase;">Total Outstanding AR</div>
+              <div class="erp-mono fw-bold fs-4 mt-1">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
+              <div style="font-size: 0.68rem; opacity: 0.85;">Current Unsettled Receivables</div>
+            </div>
+            <div class="col-4 py-2 border-end border-light border-opacity-25">
+              <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase;">Total Overdue Risk</div>
+              <div class="erp-mono fw-bold fs-4 mt-1 text-warning">{{ formatMoney(arService.dashboardMetrics().totalOverdue) }}</div>
+              <div style="font-size: 0.68rem; opacity: 0.85;">{{ arService.dashboardMetrics().overdueInvoicesCount }} Delinquent Accounts</div>
+            </div>
+            <div class="col-4 py-2">
+              <div style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase;">Settled This Month</div>
+              <div class="erp-mono fw-bold fs-4 mt-1">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}</div>
+              <div style="font-size: 0.68rem; opacity: 0.85;">{{ arService.dashboardMetrics().paidThisMonthCount }} Closed Payments</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Core Layout: Left (70%) Inventory & Overdue; Right (30%) Customer & Guest Info -->
+        <div class="row g-3">
+          <!-- Left Column -->
+          <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+
+            <!-- Solid Orange Block: Receivables Inventory Table -->
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-orange">
+                ACCOUNTS RECEIVABLE INVENTORY & SCHEDULE
+              </div>
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th class="text-center">Category</th>
+                    <th class="text-center">Count</th>
+                    <th class="text-end">Total Amount (IDR)</th>
+                    <th class="text-center">% Share</th>
+                    <th class="text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="fw-bold">Total Receivables Ledger</td>
+                    <td class="text-center">All AR</td>
+                    <td class="text-center">{{ arService.invoices().length }}</td>
+                    <td class="text-end erp-mono fw-bold">{{ formatMoney(arService.dashboardMetrics().totalOutstanding + arService.dashboardMetrics().collectedThisMonth) }}</td>
+                    <td class="text-center erp-mono">100.00%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-sent">Master</span></td>
+                  </tr>
+                  <tr>
+                    <td>- Settled MTD Credits</td>
+                    <td class="text-center">Paid</td>
+                    <td class="text-center">{{ arService.dashboardMetrics().paidThisMonthCount }}</td>
+                    <td class="text-end erp-mono text-muted">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}</td>
+                    <td class="text-center erp-mono">-</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-paid">Closed</span></td>
+                  </tr>
+                  <tr class="erp-row-green">
+                    <td class="fw-bold">Active Open Balance (Outstanding)</td>
+                    <td class="text-center">Saleable AR</td>
+                    <td class="text-center fw-bold">{{ arService.dashboardMetrics().openInvoicesCount }}</td>
+                    <td class="text-end erp-mono fw-bold text-primary">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</td>
+                    <td class="text-center erp-mono fw-bold">100.00%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-sent">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>Current (Within Net Terms)</td>
+                    <td class="text-center">0-30 Days</td>
+                    <td class="text-center">-</td>
+                    <td class="text-end erp-mono text-success fw-semibold">{{ formatMoney(agingData().grandTotal.current) }}</td>
+                    <td class="text-center erp-mono">{{ ((agingData().grandTotal.current / (agingData().grandTotal.totalOutstanding || 1)) * 100).toFixed(2) }}%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-paid">Good</span></td>
+                  </tr>
+                  <tr>
+                    <td>1 - 30 Days Overdue</td>
+                    <td class="text-center">Aging 1</td>
+                    <td class="text-center">-</td>
+                    <td class="text-end erp-mono">{{ formatMoney(agingData().grandTotal.days1_30) }}</td>
+                    <td class="text-center erp-mono">{{ ((agingData().grandTotal.days1_30 / (agingData().grandTotal.totalOutstanding || 1)) * 100).toFixed(2) }}%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-sent">Followup</span></td>
+                  </tr>
+                  <tr>
+                    <td>31 - 60 Days Overdue</td>
+                    <td class="text-center">Aging 2</td>
+                    <td class="text-center">-</td>
+                    <td class="text-end erp-mono text-warning fw-semibold">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
+                    <td class="text-center erp-mono">{{ ((agingData().grandTotal.days31_60 / (agingData().grandTotal.totalOutstanding || 1)) * 100).toFixed(2) }}%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-partial">Notice</span></td>
+                  </tr>
+                  <tr>
+                    <td>61 - 90 Days Overdue</td>
+                    <td class="text-center">Aging 3</td>
+                    <td class="text-center">-</td>
+                    <td class="text-end erp-mono text-danger fw-semibold">{{ formatMoney(agingData().grandTotal.days61_90) }}</td>
+                    <td class="text-center erp-mono">{{ ((agingData().grandTotal.days61_90 / (agingData().grandTotal.totalOutstanding || 1)) * 100).toFixed(2) }}%</td>
+                    <td class="text-center"><span class="erp-badge erp-badge-overdue">Demand</span></td>
+                  </tr>
+                  <!-- Solid Red Alert Row (Matching the "On Hand" row in reference image) -->
+                  <tr class="erp-row-red">
+                    <td>90+ Days Critical Delinquent (Credit Hold)</td>
+                    <td class="text-center">High Risk</td>
+                    <td class="text-center">{{ priorityOverdueInvoices().length }}</td>
+                    <td class="text-end erp-mono">{{ formatMoney(agingData().grandTotal.days90Plus) }}</td>
+                    <td class="text-center erp-mono">{{ ((agingData().grandTotal.days90Plus / (agingData().grandTotal.totalOutstanding || 1)) * 100).toFixed(2) }}%</td>
+                    <td class="text-center">HOLD</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Solid Crimson Red Block: Collections Priority Queue -->
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-red">
+                COLLECTIONS PRIORITY QUEUE (OVERDUE ACCOUNTS)
+              </div>
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Customer Name</th>
+                    <th>Due Date</th>
+                    <th>Overdue By</th>
+                    <th class="text-end">Balance Due</th>
+                    <th class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inv of priorityOverdueInvoices()">
+                    <td>
+                      <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none erp-mono" (click)="viewInvoice(inv)">
+                        {{ inv.invoiceNumber }}
+                      </a>
+                    </td>
+                    <td class="fw-semibold">{{ inv.customerName }}</td>
+                    <td class="erp-mono text-muted">{{ inv.dueDate }}</td>
+                    <td><span class="erp-badge erp-badge-overdue">+{{ getDaysPastDue(inv.dueDate) }} Days</span></td>
+                    <td class="text-end erp-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
+                    <td class="text-center">
+                      <button type="button" class="erp-btn-primary py-0 px-2" style="font-size: 0.72rem;" (click)="openPaymentModal(inv.customerId, inv.id)">
+                        Pay
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="priorityOverdueInvoices().length === 0">
+                    <td colspan="6" class="text-center py-3 text-muted">No delinquent invoices recorded. Excellent AR standing.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- Right Column (30%) -->
+          <div class="col-12 col-xl-4 d-flex flex-column gap-3">
+
+            <!-- Solid Purple Block: Customer Accounts Status (like "Housekeeping Status") -->
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-purple">
+                CUSTOMER ACCOUNTS STATUS
+              </div>
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Customer Name</th>
+                    <th>Terms</th>
+                    <th class="text-end">Balance Due</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let c of arService.customers()">
+                    <td class="erp-mono text-muted small">{{ c.code }}</td>
+                    <td class="fw-semibold text-truncate" style="max-width: 140px;">
+                      <a href="javascript:void(0)" class="text-decoration-none text-dark" (click)="viewCustomer(c)">
+                        {{ c.name }}
+                      </a>
+                    </td>
+                    <td class="small">Net {{ c.dueDays }}d</td>
+                    <td class="text-end erp-mono fw-bold" [class.text-danger]="arService.getCustomerBalance(c.id) > 0">
+                      {{ formatMoney(arService.getCustomerBalance(c.id)) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Solid Magenta Block: Live Ledger Activity (like "Guest Info") -->
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-magenta">
+                AR AUDIT ACTIVITY TRAIL
+              </div>
+              <div class="p-2" style="max-height: 280px; overflow-y: auto;">
+                <table class="erp-table">
+                  <tbody>
+                    <tr *ngFor="let log of arService.activityLogs()">
+                      <td style="font-size: 0.72rem;">
+                        <div class="fw-semibold text-dark">{{ log.description }}</div>
+                        <div class="text-muted d-flex justify-content-between mt-1">
+                          <span>{{ log.timestamp }}</span>
+                          <span *ngIf="log.amount" class="erp-mono text-dark fw-bold">{{ formatMoney(log.amount) }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =========================================================
+           2. INVOICES LEDGER VIEW (High-Density Bordered Table)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'invoices'" class="d-flex flex-column gap-3">
+
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+          <!-- Filter Tabs -->
+          <div class="erp-tabs">
+            <button type="button" class="erp-tab-btn" [class.active]="invoiceCategoryFilter() === 'ALL'" (click)="invoiceCategoryFilter.set('ALL')">
+              All ({{ invoiceCategoryCounts().all }})
+            </button>
+            <button type="button" class="erp-tab-btn" [class.active]="invoiceCategoryFilter() === 'OUTSTANDING'" (click)="invoiceCategoryFilter.set('OUTSTANDING')">
+              Outstanding ({{ invoiceCategoryCounts().outstanding }})
+            </button>
+            <button type="button" class="erp-tab-btn text-danger" [class.active]="invoiceCategoryFilter() === 'OVERDUE'" (click)="invoiceCategoryFilter.set('OVERDUE')">
+              Overdue ({{ invoiceCategoryCounts().overdue }})
+            </button>
+            <button type="button" class="erp-tab-btn" [class.active]="invoiceCategoryFilter() === 'PAID'" (click)="invoiceCategoryFilter.set('PAID')">
+              Paid ({{ invoiceCategoryCounts().paid }})
+            </button>
+            <button type="button" class="erp-tab-btn" [class.active]="invoiceCategoryFilter() === 'OTHER'" (click)="invoiceCategoryFilter.set('OTHER')">
+              Draft & Void ({{ invoiceCategoryCounts().other }})
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <input type="text" class="form-control form-control-sm" style="width: 220px;" placeholder="Search invoice/customer..."
+                   [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
+            <button type="button" class="erp-btn-primary" (click)="startCreateInvoice()">
+              + New Invoice
+            </button>
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-teal text-start d-flex justify-content-between align-items-center">
+            <span>MASTER INVOICE FOLIO LEDGER</span>
+            <span class="small font-monospace" style="font-size: 0.74rem;">
+              Total: {{ formatMoney(filteredSummary().totalAmount) }} | Due: {{ formatMoney(filteredSummary().balanceDue) }}
+            </span>
+          </div>
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Customer Name</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th class="text-end">Total Amount</th>
+                <th class="text-end">Paid</th>
+                <th class="text-end">Balance Due</th>
+                <th class="text-center">Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of filteredInvoices()">
+                <td>
+                  <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none erp-mono" (click)="viewInvoice(inv)">
+                    {{ inv.invoiceNumber }}
+                  </a>
+                </td>
+                <td class="fw-semibold">
+                  {{ inv.customerName }}
+                  <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-secondary ms-1" style="font-size: 0.6rem;">City Ledger</span>
+                </td>
+                <td class="erp-mono text-muted">{{ inv.issueDate }}</td>
+                <td>
+                  <span class="erp-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
+                  <span *ngIf="inv.status === 'Overdue'" class="erp-badge erp-badge-overdue ms-1">+{{ getDaysPastDue(inv.dueDate) }}d</span>
+                </td>
+                <td class="text-end erp-mono fw-semibold">{{ formatMoney(inv.total) }}</td>
+                <td class="text-end erp-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                <td class="text-end erp-mono fw-bold" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
+                  {{ formatMoney(inv.balanceDue) }}
+                </td>
+                <td class="text-center">
+                  <span class="erp-badge" [ngClass]="{
+                    'erp-badge-draft': inv.status === 'Draft',
+                    'erp-badge-sent': inv.status === 'Sent',
+                    'erp-badge-partial': inv.status === 'Partial',
+                    'erp-badge-paid': inv.status === 'Paid',
+                    'erp-badge-overdue': inv.status === 'Overdue',
+                    'erp-badge-void': inv.status === 'Void'
+                  }">{{ inv.status === 'Sent' ? 'Outstanding' : inv.status }}</span>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0" (click)="viewInvoice(inv)">View</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary py-0"
+                            *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                            (click)="openPaymentModal(inv.customerId, inv.id)">Pay</button>
+                    <button type="button" class="btn btn-sm btn-outline-success py-0"
+                            *ngIf="inv.status === 'Draft'" (click)="issueDraftInvoice(inv)">Issue</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                            *ngIf="inv.status !== 'Void'" (click)="openVoidModal(inv)">Void</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredInvoices().length === 0">
+                <td colspan="9" class="text-center py-4 text-muted">No invoices found matching current filter.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- =========================================================
+           3. INVOICE DETAIL VIEW (ERP Solid Header Panels)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'invoice-detail' && selectedInvoice() as inv" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <button type="button" class="erp-btn-secondary" (click)="navigateTo('invoices')">
+            &larr; Back to Invoices
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="erp-btn-secondary" (click)="openPdfPreview(inv)">Print Folio</button>
+            <button type="button" class="erp-btn-primary" *ngIf="inv.status === 'Draft'" (click)="issueDraftInvoice(inv)">Issue Invoice</button>
+            <button type="button" class="erp-btn-danger" *ngIf="inv.status !== 'Void'" (click)="openVoidModal(inv)">Void Invoice</button>
+            <button type="button" class="erp-btn-primary" *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'" (click)="openPaymentModal(inv.customerId, inv.id)">
+              Record Payment
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-xl-8 d-flex flex-column gap-3">
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-teal text-start">
+                FOLIO MASTER: {{ inv.invoiceNumber }} &bull; STATUS: {{ inv.status }}
+              </div>
+              <div class="p-3">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="text-muted small">Customer Name</div>
+                    <div class="fw-bold fs-6">{{ inv.customerName }}</div>
+                  </div>
+                  <div class="col-3">
+                    <div class="text-muted small">Issue Date</div>
+                    <div class="erp-mono fw-semibold">{{ inv.issueDate }}</div>
+                  </div>
+                  <div class="col-3">
+                    <div class="text-muted small">Due Date</div>
+                    <div class="erp-mono fw-semibold" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-orange text-start">
+                FOLIO CHARGES & LINE ITEMS
+              </div>
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Description</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end">Line Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of inv.lineItems; let i = index">
+                    <td class="text-muted">{{ i + 1 }}</td>
+                    <td class="fw-semibold">{{ item.description }}</td>
+                    <td class="text-end erp-mono">{{ item.quantity }}</td>
+                    <td class="text-end erp-mono">{{ formatMoney(item.unitPrice) }}</td>
+                    <td class="text-end erp-mono fw-bold">{{ formatMoney(item.lineTotal) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Payment Receipts applied to this invoice -->
+            <div class="erp-box" *ngIf="getPaymentsForInvoice(inv.id).length > 0">
+              <div class="erp-box-header erp-block-purple text-start">
+                SETTLED PAYMENTS APPLIED
+              </div>
+              <table class="erp-table">
+                <thead>
+                  <tr>
+                    <th>Receipt #</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th class="text-end">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of getPaymentsForInvoice(inv.id)">
+                    <td class="erp-mono fw-bold text-success">{{ p.paymentNumber }}</td>
+                    <td class="erp-mono text-muted">{{ p.paymentDate }}</td>
+                    <td class="text-capitalize">{{ p.method.replace('_', ' ') }}</td>
+                    <td class="erp-mono text-muted">{{ p.referenceNumber }}</td>
+                    <td class="text-end erp-mono fw-bold text-success">{{ formatMoney(p.amount) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Financial Ledger Sidebar -->
+          <div class="col-12 col-xl-4">
+            <div class="erp-box">
+              <div class="erp-box-header erp-block-magenta text-start">
+                FOLIO BALANCE SUMMARY
+              </div>
+              <table class="erp-table">
+                <tbody>
+                  <tr>
+                    <td>Subtotal Charges</td>
+                    <td class="text-end erp-mono">{{ formatMoney(inv.subtotal) }}</td>
+                  </tr>
+                  <tr>
+                    <td>PPN / Tax ({{ inv.taxRate }}%)</td>
+                    <td class="text-end erp-mono">{{ formatMoney(inv.taxAmount) }}</td>
+                  </tr>
+                  <tr class="fw-bold bg-light">
+                    <td>Total Folio Charges</td>
+                    <td class="text-end erp-mono fs-6 text-primary">{{ formatMoney(inv.total) }}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Settled Credits</td>
+                    <td class="text-end erp-mono text-success">- {{ formatMoney(inv.amountPaid) }}</td>
+                  </tr>
+                  <tr class="fw-bold fs-5" [ngClass]="inv.balanceDue > 0 ? 'erp-row-red' : 'erp-row-green'">
+                    <td>BALANCE DUE</td>
+                    <td class="text-end erp-mono">{{ formatMoney(inv.balanceDue) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           4. NEW INVOICE BUILDER
+           ========================================================= -->
+      <div *ngIf="activeView() === 'invoice-create'" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <button type="button" class="erp-btn-secondary" (click)="navigateTo('invoices')">&larr; Back</button>
+          <div class="d-flex gap-2">
+            <button type="button" class="erp-btn-secondary" (click)="saveInvoice('Draft')">Save as Draft</button>
+            <button type="button" class="erp-btn-primary" (click)="saveInvoice('Sent')">Post & Issue Folio</button>
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-teal text-start">CREATE NEW FOLIO BILLING INVOICE</div>
+          <div class="p-3">
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-md-5">
+                <label class="small fw-bold">Customer Account *</label>
+                <select class="form-select form-select-sm" [ngModel]="invoiceFormCustomerId()" (ngModelChange)="onCustomerSelectedForInvoice($event)">
+                  <option *ngFor="let c of arService.customers()" [value]="c.id">{{ c.name }} (Net {{ c.dueDays }}d)</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="small fw-bold">Issue Date</label>
+                <input type="date" class="form-control form-control-sm" [ngModel]="invoiceFormIssueDate()" (ngModelChange)="invoiceFormIssueDate.set($event)">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="small fw-bold">Due Date</label>
+                <input type="date" class="form-control form-control-sm" [ngModel]="invoiceFormDueDate()" (ngModelChange)="invoiceFormDueDate.set($event)">
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="small fw-bold">Source</label>
+                <select class="form-select form-select-sm" [ngModel]="invoiceFormSourceType()" (ngModelChange)="invoiceFormSourceType.set($event)">
+                  <option value="generic">Corporate Direct Bill</option>
+                  <option value="city_ledger">City Ledger (PMS Front Office)</option>
+                </select>
+              </div>
+            </div>
+
+            <table class="erp-table mb-2">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="width: 100px;">Qty</th>
+                  <th style="width: 180px;">Unit Price (IDR)</th>
+                  <th style="width: 180px;" class="text-end">Line Total</th>
+                  <th style="width: 50px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of invoiceFormLineItems(); let i = index">
+                  <td><input type="text" class="form-control form-control-sm" placeholder="Description..." [(ngModel)]="item.description"></td>
+                  <td><input type="number" min="1" class="form-control form-control-sm erp-mono" [(ngModel)]="item.quantity"></td>
+                  <td><input type="number" min="0" step="10000" class="form-control form-control-sm erp-mono" [(ngModel)]="item.unitPrice"></td>
+                  <td class="text-end erp-mono fw-bold">{{ formatMoney((item.quantity || 0) * (item.unitPrice || 0)) }}</td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm text-danger p-0 fw-bold" (click)="removeLineItem(i)" *ngIf="invoiceFormLineItems().length > 1">&times;</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-3" (click)="addLineItem()">+ Add Charge Line</button>
+
+            <div class="row g-3 border-top pt-2">
+              <div class="col-md-7">
+                <label class="small fw-bold">Billing Remarks</label>
+                <textarea class="form-control form-control-sm" rows="2" [ngModel]="invoiceFormNotes()" (ngModelChange)="invoiceFormNotes.set($event)"></textarea>
+              </div>
+              <div class="col-md-5">
+                <table class="erp-table">
+                  <tbody>
+                    <tr><td>Subtotal</td><td class="text-end erp-mono">{{ formatMoney(invoiceFormSubtotal()) }}</td></tr>
+                    <tr><td>Tax (11%)</td><td class="text-end erp-mono">{{ formatMoney(invoiceFormTaxAmount()) }}</td></tr>
+                    <tr class="fw-bold bg-light fs-6"><td>Total Invoiced</td><td class="text-end erp-mono text-primary">{{ formatMoney(invoiceFormTotal()) }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           5. CUSTOMER DIRECTORY VIEW
+           ========================================================= -->
+      <div *ngIf="activeView() === 'customers'" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="erp-tabs">
+            <button type="button" class="erp-tab-btn" [class.active]="customerFilter() === 'ALL'" (click)="customerFilter.set('ALL')">All Accounts</button>
+            <button type="button" class="erp-tab-btn text-danger" [class.active]="customerFilter() === 'OVERDUE'" (click)="customerFilter.set('OVERDUE')">Overdue</button>
+            <button type="button" class="erp-tab-btn" [class.active]="customerFilter() === 'HOLD'" (click)="customerFilter.set('HOLD')">Credit Hold</button>
+          </div>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control form-control-sm" style="width: 220px;" placeholder="Search corporate..." [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
+            <button type="button" class="erp-btn-primary" (click)="openNewCustomerModal()">+ Register Account</button>
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-purple text-start">CORPORATE & CITY LEDGER DIRECTORY</div>
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Company Name</th>
+                <th>Contact</th>
+                <th>Terms</th>
+                <th>Current Balance</th>
+                <th>Credit Limit</th>
+                <th>Status</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of filteredCustomers()">
+                <td class="erp-mono text-muted">{{ c.code }}</td>
+                <td class="fw-bold"><a href="javascript:void(0)" class="text-decoration-none text-primary" (click)="viewCustomer(c)">{{ c.name }}</a></td>
+                <td>{{ c.contactPerson }} ({{ c.phone }})</td>
+                <td>Net {{ c.dueDays }}d</td>
+                <td class="erp-mono fw-bold" [class.text-danger]="arService.getCustomerBalance(c.id) > 0">{{ formatMoney(arService.getCustomerBalance(c.id)) }}</td>
+                <td class="erp-mono text-muted">{{ formatMoney(c.creditLimit) }}</td>
+                <td><span class="erp-badge" [ngClass]="c.status === 'active' ? 'erp-badge-paid' : 'erp-badge-overdue'">{{ c.status === 'active' ? 'Active' : 'Credit Hold' }}</span></td>
+                <td class="text-end">
+                  <button type="button" class="erp-btn-secondary py-0 px-2 me-1" (click)="viewCustomer(c)">Folio</button>
+                  <button type="button" class="erp-btn-primary py-0 px-2" (click)="startCreateInvoice(c.id)">Bill</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           6. CUSTOMER DETAIL VIEW
+           ========================================================= -->
+      <div *ngIf="activeView() === 'customer-detail' && selectedCustomer() as cust" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <button type="button" class="erp-btn-secondary" (click)="navigateTo('customers')">&larr; Back to Directory</button>
+          <div class="d-flex gap-2">
+            <button type="button" class="erp-btn-secondary" (click)="openPaymentModal(cust.id)">Record Payment</button>
+            <button type="button" class="erp-btn-primary" (click)="startCreateInvoice(cust.id)">+ Create Invoice</button>
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-purple text-start">CORPORATE ACCOUNT FOLIO: {{ cust.name }} ({{ cust.code }})</div>
+          <div class="p-3">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <div>Contact: <strong>{{ cust.contactPerson }}</strong> &bull; Email: <strong>{{ cust.email }}</strong></div>
+                <div>Address: {{ cust.address }}</div>
+              </div>
+              <div class="col-md-6 text-md-end">
+                <div>Balance Due: <strong class="erp-mono fs-5 text-danger">{{ formatMoney(arService.getCustomerBalance(cust.id)) }}</strong></div>
+                <div>Credit Limit: <span class="erp-mono">{{ formatMoney(cust.creditLimit) }}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-orange text-start">INVOICE HISTORY FOR {{ cust.name }}</div>
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th class="text-end">Total</th>
+                <th class="text-end">Paid</th>
+                <th class="text-end">Balance Due</th>
+                <th class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of customerInvoices()">
+                <td class="erp-mono fw-bold"><a href="javascript:void(0)" class="text-primary text-decoration-none" (click)="viewInvoice(inv)">{{ inv.invoiceNumber }}</a></td>
+                <td class="erp-mono text-muted">{{ inv.issueDate }}</td>
+                <td class="erp-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</td>
+                <td class="text-end erp-mono">{{ formatMoney(inv.total) }}</td>
+                <td class="text-end erp-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                <td class="text-end erp-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+                <td class="text-center"><span class="erp-badge" [ngClass]="inv.status === 'Paid' ? 'erp-badge-paid' : 'erp-badge-sent'">{{ inv.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           7. AGING REPORT VIEW
+           ========================================================= -->
+      <div *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <h3 class="fw-bold mb-0 fs-5">Hospitality AR Aging Analysis Matrix</h3>
+          <div class="d-flex align-items-center gap-2">
+            <span class="small fw-bold">As of:</span>
+            <input type="date" class="form-control form-control-sm" style="width: 150px;" [ngModel]="agingAsOfDate()" (ngModelChange)="agingAsOfDate.set($event)">
+          </div>
+        </div>
+
+        <div class="erp-box">
+          <div class="erp-box-header erp-block-orange text-start">AGING DELINQUENCY SCHEDULE ACROSS 30-DAY PERIODS</div>
+          <table class="erp-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th class="text-end">Current (Not Due)</th>
+                <th class="text-end">1–30 Days</th>
+                <th class="text-end">31–60 Days</th>
+                <th class="text-end">61–90 Days</th>
+                <th class="text-end">90+ Days (Critical)</th>
+                <th class="text-end">Total Outstanding</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of agingData().buckets">
+                <td class="fw-bold">{{ b.customerName }} <span class="text-muted small erp-mono">({{ b.customerCode }})</span></td>
+                <td class="text-end erp-mono text-success">{{ formatMoney(b.current) }}</td>
+                <td class="text-end erp-mono text-primary">{{ formatMoney(b.days1_30) }}</td>
+                <td class="text-end erp-mono text-warning">{{ formatMoney(b.days31_60) }}</td>
+                <td class="text-end erp-mono text-danger">{{ formatMoney(b.days61_90) }}</td>
+                <td class="text-end erp-mono fw-bold text-danger">{{ formatMoney(b.days90Plus) }}</td>
+                <td class="text-end erp-mono fw-bold fs-6">{{ formatMoney(b.totalOutstanding) }}</td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-light fw-bold">
+              <tr>
+                <td>GRAND TOTAL RECEIVABLES</td>
+                <td class="text-end erp-mono text-success">{{ formatMoney(agingData().grandTotal.current) }}</td>
+                <td class="text-end erp-mono text-primary">{{ formatMoney(agingData().grandTotal.days1_30) }}</td>
+                <td class="text-end erp-mono text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
+                <td class="text-end erp-mono text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</td>
+                <td class="text-end erp-mono text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</td>
+                <td class="text-end erp-mono fs-5 text-dark">{{ formatMoney(agingData().grandTotal.totalOutstanding) }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+  <!-- Payment Modal -->
+  <div class="erp-modal-backdrop" *ngIf="showPaymentModal()">
+    <div class="erp-modal erp-modal-lg">
+      <div class="erp-modal-header erp-block-teal">
+        <h5 class="fw-bold mb-0">Record Settlement Payment</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showPaymentModal.set(false)"></button>
+      </div>
+      <div class="erp-modal-body">
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="small fw-bold">Customer</label>
+            <select class="form-select form-select-sm" [ngModel]="paymentCustomerId()" (ngModelChange)="onPaymentCustomerChange($event)">
+              <option *ngFor="let c of arService.customers()" [value]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div class="col-3">
+            <label class="small fw-bold">Date</label>
+            <input type="date" class="form-control form-control-sm" [ngModel]="paymentDate()" (ngModelChange)="paymentDate.set($event)">
+          </div>
+          <div class="col-3">
+            <label class="small fw-bold">Method</label>
+            <select class="form-select form-select-sm" [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
+              <option value="bank_transfer">Bank Wire / BCA</option>
+              <option value="credit_card">EDC Credit Card</option>
+              <option value="cash">Cash</option>
+              <option value="cheque">Cheque</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="small fw-bold">Amount (IDR) *</label>
+            <input type="number" step="10000" class="form-control form-control-sm erp-mono fw-bold fs-6 text-success" [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
+          </div>
+          <div class="col-6">
+            <label class="small fw-bold">Reference #</label>
+            <input type="text" class="form-control form-control-sm erp-mono" [ngModel]="paymentRef()" (ngModelChange)="paymentRef.set($event)">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="small fw-bold">Multi-Invoice Allocations</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary py-0" (click)="autoAllocateOldestFirst()">Auto-Allocate</button>
+        </div>
+        <table class="erp-table mb-2">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Due Date</th>
+              <th class="text-end">Balance Due</th>
+              <th class="text-end" style="width: 180px;">Amount Applied</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of paymentAllocations()">
+              <td class="erp-mono fw-bold">{{ item.invoiceNumber }}</td>
+              <td class="erp-mono text-muted">{{ item.dueDate }}</td>
+              <td class="text-end erp-mono text-danger">{{ formatMoney(item.balanceDue) }}</td>
+              <td class="text-end"><input type="number" min="0" [max]="item.balanceDue" class="form-control form-control-sm text-end erp-mono fw-bold" [(ngModel)]="item.allocatedAmount"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between p-2 bg-light small">
+          <span>Received: <strong class="erp-mono">{{ formatMoney(paymentAmount()) }}</strong></span>
+          <span>Allocated: <strong class="erp-mono text-success">{{ formatMoney(totalAllocatedAmount()) }}</strong></span>
+          <span>Unallocated: <strong class="erp-mono text-warning">{{ formatMoney(unallocatedAmount()) }}</strong></span>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="erp-btn-secondary" (click)="showPaymentModal.set(false)">Cancel</button>
+        <button type="button" class="erp-btn-primary" [disabled]="totalAllocatedAmount() <= 0" (click)="submitPayment()">Confirm & Post Settlement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Void Modal -->
+  <div class="erp-modal-backdrop" *ngIf="showVoidModal()">
+    <div class="erp-modal">
+      <div class="erp-modal-header erp-block-red">
+        <h5 class="fw-bold mb-0">Void Invoice Folio {{ voidInvoiceNumber() }}</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showVoidModal.set(false)"></button>
+      </div>
+      <div class="erp-modal-body">
+        <p class="small text-muted mb-2">Voiding writes off the receivable with audit log. This cannot be undone.</p>
+        <label class="small fw-bold">Reason *</label>
+        <textarea class="form-control form-control-sm" rows="3" [ngModel]="voidReason()" (ngModelChange)="voidReason.set($event)"></textarea>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="erp-btn-secondary" (click)="showVoidModal.set(false)">Cancel</button>
+        <button type="button" class="erp-btn-danger" [disabled]="!voidReason().trim()" (click)="confirmVoidInvoice()">Confirm Void</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Modal -->
+  <div class="erp-modal-backdrop" *ngIf="showCustomerModal()">
+    <div class="erp-modal">
+      <div class="erp-modal-header erp-block-purple">
+        <h5 class="fw-bold mb-0">Register New Corporate Account</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showCustomerModal.set(false)"></button>
+      </div>
+      <div class="erp-modal-body">
+        <div class="row g-2">
+          <div class="col-12"><label class="small fw-bold">Company Name *</label><input type="text" class="form-control form-control-sm" [ngModel]="customerFormName()" (ngModelChange)="customerFormName.set($event)"></div>
+          <div class="col-6"><label class="small fw-bold">Contact Person</label><input type="text" class="form-control form-control-sm" [ngModel]="customerFormContact()" (ngModelChange)="customerFormContact.set($event)"></div>
+          <div class="col-6"><label class="small fw-bold">Phone</label><input type="text" class="form-control form-control-sm" [ngModel]="customerFormPhone()" (ngModelChange)="customerFormPhone.set($event)"></div>
+          <div class="col-6"><label class="small fw-bold">Terms (Days)</label><input type="number" class="form-control form-control-sm erp-mono" [ngModel]="customerFormDueDays()" (ngModelChange)="customerFormDueDays.set($event)"></div>
+          <div class="col-6"><label class="small fw-bold">Credit Limit</label><input type="number" class="form-control form-control-sm erp-mono" [ngModel]="customerFormCreditLimit()" (ngModelChange)="customerFormCreditLimit.set($event)"></div>
+          <div class="col-12"><label class="small fw-bold">Billing Address</label><textarea class="form-control form-control-sm" rows="2" [ngModel]="customerFormAddress()" (ngModelChange)="customerFormAddress.set($event)"></textarea></div>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="erp-btn-secondary" (click)="showCustomerModal.set(false)">Cancel</button>
+        <button type="button" class="erp-btn-primary" [disabled]="!customerFormName().trim()" (click)="submitNewCustomer()">Register Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Modal -->
+  <div class="erp-modal-backdrop" *ngIf="showPdfModal() && selectedInvoice() as inv">
+    <div class="erp-modal erp-modal-lg">
+      <div class="erp-modal-header erp-block-teal">
+        <h5 class="fw-bold mb-0">Official Hotel Folio Invoice Preview</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="showPdfModal.set(false)"></button>
+      </div>
+      <div class="erp-modal-body p-4 bg-light">
+        <div class="bg-white p-4 border rounded">
+          <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+            <div>
+              <h4 class="fw-bold mb-0">PT. SINAR INDONESIA HOTEL</h4>
+              <div class="text-muted small">Galesong Hospitality Front Office &bull; Makassar, Indonesia</div>
+            </div>
+            <div class="text-end">
+              <h5 class="erp-mono fw-bold text-primary mb-0">{{ inv.invoiceNumber }}</h5>
+              <div class="small text-muted">{{ inv.issueDate }}</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div>Billed To: <strong>{{ inv.customerName }}</strong></div>
+            <div class="text-muted small" *ngIf="arService.getCustomer(inv.customerId) as c">{{ c.address }} &bull; {{ c.email }}</div>
+          </div>
+          <table class="table table-bordered table-sm small mb-3">
+            <thead class="table-light">
+              <tr><th>Description</th><th class="text-end">Qty</th><th class="text-end">Price</th><th class="text-end">Total</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of inv.lineItems">
+                <td>{{ item.description }}</td>
+                <td class="text-end erp-mono">{{ item.quantity }}</td>
+                <td class="text-end erp-mono">{{ formatMoney(item.unitPrice) }}</td>
+                <td class="text-end erp-mono fw-bold">{{ formatMoney(item.lineTotal) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="text-end erp-mono small">
+            <div>Subtotal: {{ formatMoney(inv.subtotal) }}</div>
+            <div>Tax: {{ formatMoney(inv.taxAmount) }}</div>
+            <div class="fw-bold fs-6 text-primary">Total: {{ formatMoney(inv.total) }}</div>
+            <div class="fw-bold text-danger">Balance Due: {{ formatMoney(inv.balanceDue) }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button type="button" class="erp-btn-secondary" (click)="showPdfModal.set(false)">Close</button>
+        <button type="button" class="erp-btn-primary" onclick="window.print()">Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="erp-toast" *ngIf="toastMessage()">{{ toastMessage() }}</div>
+
+</div>

@@ -1,0 +1,660 @@
+<div class="theme-minimal">
+
+  <!-- Minimal Sidebar -->
+  <aside class="min-sidebar">
+    <div class="min-sidebar-brand d-flex justify-content-between align-items-center">
+      <span>AR Core</span>
+      <span class="text-muted fw-normal" style="font-size: 0.75rem;">Minimalist V2</span>
+    </div>
+
+    <nav class="min-sidebar-nav">
+      <button type="button" class="min-nav-link" [class.active]="activeView() === 'dashboard'" (click)="navigate('dashboard')">
+        <span>Overview</span>
+      </button>
+
+      <button type="button" class="min-nav-link" [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail'" (click)="navigate('invoices')">
+        <span>Invoices</span>
+        <span class="min-nav-badge min-nav-badge-overdue" *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
+          {{ arService.dashboardMetrics().overdueInvoicesCount }}
+        </span>
+      </button>
+
+      <button type="button" class="min-nav-link" [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'" (click)="navigate('customers')">
+        <span>Customers</span>
+        <span class="min-nav-badge min-nav-badge-count">{{ arService.customers().length }}</span>
+      </button>
+
+      <button type="button" class="min-nav-link" [class.active]="activeView() === 'aging-report'" (click)="navigate('aging-report')">
+        <span>Aging Report</span>
+      </button>
+    </nav>
+
+    <!-- Side-by-side Theme Switcher at sidebar bottom -->
+    <div class="p-3 border-top" style="border-color: #f0f0f0 !important;">
+      <div class="text-muted small mb-2" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;">Design Comparison</div>
+      <div class="design-version-toggle w-100">
+        <button type="button" class="design-version-btn flex-fill" (click)="switchMode.emit('classic')">Classic V1</button>
+        <button type="button" class="design-version-btn flex-fill active">Minimal V2</button>
+        <button type="button" class="design-version-btn flex-fill" (click)="switchMode.emit('v3')">Focused V3</button>
+        <button type="button" class="design-version-btn flex-fill" (click)="switchMode.emit('v4')">ERP V4</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Minimal Topbar -->
+  <header class="min-topbar">
+    <div class="d-flex align-items-center gap-3">
+      <span class="fw-semibold text-dark" style="font-size: 0.9rem;">
+        <ng-container [ngSwitch]="activeView()">
+          <span *ngSwitchCase="'dashboard'">Overview</span>
+          <span *ngSwitchCase="'invoices'">Invoices</span>
+          <span *ngSwitchCase="'invoice-detail'">Invoice {{ selectedInvoice()?.invoiceNumber }}</span>
+          <span *ngSwitchCase="'customers'">Customer Directory</span>
+          <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
+          <span *ngSwitchCase="'aging-report'">Aging Report</span>
+        </ng-container>
+      </span>
+      <span class="text-muted" style="font-size: 0.78rem;">&bull; As of {{ arService.today }}</span>
+    </div>
+
+    <!-- Quick Actions & Switcher -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="design-version-toggle d-none d-md-inline-flex me-2">
+        <button type="button" class="design-version-btn" (click)="switchMode.emit('classic')">Classic V1</button>
+        <button type="button" class="design-version-btn active">Minimal V2</button>
+        <button type="button" class="design-version-btn" (click)="switchMode.emit('v3')">Focused V3</button>
+        <button type="button" class="design-version-btn" (click)="switchMode.emit('v4')">ERP V4</button>
+      </div>
+
+      <button type="button" class="min-btn min-btn-sm" (click)="openPayment(arService.customers()[0].id)">
+        Record Payment
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="min-main-content">
+
+    <!-- ==================== 1. DASHBOARD OVERVIEW ==================== -->
+    <section *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-4">
+      
+      <!-- 4 Stat Cards: Pure typographic hierarchy, zero colored background boxes -->
+      <div class="row g-3">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="min-stat-card">
+            <div class="min-stat-label">Total Outstanding</div>
+            <div class="min-stat-value">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
+            <div class="min-stat-sub">{{ arService.dashboardMetrics().openInvoicesCount }} open receivables</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="min-stat-card">
+            <div class="min-stat-label">Total Overdue</div>
+            <div class="min-stat-value text-danger">{{ formatMoney(arService.dashboardMetrics().totalOverdue) }}</div>
+            <div class="min-stat-sub text-danger">{{ arService.dashboardMetrics().overdueInvoicesCount }} past due</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="min-stat-card">
+            <div class="min-stat-label">Collected (This Month)</div>
+            <div class="min-stat-value">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}</div>
+            <div class="min-stat-sub">{{ arService.dashboardMetrics().paidThisMonthCount }} settled payments</div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="min-stat-card">
+            <div class="min-stat-label">Active Customers</div>
+            <div class="min-stat-value">{{ arService.customers().length }}</div>
+            <div class="min-stat-sub">Across all ledger types</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linear Aging Distribution Table / Strip -->
+      <div class="min-table-card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="fw-semibold" style="font-size: 0.85rem;">Aging Buckets Breakdown</span>
+          <button type="button" class="min-btn min-btn-sm" (click)="navigate('aging-report')">Full Report &rarr;</button>
+        </div>
+        <div class="row g-2 text-center">
+          <div class="col p-2">
+            <div class="text-muted small">Current</div>
+            <div class="fw-semibold mt-1">{{ formatMoney(agingData().grandTotal.current) }}</div>
+          </div>
+          <div class="col p-2 border-start">
+            <div class="text-muted small">1 - 30 Days</div>
+            <div class="fw-semibold mt-1">{{ formatMoney(agingData().grandTotal.days1_30) }}</div>
+          </div>
+          <div class="col p-2 border-start">
+            <div class="text-muted small">31 - 60 Days</div>
+            <div class="fw-semibold mt-1">{{ formatMoney(agingData().grandTotal.days31_60) }}</div>
+          </div>
+          <div class="col p-2 border-start">
+            <div class="text-muted small">61 - 90 Days</div>
+            <div class="fw-semibold text-danger mt-1">{{ formatMoney(agingData().grandTotal.days61_90) }}</div>
+          </div>
+          <div class="col p-2 border-start">
+            <div class="text-muted small">90+ Days</div>
+            <div class="fw-bold text-danger mt-1">{{ formatMoney(agingData().grandTotal.days90Plus) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overdue Attention & Recent Activity (Side by Side) -->
+      <div class="row g-4">
+        <!-- Priority Overdue Invoices -->
+        <div class="col-12 col-lg-8">
+          <div class="min-table-card">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+              <span class="fw-semibold" style="font-size: 0.85rem;">Priority Overdue Invoices</span>
+              <span class="text-muted small">{{ priorityOverdue().length }} items</span>
+            </div>
+            <table class="min-table">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Customer</th>
+                  <th>Due Date</th>
+                  <th>Overdue</th>
+                  <th class="text-end">Balance Due</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of priorityOverdue()">
+                  <td>
+                    <a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none" (click)="viewInvoice(inv)">
+                      {{ inv.invoiceNumber }}
+                    </a>
+                  </td>
+                  <td>{{ inv.customerName }}</td>
+                  <td>{{ inv.dueDate }}</td>
+                  <td class="text-danger fw-medium">{{ getDaysPastDue(inv.dueDate) }}d past due</td>
+                  <td class="text-end fw-semibold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
+                  <td class="text-end">
+                    <button type="button" class="min-btn min-btn-sm" (click)="openPayment(inv.customerId, inv.id)">Pay</button>
+                  </td>
+                </tr>
+                <tr *ngIf="priorityOverdue().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">No overdue invoices found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Activity Feed: Minimal List -->
+        <div class="col-12 col-lg-4">
+          <div class="min-table-card">
+            <div class="p-3 border-bottom">
+              <span class="fw-semibold" style="font-size: 0.85rem;">Recent Activity</span>
+            </div>
+            <div class="p-3 d-flex flex-column gap-3">
+              <div *ngFor="let log of arService.activityLogs().slice(0, 7)" class="border-bottom pb-2">
+                <div class="text-dark" style="font-size: 0.8125rem;">{{ log.description }}</div>
+                <div class="text-muted mt-1" style="font-size: 0.72rem;">{{ log.timestamp }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== 2. INVOICE LIST ==================== -->
+    <section *ngIf="activeView() === 'invoices'" class="d-flex flex-column gap-3">
+      
+      <!-- Minimal Tabs + Search Bar -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div class="min-filter-bar">
+          <button type="button" class="min-tab-btn" [class.active]="invoiceFilter() === 'ALL'" (click)="invoiceFilter.set('ALL')">
+            All ({{ categoryCounts().all }})
+          </button>
+          <button type="button" class="min-tab-btn" [class.active]="invoiceFilter() === 'OUTSTANDING'" (click)="invoiceFilter.set('OUTSTANDING')">
+            Outstanding ({{ categoryCounts().outstanding }})
+          </button>
+          <button type="button" class="min-tab-btn" [class.active]="invoiceFilter() === 'OVERDUE'" (click)="invoiceFilter.set('OVERDUE')">
+            Overdue ({{ categoryCounts().overdue }})
+          </button>
+          <button type="button" class="min-tab-btn" [class.active]="invoiceFilter() === 'PAID'" (click)="invoiceFilter.set('PAID')">
+            Paid ({{ categoryCounts().paid }})
+          </button>
+          <button type="button" class="min-tab-btn" [class.active]="invoiceFilter() === 'OTHER'" (click)="invoiceFilter.set('OTHER')">
+            Draft/Void ({{ categoryCounts().other }})
+          </button>
+        </div>
+
+        <input type="text" class="form-control form-control-sm" style="max-width: 260px; font-size: 0.8125rem;" placeholder="Search invoice or customer..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+      </div>
+
+      <!-- Invoices Clean Table -->
+      <div class="min-table-card">
+        <table class="min-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th class="text-end">Total</th>
+              <th class="text-end">Balance Due</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of filteredInvoices()">
+              <td>
+                <a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none" (click)="viewInvoice(inv)">
+                  {{ inv.invoiceNumber }}
+                </a>
+              </td>
+              <td>{{ inv.customerName }}</td>
+              <td>{{ inv.issueDate }}</td>
+              <td>
+                <span [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
+              </td>
+              <td class="text-end">{{ formatMoney(inv.total) }}</td>
+              <td class="text-end fw-semibold" [class.text-danger]="inv.balanceDue > 0">
+                {{ formatMoney(inv.balanceDue) }}
+              </td>
+              <td>
+                <span class="min-badge" [ngClass]="{
+                  'min-badge-paid': inv.status === 'Paid',
+                  'min-badge-overdue': inv.status === 'Overdue',
+                  'min-badge-sent': inv.status === 'Sent',
+                  'min-badge-partial': inv.status === 'Partial',
+                  'min-badge-draft': inv.status === 'Draft',
+                  'min-badge-void': inv.status === 'Void'
+                }">
+                  {{ inv.status === 'Sent' ? 'Outstanding' : inv.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="d-inline-flex gap-1">
+                  <button type="button" class="min-btn min-btn-sm" (click)="viewInvoice(inv)">View</button>
+                  <button type="button" class="min-btn min-btn-sm" *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'" (click)="openPayment(inv.customerId, inv.id)">
+                    Pay
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredInvoices().length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">No invoices found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ==================== 3. INVOICE DETAIL ==================== -->
+    <section *ngIf="activeView() === 'invoice-detail' && selectedInvoice() as inv" class="d-flex flex-column gap-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <button type="button" class="min-btn min-btn-sm" (click)="navigate('invoices')">&larr; Back to Invoices</button>
+        <div class="d-flex gap-2">
+          <button type="button" class="min-btn min-btn-sm" *ngIf="inv.status === 'Draft'" (click)="issueDraft(inv)">Issue Invoice</button>
+          <button type="button" class="min-btn min-btn-sm min-btn-danger" *ngIf="inv.status !== 'Void'" (click)="openVoid(inv)">Void</button>
+          <button type="button" class="min-btn min-btn-sm min-btn-primary" *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'" (click)="openPayment(inv.customerId, inv.id)">
+            Record Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- Linear Status strip instead of big colored badges -->
+      <div class="min-table-card p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <span class="text-muted small">Status: </span>
+          <span class="min-badge ms-1" [ngClass]="{
+            'min-badge-paid': inv.status === 'Paid',
+            'min-badge-overdue': inv.status === 'Overdue',
+            'min-badge-sent': inv.status === 'Sent',
+            'min-badge-partial': inv.status === 'Partial',
+            'min-badge-draft': inv.status === 'Draft',
+            'min-badge-void': inv.status === 'Void'
+          }">
+            {{ inv.status }}
+          </span>
+          <span *ngIf="inv.status === 'Overdue'" class="text-danger small ms-2">
+            ({{ getDaysPastDue(inv.dueDate) }} days overdue)
+          </span>
+        </div>
+        <div>
+          <span class="text-muted small">Remaining Balance: </span>
+          <span class="fw-bold fs-6" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</span>
+        </div>
+      </div>
+
+      <!-- Invoice Specs & Line Items -->
+      <div class="row g-4">
+        <div class="col-12 col-lg-8">
+          <div class="min-table-card p-4">
+            <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+              <div>
+                <div class="text-muted small">BILLED TO</div>
+                <div class="fw-semibold text-dark fs-6 mt-1">{{ inv.customerName }}</div>
+                <div class="text-muted small">Customer ID: {{ inv.customerId }}</div>
+              </div>
+              <div class="text-end">
+                <div class="text-muted small">Issue Date: <strong class="text-dark">{{ inv.issueDate }}</strong></div>
+                <div class="text-muted small">Due Date: <strong class="text-dark">{{ inv.dueDate }}</strong></div>
+              </div>
+            </div>
+
+            <!-- Items table -->
+            <table class="min-table mb-3">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th class="text-center">Qty</th>
+                  <th class="text-end">Unit Price</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of inv.lineItems">
+                  <td>{{ item.description }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-end">{{ formatMoney(item.unitPrice) }}</td>
+                  <td class="text-end fw-semibold">{{ formatMoney(item.lineTotal) }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="text-muted small" *ngIf="inv.notes">
+              <strong>Notes:</strong> {{ inv.notes }}
+            </div>
+          </div>
+
+          <!-- Applied Payments History -->
+          <div class="min-table-card mt-4">
+            <div class="p-3 border-bottom">
+              <span class="fw-semibold" style="font-size: 0.85rem;">Payments Applied</span>
+            </div>
+            <table class="min-table">
+              <thead>
+                <tr>
+                  <th>Payment #</th>
+                  <th>Date</th>
+                  <th>Method</th>
+                  <th>Reference</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pay of getPaymentsForInvoice(inv.id)">
+                  <td>{{ pay.paymentNumber }}</td>
+                  <td>{{ pay.paymentDate }}</td>
+                  <td class="text-uppercase" style="font-size: 0.72rem;">{{ pay.method.replace('_', ' ') }}</td>
+                  <td class="text-muted font-monospace">{{ pay.referenceNumber }}</td>
+                  <td class="text-end fw-semibold text-dark">+ {{ formatMoney(pay.amount) }}</td>
+                </tr>
+                <tr *ngIf="getPaymentsForInvoice(inv.id).length === 0">
+                  <td colspan="5" class="text-center py-3 text-muted">No payments applied yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sidebar Calculation -->
+        <div class="col-12 col-lg-4">
+          <div class="min-table-card p-3 d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Subtotal</span>
+              <span>{{ formatMoney(inv.subtotal) }}</span>
+            </div>
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Tax (PPN {{ inv.taxRate }}%)</span>
+              <span>{{ formatMoney(inv.taxAmount) }}</span>
+            </div>
+            <div class="border-top my-1"></div>
+            <div class="d-flex justify-content-between fw-semibold">
+              <span>Total</span>
+              <span>{{ formatMoney(inv.total) }}</span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>Paid</span>
+              <span>- {{ formatMoney(inv.amountPaid) }}</span>
+            </div>
+            <div class="border-top my-1"></div>
+            <div class="d-flex justify-content-between fw-bold fs-6">
+              <span [class.text-danger]="inv.balanceDue > 0">Balance Due</span>
+              <span [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. CUSTOMERS DIRECTORY ==================== -->
+    <section *ngIf="activeView() === 'customers'" class="d-flex flex-column gap-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="fw-semibold" style="font-size: 0.85rem;">Customer Accounts</span>
+        <input type="text" class="form-control form-control-sm" style="max-width: 250px;" placeholder="Search customer..." [ngModel]="customerSearch()" (ngModelChange)="customerSearch.set($event)">
+      </div>
+
+      <div class="min-table-card">
+        <table class="min-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Customer Name</th>
+              <th>Contact</th>
+              <th>Terms</th>
+              <th class="text-end">Balance Due</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of filteredCustomers()">
+              <td class="font-monospace text-muted">{{ c.code }}</td>
+              <td>
+                <a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none" (click)="viewCustomer(c)">
+                  {{ c.name }}
+                </a>
+              </td>
+              <td>{{ c.contactPerson }} ({{ c.email }})</td>
+              <td>Net {{ c.dueDays }}d</td>
+              <td class="text-end fw-semibold" [class.text-danger]="arService.getCustomerBalance(c.id) > 0">
+                {{ formatMoney(arService.getCustomerBalance(c.id)) }}
+              </td>
+              <td class="text-end">
+                <button type="button" class="min-btn min-btn-sm" (click)="viewCustomer(c)">Details</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 5. CUSTOMER DETAIL ==================== -->
+    <section *ngIf="activeView() === 'customer-detail' && selectedCustomer() as cust" class="d-flex flex-column gap-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <button type="button" class="min-btn min-btn-sm" (click)="navigate('customers')">&larr; Back to Directory</button>
+        <button type="button" class="min-btn min-btn-sm min-btn-primary" (click)="openPayment(cust.id)">Record Payment</button>
+      </div>
+
+      <div class="min-table-card p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-bold fs-6">{{ cust.name }} <span class="text-muted fw-normal font-monospace small">({{ cust.code }})</span></div>
+            <div class="text-muted small mt-1">{{ cust.contactPerson }} &bull; {{ cust.email }} &bull; {{ cust.phone }}</div>
+            <div class="text-muted small">{{ cust.address }}</div>
+          </div>
+          <div class="text-end">
+            <div class="text-muted small">Outstanding Balance</div>
+            <div class="fw-bold fs-5" [class.text-danger]="arService.getCustomerBalance(cust.id) > 0">
+              {{ formatMoney(arService.getCustomerBalance(cust.id)) }}
+            </div>
+            <div class="text-muted small">Credit Limit: {{ formatMoney(cust.creditLimit) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices for customer -->
+      <div class="min-table-card">
+        <div class="p-3 border-bottom">
+          <span class="fw-semibold" style="font-size: 0.85rem;">Invoices ({{ customerInvoices().length }})</span>
+        </div>
+        <table class="min-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th class="text-end">Total</th>
+              <th class="text-end">Balance Due</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of customerInvoices()">
+              <td>
+                <a href="javascript:void(0)" class="fw-semibold text-dark text-decoration-none" (click)="viewInvoice(inv)">
+                  {{ inv.invoiceNumber }}
+                </a>
+              </td>
+              <td>{{ inv.issueDate }}</td>
+              <td>{{ inv.dueDate }}</td>
+              <td class="text-end">{{ formatMoney(inv.total) }}</td>
+              <td class="text-end fw-semibold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+              <td>
+                <span class="min-badge" [ngClass]="{
+                  'min-badge-paid': inv.status === 'Paid',
+                  'min-badge-overdue': inv.status === 'Overdue',
+                  'min-badge-sent': inv.status === 'Sent',
+                  'min-badge-partial': inv.status === 'Partial',
+                  'min-badge-draft': inv.status === 'Draft'
+                }">
+                  {{ inv.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button type="button" class="min-btn min-btn-sm" (click)="viewInvoice(inv)">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 6. AGING REPORT ==================== -->
+    <section *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <span class="fw-semibold" style="font-size: 0.9rem;">AR Aging Analysis</span>
+          <span class="text-muted small ms-2">Point-in-time calculation</span>
+        </div>
+        <input type="date" class="form-control form-control-sm" style="max-width: 160px;" [ngModel]="agingAsOfDate()" (ngModelChange)="agingAsOfDate.set($event)">
+      </div>
+
+      <div class="min-table-card">
+        <table class="min-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th class="text-end">Current</th>
+              <th class="text-end">1 - 30d</th>
+              <th class="text-end">31 - 60d</th>
+              <th class="text-end">61 - 90d</th>
+              <th class="text-end">90d+</th>
+              <th class="text-end">Total Outstanding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of agingData().buckets">
+              <td>
+                <span class="fw-semibold">{{ b.customerName }}</span>
+                <span class="text-muted small ms-1">({{ b.customerCode }})</span>
+              </td>
+              <td class="text-end">{{ formatMoney(b.current) }}</td>
+              <td class="text-end">{{ formatMoney(b.days1_30) }}</td>
+              <td class="text-end">{{ formatMoney(b.days31_60) }}</td>
+              <td class="text-end" [class.text-danger]="b.days61_90 > 0">{{ formatMoney(b.days61_90) }}</td>
+              <td class="text-end fw-semibold text-danger">{{ formatMoney(b.days90Plus) }}</td>
+              <td class="text-end fw-bold">{{ formatMoney(b.totalOutstanding) }}</td>
+            </tr>
+          </tbody>
+          <tfoot class="border-top fw-semibold">
+            <tr>
+              <td>Grand Total</td>
+              <td class="text-end">{{ formatMoney(agingData().grandTotal.current) }}</td>
+              <td class="text-end">{{ formatMoney(agingData().grandTotal.days1_30) }}</td>
+              <td class="text-end">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
+              <td class="text-end text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</td>
+              <td class="text-end text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</td>
+              <td class="text-end fw-bold">{{ formatMoney(agingData().grandTotal.totalOutstanding) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== RECORD PAYMENT MODAL (MINIMAL) ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showPaymentModal()" (click)="showPaymentModal.set(false)">
+    <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <span class="fw-semibold">Record Payment</span>
+        <button type="button" class="btn-close" (click)="showPaymentModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom d-flex flex-column gap-3">
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small text-muted">Date</label>
+            <input type="date" class="form-control form-control-sm" [(ngModel)]="paymentDate">
+          </div>
+          <div class="col-6">
+            <label class="form-label small text-muted">Amount (IDR)</label>
+            <input type="number" class="form-control form-control-sm fw-bold" [(ngModel)]="paymentAmount">
+          </div>
+        </div>
+
+        <div class="border rounded p-2">
+          <div class="small text-muted mb-2">Apply to Invoices</div>
+          <div *ngFor="let item of paymentAllocations()" class="d-flex justify-content-between align-items-center mb-2 small">
+            <div>
+              <span class="fw-semibold">{{ item.invoiceNumber }}</span>
+              <span class="text-muted ms-1">(Due: {{ formatMoney(item.balanceDue) }})</span>
+            </div>
+            <input type="number" class="form-control form-control-sm text-end" style="width: 140px;" [(ngModel)]="item.allocatedAmount">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="min-btn min-btn-sm" (click)="showPaymentModal.set(false)">Cancel</button>
+        <button type="button" class="min-btn min-btn-sm min-btn-primary" (click)="submitPayment()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VOID MODAL (MINIMAL) ==================== -->
+  <div class="modal-backdrop-custom" *ngIf="showVoidModal()" (click)="showVoidModal.set(false)">
+    <div class="modal-dialog-custom" (click)="$event.stopPropagation()">
+      <div class="modal-header-custom">
+        <span class="fw-semibold text-danger">Void Invoice {{ voidInvoiceNumber() }}</span>
+        <button type="button" class="btn-close" (click)="showVoidModal.set(false)"></button>
+      </div>
+      <div class="modal-body-custom">
+        <p class="small text-muted mb-2">Invoice will be marked as Void. Reason is kept for audit purposes.</p>
+        <textarea class="form-control form-control-sm" rows="3" placeholder="Reason..." [(ngModel)]="voidReason"></textarea>
+      </div>
+      <div class="modal-footer-custom">
+        <button type="button" class="min-btn min-btn-sm" (click)="showVoidModal.set(false)">Cancel</button>
+        <button type="button" class="min-btn min-btn-sm min-btn-danger" (click)="confirmVoid()">Confirm Void</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-banner" *ngIf="toastMsg()">
+    <span>{{ toastMsg() }}</span>
+  </div>
+
+</div>
