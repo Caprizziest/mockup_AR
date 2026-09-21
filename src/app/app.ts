@@ -20,7 +20,7 @@ export class App {
   readonly arService = inject(ArDataService);
 
   // Active Design Version: 'classic' (V1), 'minimal' (V2), 'v3' (Focused V3), 'v4' (Enterprise ERP V4)
-  designMode = signal<'classic' | 'minimal' | 'v3' | 'v4'>('v4');
+  designMode = signal<'classic' | 'minimal' | 'v3' | 'v4'>('v3');
 
   toggleDesignMode(mode: 'classic' | 'minimal' | 'v3' | 'v4') {
     this.designMode.set(mode);

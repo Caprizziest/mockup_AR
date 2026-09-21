@@ -1,12 +1,14 @@
 /* =========================================================
    AR Core Version 3: Focused Pro (Tidied Up & Direct)
-   High-density, executive-ready design system
+   High-density, executive-ready design system per SRS_AR3.md
    ========================================================= */
 
 .v3-shell {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   background-color: #f8fafc;
   color: #0f172a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -17,6 +19,10 @@
 .v3-mono {
   font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 
 /* =========================================================
@@ -144,8 +150,6 @@
   font-weight: 600;
 }
 
-
-
 .v3-nav-pill-danger {
   background-color: #ef4444;
   color: #ffffff;
@@ -164,7 +168,7 @@
   border-radius: 10px;
 }
 
-/* Sidebar Footer & 3-Way Switcher */
+/* Sidebar Footer & Switchers */
 .v3-sidebar-footer {
   padding: 0.85rem;
   border-top: 1px solid #1e293b;
@@ -191,7 +195,7 @@
 
 .v3-switcher-btn {
   flex: 1;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
   padding: 0.3rem 0;
   background: transparent;
@@ -219,10 +223,14 @@
 .v3-main {
   flex: 1;
   margin-left: 240px;
+  width: calc(100vw - 240px);
+  max-width: calc(100vw - 240px);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background-color: #f8fafc;
+  overflow-x: hidden;
 }
 
 .v3-topbar {
@@ -268,11 +276,12 @@
 }
 
 .v3-content {
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   flex-grow: 1;
-  max-width: 1400px;
+  max-width: 100%;
   width: 100%;
-  margin: 0 auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* =========================================================
@@ -405,12 +414,15 @@
 
 .v3-table-container {
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
 .v3-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.815rem;
+  font-size: 0.8rem;
   text-align: left;
 }
 
@@ -421,13 +433,13 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.75rem;
   border-bottom: 1px solid #e2e8f0;
   white-space: nowrap;
 }
 
 .v3-table tbody td {
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 0.75rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   color: #1e293b;
@@ -441,8 +453,24 @@
   border-bottom: none;
 }
 
+.v3-table-compact thead th {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+.v3-table-compact tbody td {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.76rem;
+}
+
 /* =========================================================
-   Status Badges (Refined, Minimal, High Contrast)
+   Status Badges (Strictly Color Coded per SRS 4.3.1)
+   Abu-abu: Draft
+   Biru: Issued
+   Kuning: Partially Paid
+   Hijau: Paid
+   Merah: Overdue
+   Hitam/Abu-abu gelap: Cancelled
    ========================================================= */
 .v3-badge {
   display: inline-flex;
@@ -455,16 +483,46 @@
   line-height: 1.2;
 }
 
-.v3-badge-draft { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-.v3-badge-sent { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.v3-badge-partial { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.v3-badge-paid { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-.v3-badge-overdue { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.v3-badge-void { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; text-decoration: line-through; }
+.v3-badge-draft {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.v3-badge-issued {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.v3-badge-partial {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.v3-badge-paid {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.v3-badge-overdue {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.v3-badge-cancelled {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #0f172a;
+}
 
 /* Filter Tabs */
 .v3-tabs-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
   background-color: #ffffff;
@@ -512,7 +570,7 @@
 }
 
 /* =========================================================
-   Compact Lifecycle Progress Ribbon (Replaces 120px bulky stepper)
+   Compact Lifecycle Progress Ribbon
    ========================================================= */
 .v3-lifecycle-ribbon {
   display: flex;
@@ -605,9 +663,14 @@
   transition: all 0.15s;
 }
 
-.v3-btn-primary:hover {
+.v3-btn-primary:hover:not(:disabled) {
   background-color: #1d4ed8;
   color: #ffffff;
+}
+
+.v3-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .v3-btn-secondary {
@@ -625,10 +688,15 @@
   transition: all 0.15s;
 }
 
-.v3-btn-secondary:hover {
+.v3-btn-secondary:hover:not(:disabled) {
   background-color: #f8fafc;
   color: #0f172a;
   border-color: #94a3b8;
+}
+
+.v3-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .v3-btn-danger-outline {
@@ -646,8 +714,13 @@
   transition: all 0.15s;
 }
 
-.v3-btn-danger-outline:hover {
+.v3-btn-danger-outline:hover:not(:disabled) {
   background-color: #fef2f2;
+}
+
+.v3-btn-danger-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Toast */
@@ -655,19 +728,23 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background-color: #0f172a;
   color: #ffffff;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25);
   font-size: 0.85rem;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  z-index: 2000;
+  z-index: 2100;
   animation: v3FadeIn 0.2s ease-out;
 }
+
+.toast-info { background-color: #0f172a; border-left: 4px solid #38bdf8; }
+.toast-success { background-color: #064e3b; border-left: 4px solid #34d399; }
+.toast-warning { background-color: #78350f; border-left: 4px solid #fbbf24; }
+.toast-danger { background-color: #7f1d1d; border-left: 4px solid #f87171; }
 
 @keyframes v3FadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -701,7 +778,7 @@
 }
 
 .v3-modal-lg {
-  max-width: 860px;
+  max-width: 880px;
 }
 
 @keyframes v3ModalScale {
@@ -732,6 +809,28 @@
   justify-content: flex-end;
   gap: 0.75rem;
 }
+
+/* PDF Print Watermark Stamp (SRS UC-08) */
+.v3-pdf-watermark {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-25deg);
+  pointer-events: none;
+  user-select: none;
+  z-index: 10;
+  opacity: 0.14;
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  border: 8px solid currentColor;
+  padding: 0.5rem 2rem;
+  border-radius: 12px;
+}
+
+.watermark-draft { color: #64748b; }
+.watermark-cancelled { color: #dc2626; }
+.watermark-paid { color: #16a34a; }
 
 /* Responsive adjustment */
 @media (max-width: 992px) {

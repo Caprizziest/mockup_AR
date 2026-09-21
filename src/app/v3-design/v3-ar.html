@@ -5,52 +5,77 @@
     <div class="v3-sidebar-header">
       <div class="v3-brand">
         <div class="v3-brand-monogram">AR</div>
-        <span>Core Ledger</span>
+        <div>
+          <span class="d-block lh-1">Sistem Piutang</span>
+          <small class="text-secondary" style="font-size: 0.65rem; font-weight: 500;">PT Galesong Pratama</small>
+        </div>
       </div>
-      <span class="v3-version-tag">V3 Focused</span>
+      <span class="v3-version-tag">V3 Mockup</span>
     </div>
 
     <nav class="v3-sidebar-nav">
-      <div class="v3-nav-group-label">Operations</div>
+      <div class="v3-nav-group-label">Operasional AR</div>
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'dashboard'" (click)="navigateTo('dashboard')">
-        <span>Overview</span>
+        <span>Ringkasan (Overview)</span>
       </button>
 
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create'" (click)="navigateTo('invoices')">
-        <span>Invoices</span>
+      <button type="button" class="v3-nav-item"
+              [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create' || activeView() === 'invoice-edit'"
+              (click)="navigateTo('invoices')">
+        <span>Daftar Invoice</span>
         <span class="v3-nav-pill-danger" *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
           {{ arService.dashboardMetrics().overdueInvoicesCount }}
         </span>
       </button>
 
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'" (click)="navigateTo('customers')">
-        <span>Customers</span>
+        <span>Data Pelanggan</span>
         <span class="v3-nav-pill-muted">{{ arService.customers().length }}</span>
       </button>
 
-      <div class="v3-nav-group-label mt-3">Reports</div>
+      <div class="v3-nav-group-label mt-3">Laporan & Audit</div>
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'aging-report'" (click)="navigateTo('aging-report')">
-        <span>Aging Matrix</span>
+        <span>Laporan Aging</span>
+      </button>
+
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'activity-logs'" (click)="navigateTo('activity-logs')">
+        <span>Log Aktivitas (Audit)</span>
+        <span class="v3-nav-pill-muted">{{ arService.activityLogs().length }}</span>
+      </button>
+
+      <div class="v3-nav-group-label mt-3">Master Data & Pengaturan</div>
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'bank-accounts'" (click)="navigateTo('bank-accounts')">
+        <span>Rekening Bank Hotel</span>
+        <span class="v3-nav-pill-muted">{{ arService.bankAccounts().length }}</span>
       </button>
     </nav>
 
-    <!-- 3-Way Design Switcher in Sidebar Footer -->
+    <!-- Sidebar Footer with Role Indicator and Switcher -->
     <div class="v3-sidebar-footer">
-      <div class="v3-switcher-label">Design Version</div>
+      <div class="v3-switcher-label">Simulasi Role (RBAC SRS-F-37)</div>
+      <div class="v3-switcher-group mb-2">
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Admin'" (click)="changeUserRole('Admin')">Admin</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'User'" (click)="changeUserRole('User')">User (AR)</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Manager'" (click)="changeUserRole('Manager')">Manager</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Viewer'" (click)="changeUserRole('Viewer')">Viewer</button>
+      </div>
+
+      <div class="v3-switcher-label mt-2">Versi Desain Antarmuka</div>
       <div class="v3-switcher-group">
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('classic')">V1 Classic</button>
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('minimal')">V2 Minimal</button>
-        <button type="button" class="v3-switcher-btn active">V3 Focused</button>
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('v4')">V4 ERP</button>
+        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('classic')">V1</button>
+        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('minimal')">V2</button>
+        <button type="button" class="v3-switcher-btn active">V3 (SRS)</button>
+        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('v4')">V4</button>
       </div>
 
       <div class="d-flex align-items-center gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 26px; height: 26px; font-size: 0.72rem; font-weight: 700;">
-          FO
+        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+             style="width: 28px; height: 28px; font-size: 0.72rem; font-weight: 700;">
+          {{ currentUser().role.substring(0, 2).toUpperCase() }}
         </div>
         <div class="overflow-hidden">
-          <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">Finance Officer</div>
-          <div class="text-secondary text-truncate" style="font-size: 0.68rem;">PT Sistem Akuntansi</div>
+          <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">{{ currentUser().fullName }}</div>
+          <div class="text-secondary text-truncate" style="font-size: 0.68rem;">Role: {{ currentUser().role }}</div>
         </div>
       </div>
     </div>
@@ -67,40 +92,53 @@
         </button>
 
         <div class="v3-breadcrumb">
-          <span class="v3-breadcrumb-root">AR Core</span>
+          <span class="v3-breadcrumb-root">Sistem Piutang Usaha</span>
           <span class="text-muted">/</span>
           <span class="v3-breadcrumb-current">
             <ng-container [ngSwitch]="activeView()">
-              <span *ngSwitchCase="'dashboard'">Overview</span>
-              <span *ngSwitchCase="'invoices'">Invoices</span>
-              <span *ngSwitchCase="'invoice-create'">New Invoice</span>
-              <span *ngSwitchCase="'invoice-detail'">Invoice {{ selectedInvoice()?.invoiceNumber }}</span>
-              <span *ngSwitchCase="'customers'">Customers</span>
+              <span *ngSwitchCase="'dashboard'">Ringkasan Operasional</span>
+              <span *ngSwitchCase="'invoices'">Daftar Invoice</span>
+              <span *ngSwitchCase="'invoice-create'">{{ editingInvoiceId() ? 'Ubah Invoice Draft' : 'Buat Invoice Baru' }}</span>
+              <span *ngSwitchCase="'invoice-edit'">Ubah Invoice Draft</span>
+              <span *ngSwitchCase="'invoice-detail'">Faktur {{ selectedInvoice()?.invoiceNumber }}</span>
+              <span *ngSwitchCase="'customers'">Data Pelanggan</span>
               <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
-              <span *ngSwitchCase="'aging-report'">Aging Matrix</span>
+              <span *ngSwitchCase="'aging-report'">Laporan Umur Piutang (Aging Matrix)</span>
+              <span *ngSwitchCase="'bank-accounts'">Rekening Bank Hotel</span>
+              <span *ngSwitchCase="'activity-logs'">Log Audit Aktivitas</span>
             </ng-container>
           </span>
-          <span class="v3-date-pill ms-2 d-none d-md-inline-flex">
+          <span class="v3-date-pill ms-2 d-none d-md-inline-flex" title="Tanggal Acuan Sistem">
             {{ arService.today }}
           </span>
         </div>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <!-- Topbar 4-Way Switcher -->
-        <div class="v3-switcher-group d-none d-md-flex me-2" style="background: #f1f5f9; border-color: #e2e8f0;">
-          <button type="button" class="v3-switcher-btn" style="color: #64748b;" (click)="switchMode.emit('classic')">V1 Classic</button>
-          <button type="button" class="v3-switcher-btn" style="color: #64748b;" (click)="switchMode.emit('minimal')">V2 Minimal</button>
-          <button type="button" class="v3-switcher-btn active">V3 Focused</button>
-          <button type="button" class="v3-switcher-btn" style="color: #64748b;" (click)="switchMode.emit('v4')">V4 ERP</button>
+        <!-- Role badge indicator -->
+        <div class="d-none d-lg-flex align-items-center gap-1 px-2 py-1 bg-light border rounded text-dark" style="font-size: 0.75rem;">
+          <span class="text-muted">Hak Akses:</span>
+          <span class="badge" [ngClass]="{
+            'bg-dark': currentUser().role === 'Admin',
+            'bg-primary': currentUser().role === 'Manager',
+            'bg-info text-dark': currentUser().role === 'User',
+            'bg-secondary': currentUser().role === 'Viewer'
+          }">{{ currentUser().role }}</span>
+          <span *ngIf="isViewer()" class="text-danger fw-semibold ms-1">(Hanya Baca)</span>
         </div>
 
-        <button type="button" class="v3-btn-secondary" (click)="openPaymentModal()">
-          <span>Record Payment</span>
+        <!-- Overdue detection trigger button (UC-15) -->
+        <button type="button" class="btn btn-sm btn-outline-secondary d-none d-xl-inline-flex align-items-center gap-1"
+                style="font-size: 0.75rem;" (click)="runOverdueDetection()" title="Jalankan Scheduled Job Deteksi Overdue">
+          <span>Deteksi Jatuh Tempo</span>
         </button>
 
-        <button type="button" class="v3-btn-primary" (click)="startCreateInvoice()">
-          <span>+ New Invoice</span>
+        <button type="button" class="v3-btn-secondary" [disabled]="isViewer()" (click)="openPaymentModal()">
+          <span>Catat Pembayaran</span>
+        </button>
+
+        <button type="button" class="v3-btn-primary" [disabled]="isViewer()" (click)="startCreateInvoice()">
+          <span>+ Buat Invoice</span>
         </button>
       </div>
     </header>
@@ -109,20 +147,20 @@
     <main class="v3-content">
 
       <!-- =========================================================
-           1. DASHBOARD VIEW (Clean, Typographic, No Icon Bloat)
+           1. DASHBOARD VIEW (Overview, KPIs, Aging Health, Overdue Queue)
            ========================================================= -->
       <div *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-4">
 
-        <!-- 4 Executive KPI Cards (Icon-free, High typographic clarity) -->
+        <!-- 4 Executive KPI Cards -->
         <div class="row g-3">
           <div class="col-12 col-sm-6 col-xl-3">
             <div class="v3-kpi-card">
               <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Total Outstanding AR</span>
+                <span class="v3-kpi-title">Total Sisa Piutang (Outstanding)</span>
               </div>
-              <div class="v3-kpi-value v3-mono">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
-              <div class="v3-kpi-meta text-primary">
-                {{ arService.dashboardMetrics().openInvoicesCount }} active invoices
+              <div class="v3-kpi-value v3-mono text-primary">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
+              <div class="v3-kpi-meta text-muted">
+                {{ arService.dashboardMetrics().openInvoicesCount }} invoice aktif belum lunas
               </div>
             </div>
           </div>
@@ -130,11 +168,11 @@
           <div class="col-12 col-sm-6 col-xl-3">
             <div class="v3-kpi-card">
               <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Total Overdue</span>
+                <span class="v3-kpi-title">Piutang Jatuh Tempo (Overdue)</span>
               </div>
               <div class="v3-kpi-value v3-mono text-danger">{{ formatMoney(arService.dashboardMetrics().totalOverdue) }}</div>
-              <div class="v3-kpi-meta text-danger">
-                {{ arService.dashboardMetrics().overdueInvoicesCount }} accounts past due
+              <div class="v3-kpi-meta text-danger fw-semibold">
+                {{ arService.dashboardMetrics().overdueInvoicesCount }} invoice lewat jatuh tempo
               </div>
             </div>
           </div>
@@ -142,11 +180,11 @@
           <div class="col-12 col-sm-6 col-xl-3">
             <div class="v3-kpi-card">
               <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Collected This Month</span>
+                <span class="v3-kpi-title">Penerimaan Bulan Berjalan</span>
               </div>
               <div class="v3-kpi-value v3-mono text-success">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}</div>
               <div class="v3-kpi-meta text-success">
-                {{ arService.dashboardMetrics().paidThisMonthCount }} settled payments
+                {{ arService.dashboardMetrics().paidThisMonthCount }} transaksi pembayaran masuk
               </div>
             </div>
           </div>
@@ -154,25 +192,26 @@
           <div class="col-12 col-sm-6 col-xl-3">
             <div class="v3-kpi-card">
               <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Active Customers</span>
+                <span class="v3-kpi-title">Pelanggan Terdaftar</span>
               </div>
               <div class="v3-kpi-value v3-mono">{{ arService.customers().length }}</div>
               <div class="v3-kpi-meta text-muted">
-                Corporate & City Ledger
+                Korporat, Travel Agent & Tamu Individu
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Integrated Aging Health Progress Banner -->
+        <!-- Integrated Aging Health Progress Banner (SRS-F-33) -->
         <div class="v3-aging-banner">
           <div class="d-flex align-items-center justify-content-between">
             <div>
-              <span class="fw-bold text-dark" style="font-size: 0.88rem;">Receivables Health & Aging Breakdown</span>
-              <span class="text-muted ms-2" style="font-size: 0.78rem;">As of {{ arService.today }}</span>
+              <span class="fw-bold text-dark" style="font-size: 0.88rem;">Kesehatan Portofolio Piutang Berdasarkan Umur (Aging)</span>
+              <span class="text-muted ms-2" style="font-size: 0.78rem;">Posisi per {{ arService.today }}</span>
             </div>
-            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold text-primary" style="font-size: 0.78rem;" (click)="navigateTo('aging-report')">
-              Detailed Aging Matrix &rarr;
+            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold text-primary"
+                    style="font-size: 0.78rem;" (click)="navigateTo('aging-report')">
+              Lihat Rincian Laporan Aging &rarr;
             </button>
           </div>
 
@@ -180,96 +219,109 @@
           <div class="v3-aging-bar">
             <div class="v3-aging-seg v3-seg-current"
                  [style.width.%]="(agingData().grandTotal.current / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="Current: {{ formatMoney(agingData().grandTotal.current) }}"></div>
+                 title="Belum Jatuh Tempo: {{ formatMoney(agingData().grandTotal.current) }}"></div>
             <div class="v3-aging-seg v3-seg-130"
                  [style.width.%]="(agingData().grandTotal.days1_30 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="1-30d: {{ formatMoney(agingData().grandTotal.days1_30) }}"></div>
+                 title="1-30 Hari: {{ formatMoney(agingData().grandTotal.days1_30) }}"></div>
             <div class="v3-aging-seg v3-seg-3160"
                  [style.width.%]="(agingData().grandTotal.days31_60 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="31-60d: {{ formatMoney(agingData().grandTotal.days31_60) }}"></div>
+                 title="31-60 Hari: {{ formatMoney(agingData().grandTotal.days31_60) }}"></div>
             <div class="v3-aging-seg v3-seg-6190"
                  [style.width.%]="(agingData().grandTotal.days61_90 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="61-90d: {{ formatMoney(agingData().grandTotal.days61_90) }}"></div>
+                 title="61-90 Hari: {{ formatMoney(agingData().grandTotal.days61_90) }}"></div>
             <div class="v3-aging-seg v3-seg-90plus"
                  [style.width.%]="(agingData().grandTotal.days90Plus / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="90+d: {{ formatMoney(agingData().grandTotal.days90Plus) }}"></div>
+                 title="> 90 Hari: {{ formatMoney(agingData().grandTotal.days90Plus) }}"></div>
           </div>
 
           <div class="v3-aging-legend">
             <div class="v3-legend-item">
               <span class="v3-legend-dot v3-seg-current"></span>
-              <span class="text-muted">Current:</span>
+              <span class="text-muted">Belum Jatuh Tempo:</span>
               <strong class="v3-mono text-dark">{{ formatMoney(agingData().grandTotal.current) }}</strong>
             </div>
             <div class="v3-legend-item">
               <span class="v3-legend-dot v3-seg-130"></span>
-              <span class="text-muted">1–30d:</span>
+              <span class="text-muted">1–30 Hari:</span>
               <strong class="v3-mono text-dark">{{ formatMoney(agingData().grandTotal.days1_30) }}</strong>
             </div>
             <div class="v3-legend-item">
               <span class="v3-legend-dot v3-seg-3160"></span>
-              <span class="text-muted">31–60d:</span>
+              <span class="text-muted">31–60 Hari:</span>
               <strong class="v3-mono text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</strong>
             </div>
             <div class="v3-legend-item">
               <span class="v3-legend-dot v3-seg-6190"></span>
-              <span class="text-muted">61–90d:</span>
+              <span class="text-muted">61–90 Hari:</span>
               <strong class="v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</strong>
             </div>
             <div class="v3-legend-item">
               <span class="v3-legend-dot v3-seg-90plus"></span>
-              <span class="text-muted">90+d (Critical):</span>
+              <span class="text-muted">&gt; 90 Hari (Kritis):</span>
               <strong class="v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</strong>
             </div>
           </div>
         </div>
 
-        <!-- 2 Action Columns: Priority Overdue Queue & Live Activity -->
+        <!-- 2 Action Columns: Priority Overdue Queue & Live Audit Activity -->
         <div class="row g-4">
           <!-- Left: Priority Overdue Queue -->
           <div class="col-12 col-xl-7">
-            <div class="v3-card h-100">
+            <div class="v3-card h-100 d-flex flex-column">
               <div class="v3-card-header">
                 <div>
-                  <h3 class="v3-card-title text-danger">Collections Priority Queue</h3>
-                  <p class="v3-card-subtitle">Invoices past due requiring immediate follow-up</p>
+                  <h3 class="v3-card-title text-danger">Antrian Penagihan Jatuh Tempo (Overdue)</h3>
+                  <p class="v3-card-subtitle">Invoice melewati batas tanggal jatuh tempo yang memerlukan tindak lanjut penagihan</p>
                 </div>
                 <span class="v3-badge v3-badge-overdue">{{ priorityOverdueInvoices().length }} Overdue</span>
               </div>
-              <div class="v3-table-container">
-                <table class="v3-table">
+              <div class="v3-table-container flex-grow-1" style="max-height: 380px; overflow-y: auto;">
+                <table class="v3-table v3-table-compact">
                   <thead>
                     <tr>
-                      <th>Invoice</th>
-                      <th>Customer</th>
-                      <th>Due Date</th>
-                      <th>Overdue</th>
-                      <th>Balance Due</th>
-                      <th class="text-end">Action</th>
+                      <th>Invoice & Pelanggan</th>
+                      <th>Jatuh Tempo</th>
+                      <th class="text-end">Sisa Tagihan</th>
+                      <th class="text-end">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let inv of priorityOverdueInvoices()">
                       <td>
-                        <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono" (click)="viewInvoice(inv)">
+                        <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono d-block" (click)="viewInvoice(inv)">
                           {{ inv.invoiceNumber }}
                         </a>
+                        <div class="text-truncate text-dark small" style="max-width: 170px;" [title]="inv.customerName">
+                          {{ inv.customerName }}
+                        </div>
                       </td>
-                      <td class="fw-medium">{{ inv.customerName }}</td>
-                      <td class="v3-mono text-muted">{{ inv.dueDate }}</td>
                       <td>
-                        <span class="v3-badge v3-badge-overdue">+{{ getDaysPastDue(inv.dueDate) }}d</span>
+                        <div class="v3-mono text-muted" style="font-size: 0.75rem;">{{ inv.dueDate }}</div>
+                        <span class="v3-badge v3-badge-overdue mt-1" style="font-size: 0.65rem; padding: 0.1rem 0.35rem;">
+                          +{{ getDaysPastDue(inv.dueDate) }} hari
+                        </span>
                       </td>
-                      <td class="v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
                       <td class="text-end">
-                        <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;" (click)="openPaymentModal(inv.customerId, inv.id)">
-                          Pay
-                        </button>
+                        <div class="v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</div>
+                        <div class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.amountPaid > 0">
+                          Total: {{ formatMoney(inv.total) }}
+                        </div>
+                      </td>
+                      <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                          <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)" title="Lihat Rincian">
+                            Rincian
+                          </button>
+                          <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
+                                  [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
+                            Bayar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     <tr *ngIf="priorityOverdueInvoices().length === 0">
-                      <td colspan="6" class="text-center py-4 text-muted">
-                        No overdue invoices. Accounts receivable fully compliant.
+                      <td colspan="4" class="text-center py-4 text-muted">
+                        Tidak ada invoice yang lewat jatuh tempo. Posisi piutang lancar.
                       </td>
                     </tr>
                   </tbody>
@@ -278,19 +330,21 @@
             </div>
           </div>
 
-          <!-- Right: Recent Ledger Activity Feed -->
+          <!-- Right: Recent Activity Audit Stream -->
           <div class="col-12 col-xl-5">
             <div class="v3-card h-100">
               <div class="v3-card-header">
                 <div>
-                  <h3 class="v3-card-title">Recent Ledger Activity</h3>
-                  <p class="v3-card-subtitle">Audit stream of recent financial transactions</p>
+                  <h3 class="v3-card-title">Audit Trail & Log Aktivitas Terakhir</h3>
+                  <p class="v3-card-subtitle">Rekaman transaksi dan perubahan status real-time (SRS-F-39)</p>
                 </div>
-                <span class="text-muted" style="font-size: 0.72rem;">Last 20</span>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-primary" style="font-size: 0.75rem;" (click)="navigateTo('activity-logs')">
+                  Lihat Semua &rarr;
+                </button>
               </div>
               <div class="p-3" style="max-height: 380px; overflow-y: auto;">
                 <div class="d-flex flex-column gap-2">
-                  <div *ngFor="let log of arService.activityLogs()" class="d-flex align-items-center justify-content-between py-2 border-bottom border-light" style="font-size: 0.78rem;">
+                  <div *ngFor="let log of arService.activityLogs().slice(0, 8)" class="d-flex align-items-center justify-content-between py-2 border-bottom border-light" style="font-size: 0.78rem;">
                     <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
                       <span class="v3-log-dot" [ngClass]="{
                         'dot-blue': log.badgeType === 'info',
@@ -299,11 +353,13 @@
                         'dot-red': log.badgeType === 'danger',
                         'dot-gray': log.badgeType === 'secondary'
                       }"></span>
-                      <span class="text-dark fw-medium text-truncate">{{ log.description }}</span>
+                      <div class="overflow-hidden">
+                        <div class="text-dark fw-medium text-truncate">{{ log.description }}</div>
+                        <small class="text-muted" style="font-size: 0.68rem;">Oleh: {{ log.user || 'Sistem' }} &bull; {{ log.timestamp }}</small>
+                      </div>
                     </div>
-                    <div class="text-nowrap text-end">
-                      <span *ngIf="log.amount" class="v3-mono fw-semibold text-dark d-block" style="font-size: 0.75rem;">{{ formatMoney(log.amount) }}</span>
-                      <span class="text-muted" style="font-size: 0.68rem;">{{ log.timestamp.split(' ')[1] }}</span>
+                    <div class="text-nowrap text-end" *ngIf="log.amount">
+                      <span class="v3-mono fw-semibold text-dark d-block" style="font-size: 0.75rem;">{{ formatMoney(log.amount) }}</span>
                     </div>
                   </div>
                 </div>
@@ -315,132 +371,166 @@
       </div>
 
       <!-- =========================================================
-           2. INVOICES LEDGER VIEW (Clean, High-Density Table)
+           2. INVOICES LEDGER VIEW (Strict SRS Status Codes & Colors)
            ========================================================= -->
       <div *ngIf="activeView() === 'invoices'" class="d-flex flex-column gap-3">
 
-        <!-- Controls Toolbar: Clean Tabs + Search + Action -->
+        <!-- Controls Toolbar: Status Tabs per Table 4.4.2 & Color Code SRS 4.3.1 -->
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-          <!-- 5 Clean Filter Tabs -->
           <div class="v3-tabs-bar">
             <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'ALL'" (click)="invoiceCategoryFilter.set('ALL')">
-              All <span class="v3-tab-count">{{ invoiceCategoryCounts().all }}</span>
+              Semua <span class="v3-tab-count">{{ invoiceCategoryCounts().all }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'OUTSTANDING'" (click)="invoiceCategoryFilter.set('OUTSTANDING')">
-              Outstanding <span class="v3-tab-count">{{ invoiceCategoryCounts().outstanding }}</span>
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Draft'" (click)="invoiceCategoryFilter.set('Draft')">
+              Draft <span class="v3-tab-count">{{ invoiceCategoryCounts().draft }}</span>
             </button>
-            <button type="button" class="v3-tab-btn text-danger" [class.active]="invoiceCategoryFilter() === 'OVERDUE'" (click)="invoiceCategoryFilter.set('OVERDUE')">
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Issued'" (click)="invoiceCategoryFilter.set('Issued')">
+              Issued <span class="v3-tab-count">{{ invoiceCategoryCounts().issued }}</span>
+            </button>
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Partially Paid'" (click)="invoiceCategoryFilter.set('Partially Paid')">
+              Partially Paid <span class="v3-tab-count">{{ invoiceCategoryCounts().partiallyPaid }}</span>
+            </button>
+            <button type="button" class="v3-tab-btn text-danger" [class.active]="invoiceCategoryFilter() === 'Overdue'" (click)="invoiceCategoryFilter.set('Overdue')">
               Overdue <span class="v3-tab-count">{{ invoiceCategoryCounts().overdue }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'PAID'" (click)="invoiceCategoryFilter.set('PAID')">
+            <button type="button" class="v3-tab-btn text-success" [class.active]="invoiceCategoryFilter() === 'Paid'" (click)="invoiceCategoryFilter.set('Paid')">
               Paid <span class="v3-tab-count">{{ invoiceCategoryCounts().paid }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'OTHER'" (click)="invoiceCategoryFilter.set('OTHER')">
-              Draft & Void <span class="v3-tab-count">{{ invoiceCategoryCounts().other }}</span>
+            <button type="button" class="v3-tab-btn text-muted" [class.active]="invoiceCategoryFilter() === 'Cancelled'" (click)="invoiceCategoryFilter.set('Cancelled')">
+              Cancelled <span class="v3-tab-count">{{ invoiceCategoryCounts().cancelled }}</span>
             </button>
           </div>
 
-          <!-- Search & New Invoice button -->
+          <!-- Search & Action -->
           <div class="d-flex align-items-center gap-2">
-            <div style="width: 240px;">
-              <input type="text" class="form-control form-control-sm" placeholder="Search invoice or customer..."
+            <div style="width: 250px;">
+              <input type="text" class="form-control form-control-sm" placeholder="Cari no invoice, pelanggan, NPWP..."
                      [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
             </div>
-            <button type="button" class="v3-btn-primary text-nowrap" (click)="startCreateInvoice()">
-              + New Invoice
+            <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="startCreateInvoice()">
+              + Buat Invoice
             </button>
           </div>
         </div>
 
         <!-- Summary Strip -->
-        <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-white rounded border border-light text-muted" style="font-size: 0.76rem;">
-          <span>Showing <strong>{{ filteredSummary().count }}</strong> invoices</span>
-          <div class="d-flex gap-3">
-            <span>Total: <strong class="v3-mono text-dark">{{ formatMoney(filteredSummary().totalAmount) }}</strong></span>
-            <span>Balance Due: <strong class="v3-mono text-primary">{{ formatMoney(filteredSummary().balanceDue) }}</strong></span>
+        <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-white rounded border border-light text-muted" style="font-size: 0.78rem;">
+          <span>Menampilkan <strong>{{ filteredSummary().count }}</strong> dokumen invoice</span>
+          <div class="d-flex gap-4">
+            <span>Total Nilai: <strong class="v3-mono text-dark">{{ formatMoney(filteredSummary().totalAmount) }}</strong></span>
+            <span>Total Sisa Tagihan (AR): <strong class="v3-mono text-danger">{{ formatMoney(filteredSummary().balanceDue) }}</strong></span>
           </div>
         </div>
 
-        <!-- High-Density Invoices Table -->
+        <!-- High-Density Invoices Table (Viewport-Optimized) -->
         <div class="v3-card">
           <div class="v3-table-container">
             <table class="v3-table">
               <thead>
                 <tr>
-                  <th>Invoice #</th>
-                  <th>Customer</th>
-                  <th>Issue Date</th>
-                  <th>Due Date</th>
-                  <th>Total Amount</th>
-                  <th>Paid</th>
-                  <th>Balance Due</th>
-                  <th>Status</th>
-                  <th class="text-end">Actions</th>
+                  <th>No. & Tgl Invoice</th>
+                  <th>Pelanggan & Layanan</th>
+                  <th>Jatuh Tempo</th>
+                  <th class="text-end">Total & Dibayar</th>
+                  <th class="text-end">Sisa Tagihan (AR)</th>
+                  <th>Status (SRS 4.3.1)</th>
+                  <th class="text-end">Tindakan</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let inv of filteredInvoices()">
                   <td>
-                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono" (click)="viewInvoice(inv)">
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono d-block" (click)="viewInvoice(inv)">
                       {{ inv.invoiceNumber }}
                     </a>
+                    <span class="v3-mono text-muted" style="font-size: 0.7rem;">{{ inv.issueDate }}</span>
                   </td>
                   <td>
-                    <div class="fw-semibold">{{ inv.customerName }}</div>
-                    <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-light text-secondary border" style="font-size: 0.65rem;">
-                      City Ledger
-                    </span>
+                    <div class="fw-semibold text-truncate" style="max-width: 180px;" [title]="inv.customerName">
+                      {{ inv.customerName }}
+                    </div>
+                    <div class="d-flex align-items-center gap-1 mt-1">
+                      <span class="badge bg-light text-secondary border px-1 py-0" style="font-size: 0.65rem;">
+                        {{ inv.invoiceType || 'General AR' }}
+                      </span>
+                      <span class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.customerNpwp">NPWP: {{ inv.customerNpwp }}</span>
+                    </div>
                   </td>
-                  <td class="v3-mono text-muted">{{ inv.issueDate }}</td>
                   <td>
                     <span class="v3-mono" [class.text-danger]="inv.status === 'Overdue'" [class.fw-bold]="inv.status === 'Overdue'">
                       {{ inv.dueDate }}
                     </span>
-                    <span *ngIf="inv.status === 'Overdue'" class="v3-badge v3-badge-overdue ms-1" style="font-size: 0.65rem;">
-                      +{{ getDaysPastDue(inv.dueDate) }}d
+                    <span *ngIf="inv.status === 'Overdue'" class="v3-badge v3-badge-overdue d-block mt-1" style="font-size: 0.62rem; width: fit-content; padding: 0.05rem 0.35rem;">
+                      +{{ getDaysPastDue(inv.dueDate) }}h
                     </span>
                   </td>
-                  <td class="v3-mono fw-semibold">{{ formatMoney(inv.total) }}</td>
-                  <td class="v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
-                  <td class="v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
-                    {{ formatMoney(inv.balanceDue) }}
+                  <td class="text-end">
+                    <div class="v3-mono fw-semibold">{{ formatMoney(inv.total) }}</div>
+                    <div class="v3-mono text-muted" style="font-size: 0.68rem;" *ngIf="inv.amountPaid > 0">
+                      Dibayar: {{ formatMoney(inv.amountPaid) }}
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <div class="v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
+                      {{ formatMoney(inv.balanceDue) }}
+                    </div>
                   </td>
                   <td>
+                    <!-- Exact SRS 4.3.1 Color Codes: Gray=Draft, Blue=Issued, Yellow=Partial, Green=Paid, Red=Overdue, Dark=Cancelled -->
                     <span class="v3-badge" [ngClass]="{
                       'v3-badge-draft': inv.status === 'Draft',
-                      'v3-badge-sent': inv.status === 'Sent',
-                      'v3-badge-partial': inv.status === 'Partial',
+                      'v3-badge-issued': inv.status === 'Issued',
+                      'v3-badge-partial': inv.status === 'Partially Paid',
                       'v3-badge-paid': inv.status === 'Paid',
                       'v3-badge-overdue': inv.status === 'Overdue',
-                      'v3-badge-void': inv.status === 'Void'
+                      'v3-badge-cancelled': inv.status === 'Cancelled'
                     }">
-                      {{ inv.status === 'Sent' ? 'Outstanding' : inv.status }}
+                      {{ inv.status }}
                     </span>
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex align-items-center gap-1">
-                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem;" (click)="viewInvoice(inv)">
-                        View
+                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)" title="Lihat Rincian">
+                        Lihat
                       </button>
-                      <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;"
-                              *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+
+                      <!-- Pay Button (Only if open balance, not draft, not cancelled) -->
+                      <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
+                              *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                              [disabled]="isViewer()"
                               (click)="openPaymentModal(inv.customerId, inv.id)">
-                        Pay
+                        Bayar
                       </button>
-                      <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 0.75rem;"
-                              *ngIf="inv.status === 'Draft'" (click)="issueDraftInvoice(inv)">
-                        Issue
+
+                      <!-- Draft Actions: Issue & Edit & Delete Draft -->
+                      <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 0.72rem;"
+                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="issueDraftInvoice(inv)" title="Terbitkan Invoice (Draft -> Issued)">
+                        Terbitkan
                       </button>
-                      <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.75rem;"
-                              *ngIf="inv.status !== 'Void'" (click)="openVoidModal(inv)">
-                        Void
+
+                      <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;"
+                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)" title="Ubah Isi Draft (SRS-F-15)">
+                        Ubah
+                      </button>
+
+                      <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
+                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)" title="Hapus Draft Invoice">
+                        Hapus
+                      </button>
+
+                      <!-- Cancel Button for Issued/Overdue (Manager or Admin only, if no payments) -->
+                      <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
+                              *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'"
+                              [disabled]="isViewer()"
+                              (click)="openCancelInvoiceModal(inv)" title="Batalkan Invoice (SRS-F-18)">
+                        Batal
                       </button>
                     </div>
                   </td>
                 </tr>
                 <tr *ngIf="filteredInvoices().length === 0">
-                  <td colspan="9" class="text-center py-5 text-muted">
-                    No invoices found matching your filter criteria.
+                  <td colspan="7" class="text-center py-5 text-muted">
+                    Tidak ditemukan invoice yang cocok dengan kriteria filter.
                   </td>
                 </tr>
               </tbody>
@@ -451,31 +541,67 @@
       </div>
 
       <!-- =========================================================
-           3. INVOICE DETAIL VIEW (Tidied, 36px Ribbon, Crisp Ledger)
+           3. INVOICE DETAIL VIEW (Hospitality Layout, Taxes, Allocations)
            ========================================================= -->
       <div *ngIf="activeView() === 'invoice-detail' && selectedInvoice() as inv" class="d-flex flex-column gap-3">
 
         <!-- Back Button & Action Toolbar -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
           <button type="button" class="v3-btn-secondary" (click)="navigateTo('invoices')">
-            &larr; Back to Invoices
+            &larr; Kembali ke Daftar Invoice
           </button>
 
           <div class="d-flex align-items-center gap-2">
             <button type="button" class="v3-btn-secondary" (click)="openPdfPreview(inv)">
-              Print / PDF
+              Cetak / Export PDF (UC-08)
             </button>
-            <button type="button" class="btn btn-sm btn-outline-success" *ngIf="inv.status === 'Draft'" (click)="issueDraftInvoice(inv)">
-              Issue to Client
+
+            <!-- Edit Draft Button -->
+            <button type="button" class="btn btn-sm btn-outline-primary"
+                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)">
+              Ubah Draft
             </button>
-            <button type="button" class="v3-btn-danger-outline" *ngIf="inv.status !== 'Void'" (click)="openVoidModal(inv)">
-              Void
+
+            <!-- Issue Draft Button -->
+            <button type="button" class="btn btn-sm btn-success"
+                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="issueDraftInvoice(inv)">
+              Terbitkan Invoice Resmi (UC-03)
             </button>
+
+            <!-- Delete Draft Button -->
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)">
+              Hapus Draft
+            </button>
+
+            <!-- Cancel Button per SRS-F-18 -->
+            <button type="button" class="v3-btn-danger-outline"
+                    *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'"
+                    [disabled]="isViewer()"
+                    (click)="openCancelInvoiceModal(inv)">
+              Batalkan Invoice (UC-04)
+            </button>
+
+            <!-- Record Payment Button -->
             <button type="button" class="v3-btn-primary"
-                    *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                    *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                    [disabled]="isViewer()"
                     (click)="openPaymentModal(inv.customerId, inv.id)">
-              Record Payment
+              Catat Pembayaran
             </button>
+          </div>
+        </div>
+
+        <!-- Cancellation Banner if Cancelled -->
+        <div class="alert alert-dark border-secondary d-flex align-items-start gap-3" *ngIf="inv.status === 'Cancelled'">
+          <div>
+            <strong class="d-block text-danger">INVOICE TELAH DIBATALKAN (CANCELLED)</strong>
+            <div class="small text-muted mt-1">
+              Dibatalkan pada: <strong>{{ inv.cancelledAt }}</strong> oleh <strong>{{ inv.cancelledBy || 'Manager' }}</strong>
+            </div>
+            <div class="small mt-1">
+              <strong>Alasan Pembatalan (SRS-F-18):</strong> "{{ inv.cancellationReason || 'Pembatalan transaksi administrasi' }}"
+            </div>
           </div>
         </div>
 
@@ -483,88 +609,92 @@
         <div class="v3-card p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
           <div>
             <div class="d-flex align-items-center gap-2">
-              <h2 class="v3-mono fw-bold mb-0" style="font-size: 1.3rem;">{{ inv.invoiceNumber }}</h2>
+              <h2 class="v3-mono fw-bold mb-0" style="font-size: 1.35rem;">{{ inv.invoiceNumber }}</h2>
               <span class="v3-badge" [ngClass]="{
                 'v3-badge-draft': inv.status === 'Draft',
-                'v3-badge-sent': inv.status === 'Sent',
-                'v3-badge-partial': inv.status === 'Partial',
+                'v3-badge-issued': inv.status === 'Issued',
+                'v3-badge-partial': inv.status === 'Partially Paid',
                 'v3-badge-paid': inv.status === 'Paid',
                 'v3-badge-overdue': inv.status === 'Overdue',
-                'v3-badge-void': inv.status === 'Void'
+                'v3-badge-cancelled': inv.status === 'Cancelled'
               }">
                 {{ inv.status }}
               </span>
-              <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-light text-secondary border">City Ledger</span>
+              <span class="badge bg-light text-dark border">{{ inv.invoiceType }}</span>
+              <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-primary-subtle text-primary border border-primary-subtle">City Ledger</span>
             </div>
             <div class="text-muted small mt-1">
-              Issued: <span class="v3-mono text-dark fw-medium">{{ inv.issueDate }}</span> &bull;
-              Due: <span class="v3-mono fw-medium" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
-              <span *ngIf="inv.status === 'Overdue'" class="text-danger fw-bold ms-1">({{ getDaysPastDue(inv.dueDate) }} days overdue)</span>
+              Tanggal Terbit: <span class="v3-mono text-dark fw-medium">{{ inv.issueDate }}</span> &bull;
+              Jatuh Tempo: <span class="v3-mono fw-medium" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
+              <span *ngIf="inv.status === 'Overdue'" class="text-danger fw-bold ms-1">(Terlambat {{ getDaysPastDue(inv.dueDate) }} hari)</span>
+              &bull; Pembuat: {{ inv.createdByName || 'Staf AR' }}
             </div>
           </div>
 
           <div class="text-end">
-            <div class="text-muted small">Outstanding Balance</div>
-            <div class="v3-mono fw-bold fs-4" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
+            <div class="text-muted small">Sisa Tagihan (Outstanding)</div>
+            <div class="v3-mono fw-bold fs-3" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
               {{ formatMoney(inv.balanceDue) }}
             </div>
           </div>
         </div>
 
-        <!-- Tidied Lifecycle Ribbon (Step numbers instead of icons) -->
-        <div class="v3-lifecycle-ribbon" *ngIf="inv.status !== 'Void'">
-          <div class="v3-ribbon-step" [class.done]="getInvoiceWorkflowStep(inv.status) >= 1">
-            <div class="v3-ribbon-circle">{{ getInvoiceWorkflowStep(inv.status) > 1 ? '✓' : '1' }}</div>
-            <span>Draft Created</span>
+        <!-- Lifecycle Step Ribbon (SRS Table 4.4.2) -->
+        <div class="v3-lifecycle-ribbon" *ngIf="inv.status !== 'Cancelled'">
+          <div class="v3-ribbon-step" [class.done]="inv.status !== 'Draft'">
+            <div class="v3-ribbon-circle">{{ inv.status !== 'Draft' ? '✓' : '1' }}</div>
+            <span>1. Draft Disusun</span>
           </div>
-          <div class="v3-ribbon-divider" [class.done]="getInvoiceWorkflowStep(inv.status) >= 2"></div>
+          <div class="v3-ribbon-divider" [class.done]="inv.status !== 'Draft'"></div>
 
           <div class="v3-ribbon-step"
-               [class.done]="getInvoiceWorkflowStep(inv.status) > 2"
-               [class.current]="getInvoiceWorkflowStep(inv.status) === 2 && inv.status !== 'Overdue'"
+               [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"
+               [class.current]="inv.status === 'Issued'"
                [class.overdue]="inv.status === 'Overdue'">
             <div class="v3-ribbon-circle">
-              {{ getInvoiceWorkflowStep(inv.status) > 2 ? '✓' : (inv.status === 'Overdue' ? '!' : '2') }}
+              {{ (inv.status === 'Partially Paid' || inv.status === 'Paid') ? '✓' : (inv.status === 'Overdue' ? '!' : '2') }}
             </div>
-            <span>{{ inv.status === 'Overdue' ? 'Overdue Due Date' : 'Issued & Sent' }}</span>
+            <span>{{ inv.status === 'Overdue' ? '2. Overdue (Lewat Tempo)' : '2. Issued (Diterbitkan)' }}</span>
           </div>
-          <div class="v3-ribbon-divider" [class.done]="getInvoiceWorkflowStep(inv.status) >= 3"></div>
+          <div class="v3-ribbon-divider" [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"></div>
 
           <div class="v3-ribbon-step"
-               [class.done]="getInvoiceWorkflowStep(inv.status) > 3"
-               [class.current]="getInvoiceWorkflowStep(inv.status) === 3">
-            <div class="v3-ribbon-circle">{{ getInvoiceWorkflowStep(inv.status) > 3 ? '✓' : '3' }}</div>
-            <span>Partial Payment</span>
+               [class.done]="inv.status === 'Paid'"
+               [class.current]="inv.status === 'Partially Paid'">
+            <div class="v3-ribbon-circle">{{ inv.status === 'Paid' ? '✓' : '3' }}</div>
+            <span>3. Partially Paid (Bertahap)</span>
           </div>
-          <div class="v3-ribbon-divider" [class.done]="getInvoiceWorkflowStep(inv.status) === 4"></div>
+          <div class="v3-ribbon-divider" [class.done]="inv.status === 'Paid'"></div>
 
-          <div class="v3-ribbon-step" [class.done]="getInvoiceWorkflowStep(inv.status) === 4">
-            <div class="v3-ribbon-circle">{{ getInvoiceWorkflowStep(inv.status) === 4 ? '✓' : '4' }}</div>
-            <span>Settled (Paid)</span>
+          <div class="v3-ribbon-step" [class.done]="inv.status === 'Paid'">
+            <div class="v3-ribbon-circle">{{ inv.status === 'Paid' ? '✓' : '4' }}</div>
+            <span>4. Lunas (Paid)</span>
           </div>
         </div>
 
-        <!-- 2-Column Core Layout: Line Items (65%) & Financial Balance (35%) -->
+        <!-- 2-Column Detail Layout -->
         <div class="row g-4">
-          <!-- Left Column: Customer Bill-To & Line Items -->
+          <!-- Left: Customer Bill-To & Line Items -->
           <div class="col-12 col-xl-8">
             <div class="d-flex flex-column gap-3">
               <!-- Customer Billing Info -->
               <div class="v3-card p-3">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <span class="text-muted small text-uppercase fw-semibold">Billed To</span>
-                    <h4 class="fw-bold text-dark mt-1 mb-1" style="font-size: 1.05rem;">{{ inv.customerName }}</h4>
+                    <span class="text-muted small text-uppercase fw-semibold">Ditagihkan Kepada (Pelanggan)</span>
+                    <h4 class="fw-bold text-dark mt-1 mb-1" style="font-size: 1.1rem;">{{ inv.customerName }}</h4>
                     <div class="text-muted small">
-                      <span *ngIf="arService.getCustomer(inv.customerId) as cust">
-                        {{ cust.address }} &bull; {{ cust.email }} &bull; {{ cust.phone }}
-                      </span>
+                      <span class="me-3">NIK: <strong class="v3-mono text-dark">{{ inv.customerNik || '-' }}</strong></span>
+                      <span>NPWP: <strong class="v3-mono text-dark">{{ inv.customerNpwp || '-' }}</strong></span>
+                    </div>
+                    <div class="text-muted small mt-1" *ngIf="arService.getCustomer(inv.customerId) as cust">
+                      Alamat: {{ cust.address }} &bull; Kontak: {{ cust.contactPerson }} ({{ cust.phone }})
                     </div>
                   </div>
                   <button type="button" class="btn btn-sm btn-link text-decoration-none p-0"
                           *ngIf="arService.getCustomer(inv.customerId) as cust"
                           (click)="viewCustomer(cust)">
-                    Customer Profile &rarr;
+                    Profil Pelanggan &rarr;
                   </button>
                 </div>
               </div>
@@ -572,24 +702,30 @@
               <!-- Line Items Table -->
               <div class="v3-card">
                 <div class="v3-card-header">
-                  <h3 class="v3-card-title">Line Items Breakdown</h3>
-                  <span class="text-muted small">{{ inv.lineItems.length }} items</span>
+                  <h3 class="v3-card-title">Rincian Item / Layanan Hotel (SRS-F-07)</h3>
+                  <span class="text-muted small">{{ inv.lineItems.length }} item</span>
                 </div>
                 <div class="v3-table-container">
                   <table class="v3-table">
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Description</th>
-                        <th class="text-end">Qty</th>
-                        <th class="text-end">Unit Price</th>
-                        <th class="text-end">Total</th>
+                        <th>Deskripsi Item / Layanan</th>
+                        <th>Kategori</th>
+                        <th class="text-end">Kuantitas</th>
+                        <th class="text-end">Harga Satuan</th>
+                        <th class="text-end">Total Harga</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr *ngFor="let item of inv.lineItems; let idx = index">
                         <td class="text-muted">{{ idx + 1 }}</td>
                         <td class="fw-medium">{{ item.description }}</td>
+                        <td>
+                          <span class="badge bg-light text-secondary border" style="font-size: 0.7rem;">
+                            {{ item.itemType || 'Service' }}
+                          </span>
+                        </td>
                         <td class="text-end v3-mono">{{ item.quantity }}</td>
                         <td class="text-end v3-mono text-muted">{{ formatMoney(item.unitPrice) }}</td>
                         <td class="text-end v3-mono fw-semibold">{{ formatMoney(item.lineTotal) }}</td>
@@ -598,34 +734,51 @@
                   </table>
                 </div>
                 <div class="p-3 bg-light border-top text-muted small" *ngIf="inv.notes">
-                  <strong>Notes & Remittance:</strong> {{ inv.notes }}
+                  <strong>Catatan & Instruksi Pembayaran:</strong> {{ inv.notes }}
                 </div>
               </div>
 
-              <!-- Payment Allocation History -->
+              <!-- Payment Receipts Allocation History (Installments - SRS-F-25) -->
               <div class="v3-card" *ngIf="getPaymentsForInvoice(inv.id).length > 0">
                 <div class="v3-card-header">
-                  <h3 class="v3-card-title text-success">Applied Payment Receipts</h3>
-                  <span class="text-muted small">{{ getPaymentsForInvoice(inv.id).length }} transactions</span>
+                  <h3 class="v3-card-title text-success">Riwayat Pembayaran Masuk (Termin / Installment)</h3>
+                  <span class="text-muted small">{{ getPaymentsForInvoice(inv.id).length }} transaksi</span>
                 </div>
                 <div class="v3-table-container">
                   <table class="v3-table">
                     <thead>
                       <tr>
-                        <th>Receipt #</th>
-                        <th>Payment Date</th>
-                        <th>Method</th>
-                        <th>Reference</th>
-                        <th class="text-end">Applied Amount</th>
+                        <th>No. Kuitansi</th>
+                        <th>Tanggal Bayar</th>
+                        <th>Metode & Kanal</th>
+                        <th>No. Referensi</th>
+                        <th>Rekening Penerima</th>
+                        <th class="text-end">Nominal Diterapkan</th>
+                        <th class="text-end" *ngIf="isManagerOrAdmin()">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr *ngFor="let p of getPaymentsForInvoice(inv.id)">
                         <td class="fw-bold v3-mono text-success">{{ p.paymentNumber }}</td>
                         <td class="v3-mono text-muted">{{ p.paymentDate }}</td>
-                        <td class="text-capitalize">{{ p.method.replace('_', ' ') }}</td>
+                        <td>
+                          <span class="text-capitalize fw-medium">{{ p.method.replace('_', ' ') }}</span>
+                          <small class="d-block text-muted">{{ p.paymentChannel }}</small>
+                        </td>
                         <td class="v3-mono text-muted">{{ p.referenceNumber }}</td>
+                        <td class="small text-muted">
+                          <span *ngIf="getBankAccount(p.bankAccountId) as b">
+                            {{ b.bankName }} ({{ b.accountNumber }})
+                          </span>
+                          <span *ngIf="!p.bankAccountId">-</span>
+                        </td>
                         <td class="text-end v3-mono fw-bold text-success">{{ formatMoney(p.amount) }}</td>
+                        <td class="text-end" *ngIf="isManagerOrAdmin()">
+                          <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;"
+                                  (click)="requestDeletePayment(p)" title="Batalkan dan pulihkan saldo">
+                            Rollback
+                          </button>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -634,44 +787,53 @@
             </div>
           </div>
 
-          <!-- Right Column: Financial Summary Card -->
+          <!-- Right: Financial Breakdown Card -->
           <div class="col-12 col-xl-4">
             <div class="v3-card p-3">
-              <h3 class="v3-card-title mb-3">Financial Ledger</h3>
+              <h3 class="v3-card-title mb-3">Ringkasan Nilai & Pajak (SRS-F-08..13)</h3>
 
               <div class="d-flex flex-column gap-2 border-bottom pb-3">
                 <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
-                  <span>Subtotal</span>
+                  <span>Subtotal Item</span>
                   <span class="v3-mono text-dark">{{ formatMoney(inv.subtotal) }}</span>
                 </div>
                 <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
-                  <span>PPN / Tax ({{ inv.taxRate }}%)</span>
-                  <span class="v3-mono text-dark">{{ formatMoney(inv.taxAmount) }}</span>
+                  <span>PPN ({{ inv.taxRate }}%)</span>
+                  <span class="v3-mono text-dark">+ {{ formatMoney(inv.taxAmount) }}</span>
                 </div>
-                <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top" style="font-size: 0.92rem;">
-                  <span>Total Invoice</span>
-                  <span class="v3-mono">{{ formatMoney(inv.total) }}</span>
+                <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
+                  <span>PPh 23 Dipotong ({{ inv.pphRate }}%)</span>
+                  <span class="v3-mono text-danger">- {{ formatMoney(inv.pphAmount) }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
+                  <span>Potongan Uang Muka (DP)</span>
+                  <span class="v3-mono text-danger">- {{ formatMoney(inv.dpDeduction) }}</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top" style="font-size: 0.95rem;">
+                  <span>Total Tagihan Bersih</span>
+                  <span class="v3-mono text-primary">{{ formatMoney(inv.total) }}</span>
                 </div>
               </div>
 
               <div class="d-flex flex-column gap-2 pt-3">
                 <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
-                  <span>Settled / Paid Amount</span>
+                  <span>Total Telah Dibayar</span>
                   <span class="v3-mono text-success">- {{ formatMoney(inv.amountPaid) }}</span>
                 </div>
 
                 <div class="p-3 rounded mt-2 text-center"
                      [ngClass]="inv.balanceDue > 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle'">
-                  <div class="small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Balance Due</div>
+                  <div class="small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Sisa Tagihan (Balance Due)</div>
                   <div class="v3-mono fw-bold fs-3 mt-1">{{ formatMoney(inv.balanceDue) }}</div>
-                  <div class="small mt-1" *ngIf="inv.balanceDue === 0">Fully Settled &bull; Zero Balance</div>
-                  <div class="small mt-1" *ngIf="inv.balanceDue > 0">Unsettled Receivable</div>
+                  <div class="small mt-1" *ngIf="inv.balanceDue === 0">Lunas &bull; Saldo Nol</div>
+                  <div class="small mt-1" *ngIf="inv.balanceDue > 0">Piutang Belum Dilunasi</div>
                 </div>
 
                 <button type="button" class="v3-btn-primary w-100 justify-content-center mt-3 py-2"
-                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                        [disabled]="isViewer()"
                         (click)="openPaymentModal(inv.customerId, inv.id)">
-                  Record Payment Now
+                  Catat Pembayaran Sekarang
                 </button>
               </div>
             </div>
@@ -681,81 +843,110 @@
       </div>
 
       <!-- =========================================================
-           4. NEW INVOICE BUILDER (Fast, Direct Line-Item Entry)
+           4. NEW / EDIT INVOICE BUILDER (SRS-F-04..15)
            ========================================================= -->
       <div *ngIf="activeView() === 'invoice-create'" class="d-flex flex-column gap-3">
         <div class="d-flex align-items-center justify-content-between">
           <button type="button" class="v3-btn-secondary" (click)="navigateTo('invoices')">
-            &larr; Back
+            &larr; Batal & Kembali
           </button>
           <div class="d-flex gap-2">
             <button type="button" class="v3-btn-secondary" (click)="saveInvoice('Draft')">
-              Save as Draft
+              Simpan sebagai Draft
             </button>
-            <button type="button" class="v3-btn-primary" (click)="saveInvoice('Sent')">
-              Save & Issue Invoice
+            <button type="button" class="v3-btn-primary" (click)="saveInvoice('Issued')">
+              Simpan & Terbitkan Langsung
             </button>
           </div>
         </div>
 
         <div class="v3-card p-4">
-          <h3 class="v3-card-title mb-3">New Receivable Invoice</h3>
+          <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+            <h3 class="v3-card-title mb-0 fs-5">
+              {{ editingInvoiceId() ? 'Ubah Rincian Invoice Draft' : 'Formulir Pembuatan Invoice Piutang Baru' }}
+            </h3>
+            <span class="badge bg-light text-secondary border">Modul Piutang Usaha Hotel</span>
+          </div>
 
           <!-- Form Header -->
           <div class="row g-3 mb-4">
             <div class="col-12 col-md-5">
-              <label class="form-label small fw-semibold">Customer Account *</label>
+              <label class="form-label small fw-semibold">Pilih Pelanggan (Customer) *</label>
               <select class="form-select form-select-sm"
                       [ngModel]="invoiceFormCustomerId()"
                       (ngModelChange)="onCustomerSelectedForInvoice($event)">
                 <option *ngFor="let c of arService.customers()" [value]="c.id">
-                  {{ c.name }} (Net {{ c.dueDays }}d)
+                  {{ c.name }} (Termin: {{ c.dueDays }} hari &bull; NPWP: {{ c.npwp }})
                 </option>
               </select>
             </div>
 
             <div class="col-6 col-md-2">
-              <label class="form-label small fw-semibold">Issue Date</label>
+              <label class="form-label small fw-semibold">Tanggal Invoice *</label>
               <input type="date" class="form-control form-control-sm"
                      [ngModel]="invoiceFormIssueDate()"
                      (ngModelChange)="invoiceFormIssueDate.set($event)">
             </div>
 
             <div class="col-6 col-md-2">
-              <label class="form-label small fw-semibold">Due Date</label>
+              <label class="form-label small fw-semibold">Tanggal Jatuh Tempo *</label>
               <input type="date" class="form-control form-control-sm"
                      [ngModel]="invoiceFormDueDate()"
                      (ngModelChange)="invoiceFormDueDate.set($event)">
+              <small class="text-danger" *ngIf="invoiceFormDueDate() < invoiceFormIssueDate()" style="font-size: 0.68rem;">
+                Tidak boleh lebih awal dari tgl invoice
+              </small>
             </div>
 
             <div class="col-12 col-md-3">
-              <label class="form-label small fw-semibold">Source Type</label>
+              <label class="form-label small fw-semibold">Jenis Tagihan / Layanan</label>
               <select class="form-select form-select-sm"
-                      [ngModel]="invoiceFormSourceType()"
-                      (ngModelChange)="invoiceFormSourceType.set($event)">
-                <option value="generic">Standard Corporate Invoice</option>
-                <option value="city_ledger">City Ledger (PMS Hospitality)</option>
+                      [ngModel]="invoiceFormInvoiceType()"
+                      (ngModelChange)="invoiceFormInvoiceType.set($event)">
+                <option value="Banquet & Event Billing">Banquet & Event Billing</option>
+                <option value="Room & Suites Accommodation">Room & Suites Accommodation</option>
+                <option value="City Ledger Folio Transfer">City Ledger Folio Transfer</option>
+                <option value="Corporate Catering Services">Corporate Catering Services</option>
+                <option value="Meeting Room & Facility">Meeting Room & Facility</option>
               </select>
             </div>
           </div>
 
-          <!-- Dynamic Line Items Table -->
+          <!-- Dynamic Line Items Table (SRS-F-07, SRS-F-08) -->
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="small fw-bold text-dark mb-0">Rincian Item Barang / Jasa (Invoice Detail)</label>
+            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;" (click)="addLineItem()">
+              + Tambah Baris Rincian
+            </button>
+          </div>
+
           <div class="border rounded mb-3 overflow-hidden">
             <table class="v3-table mb-0">
               <thead>
                 <tr>
-                  <th>Description</th>
-                  <th style="width: 100px;">Qty</th>
-                  <th style="width: 180px;">Unit Price (IDR)</th>
-                  <th style="width: 180px;" class="text-end">Line Total</th>
-                  <th style="width: 60px;"></th>
+                  <th>Deskripsi Item / Layanan *</th>
+                  <th style="width: 140px;">Kategori</th>
+                  <th style="width: 100px;">Kuantitas</th>
+                  <th style="width: 180px;">Harga Satuan (Rp)</th>
+                  <th style="width: 180px;" class="text-end">Total Harga</th>
+                  <th style="width: 50px;"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let item of invoiceFormLineItems(); let i = index">
                   <td>
-                    <input type="text" class="form-control form-control-sm" placeholder="Item or service description..."
+                    <input type="text" class="form-control form-control-sm" placeholder="Contoh: Sewa Ruang Meeting 1 Hari..."
                            [(ngModel)]="item.description">
+                  </td>
+                  <td>
+                    <select class="form-select form-select-sm" [(ngModel)]="item.itemType">
+                      <option value="Banquet">Banquet</option>
+                      <option value="Room">Room</option>
+                      <option value="F&B">F&B</option>
+                      <option value="Facility">Facility</option>
+                      <option value="Service">Service</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </td>
                   <td>
                     <input type="number" min="1" class="form-control form-control-sm v3-mono"
@@ -769,8 +960,8 @@
                     {{ formatMoney((item.quantity || 0) * (item.unitPrice || 0)) }}
                   </td>
                   <td class="text-center">
-                    <button type="button" class="btn btn-sm text-danger p-0 fw-bold" (click)="removeLineItem(i)"
-                            *ngIf="invoiceFormLineItems().length > 1">
+                    <button type="button" class="btn btn-sm text-danger p-0 fw-bold fs-5" (click)="removeLineItem(i)"
+                            *ngIf="invoiceFormLineItems().length > 1" title="Hapus baris ini">
                       &times;
                     </button>
                   </td>
@@ -779,37 +970,57 @@
             </table>
           </div>
 
-          <button type="button" class="btn btn-sm btn-outline-primary mb-4" (click)="addLineItem()">
-            + Add Line Item
-          </button>
-
           <!-- Bottom Totals & Notes -->
           <div class="row g-4 border-top pt-3">
             <div class="col-12 col-md-7">
-              <label class="form-label small fw-semibold">Notes / Payment Terms</label>
-              <textarea class="form-control form-control-sm" rows="3" placeholder="Optional notes for the invoice..."
+              <label class="form-label small fw-semibold">Catatan / Instruksi Rekening Transfer</label>
+              <textarea class="form-control form-control-sm" rows="4" placeholder="Instruksi transfer pembayaran, no referensi pesanan hotel..."
                         [ngModel]="invoiceFormNotes()" (ngModelChange)="invoiceFormNotes.set($event)"></textarea>
             </div>
 
             <div class="col-12 col-md-5">
-              <div class="p-3 bg-light rounded d-flex flex-column gap-2">
+              <div class="p-3 bg-light rounded d-flex flex-column gap-2 border">
                 <div class="d-flex justify-content-between text-muted small">
-                  <span>Subtotal</span>
-                  <span class="v3-mono text-dark">{{ formatMoney(invoiceFormSubtotal()) }}</span>
+                  <span>Subtotal Item (SRS-F-09)</span>
+                  <span class="v3-mono text-dark fw-medium">{{ formatMoney(invoiceFormSubtotal()) }}</span>
                 </div>
+
                 <div class="d-flex justify-content-between align-items-center text-muted small">
-                  <span>PPN / VAT</span>
+                  <span>PPN / Pajak (SRS-F-10)</span>
                   <div class="d-flex align-items-center gap-1">
                     <select class="form-select form-select-sm py-0" style="width: 80px;"
                             [ngModel]="invoiceFormTaxRate()" (ngModelChange)="invoiceFormTaxRate.set($event)">
                       <option [value]="11">11%</option>
+                      <option [value]="12">12%</option>
                       <option [value]="0">0%</option>
                     </select>
-                    <span class="v3-mono text-dark">{{ formatMoney(invoiceFormTaxAmount()) }}</span>
+                    <span class="v3-mono text-dark">+ {{ formatMoney(invoiceFormTaxAmount()) }}</span>
                   </div>
                 </div>
+
+                <div class="d-flex justify-content-between align-items-center text-muted small">
+                  <span>PPh 23 Dipotong (SRS-F-11)</span>
+                  <div class="d-flex align-items-center gap-1">
+                    <select class="form-select form-select-sm py-0" style="width: 80px;"
+                            [ngModel]="invoiceFormPphRate()" (ngModelChange)="invoiceFormPphRate.set($event)">
+                      <option [value]="2">2%</option>
+                      <option [value]="10">10%</option>
+                      <option [value]="0">0%</option>
+                    </select>
+                    <span class="v3-mono text-danger">- {{ formatMoney(invoiceFormPphAmount()) }}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center text-muted small">
+                  <span>Potongan Uang Muka / DP (SRS-F-13)</span>
+                  <div class="d-flex align-items-center gap-1" style="width: 170px;">
+                    <input type="number" min="0" step="100000" class="form-control form-control-sm text-end v3-mono py-0"
+                           [ngModel]="invoiceFormDpDeduction()" (ngModelChange)="invoiceFormDpDeduction.set($event)">
+                  </div>
+                </div>
+
                 <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top fs-5">
-                  <span>Grand Total</span>
+                  <span>Total Tagihan (SRS-F-12)</span>
                   <span class="v3-mono text-primary">{{ formatMoney(invoiceFormTotal()) }}</span>
                 </div>
               </div>
@@ -819,16 +1030,16 @@
       </div>
 
       <!-- =========================================================
-           5. CUSTOMER DIRECTORY VIEW
+           5. CUSTOMER DIRECTORY VIEW (SRS-F-01..03, NIK, NPWP, Delete)
            ========================================================= -->
       <div *ngIf="activeView() === 'customers'" class="d-flex flex-column gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div class="v3-tabs-bar">
             <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'ALL'" (click)="customerFilter.set('ALL')">
-              All Customers
+              Semua Pelanggan ({{ arService.customers().length }})
             </button>
             <button type="button" class="v3-tab-btn text-danger" [class.active]="customerFilter() === 'OVERDUE'" (click)="customerFilter.set('OVERDUE')">
-              Has Overdue
+              Memiliki Overdue
             </button>
             <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'HOLD'" (click)="customerFilter.set('HOLD')">
               Credit Hold
@@ -836,12 +1047,12 @@
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <div style="width: 240px;">
-              <input type="text" class="form-control form-control-sm" placeholder="Search customers..."
+            <div style="width: 250px;">
+              <input type="text" class="form-control form-control-sm" placeholder="Cari nama, NIK, NPWP, kontak..."
                      [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
             </div>
-            <button type="button" class="v3-btn-primary text-nowrap" (click)="openNewCustomerModal()">
-              + New Customer
+            <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="openNewCustomerModal()">
+              + Tambah Pelanggan
             </button>
           </div>
         </div>
@@ -851,60 +1062,81 @@
             <table class="v3-table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Customer Name</th>
-                  <th>Contact Person</th>
-                  <th>Terms</th>
-                  <th>Balance Due</th>
-                  <th>Credit Limit</th>
-                  <th>Credit Utilization</th>
+                  <th>Pelanggan & Kode</th>
+                  <th>Kontak & Legalitas</th>
+                  <th class="text-end">Sisa Piutang (AR)</th>
+                  <th>Batas & Utilisasi Kredit</th>
                   <th>Status</th>
-                  <th class="text-end">Actions</th>
+                  <th class="text-end">Tindakan</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let cust of filteredCustomers()">
-                  <td class="v3-mono text-muted">{{ cust.code }}</td>
                   <td>
-                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none" (click)="viewCustomer(cust)">
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none text-truncate d-block" style="max-width: 190px;" [title]="cust.name" (click)="viewCustomer(cust)">
                       {{ cust.name }}
                     </a>
+                    <div class="text-muted v3-mono" style="font-size: 0.7rem;">
+                      {{ cust.code }} &bull; Termin: Net {{ cust.dueDays }}h
+                    </div>
                   </td>
                   <td>
-                    <div class="fw-medium">{{ cust.contactPerson }}</div>
-                    <div class="text-muted small">{{ cust.email }}</div>
+                    <div class="fw-medium text-truncate" style="max-width: 170px;">{{ cust.contactPerson }}</div>
+                    <div class="text-muted small v3-mono" style="font-size: 0.7rem;">
+                      {{ cust.phone }}
+                      <span *ngIf="cust.npwp">&bull; NPWP: {{ cust.npwp }}</span>
+                    </div>
                   </td>
-                  <td>Net {{ cust.dueDays }}d</td>
-                  <td class="v3-mono fw-bold" [class.text-danger]="arService.getCustomerBalance(cust.id) > 0">
-                    {{ formatMoney(arService.getCustomerBalance(cust.id)) }}
+                  <td class="text-end">
+                    <div class="v3-mono fw-bold" [class.text-danger]="arService.getCustomerBalance(cust.id) > 0">
+                      {{ formatMoney(arService.getCustomerBalance(cust.id)) }}
+                    </div>
+                    <small class="text-muted" style="font-size: 0.68rem;" *ngIf="arService.getCustomerInvoiceCount(cust.id) as count">
+                      {{ count }} invoice
+                    </small>
                   </td>
-                  <td class="v3-mono text-muted">{{ formatMoney(cust.creditLimit) }}</td>
-                  <td style="width: 140px;">
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar"
-                             [class.bg-danger]="getCustomerCreditUtilization(cust) > 80"
-                             [class.bg-warning]="getCustomerCreditUtilization(cust) > 50 && getCustomerCreditUtilization(cust) <= 80"
-                             [class.bg-success]="getCustomerCreditUtilization(cust) <= 50"
-                             [style.width.%]="getCustomerCreditUtilization(cust)"></div>
-                      </div>
-                      <span class="small v3-mono text-muted" style="font-size: 0.7rem;">{{ getCustomerCreditUtilization(cust) }}%</span>
+                  <td style="min-width: 130px; max-width: 155px;">
+                    <div class="d-flex justify-content-between small text-muted mb-1" style="font-size: 0.7rem;">
+                      <span>Limit: {{ formatMoney(cust.creditLimit) }}</span>
+                      <span class="v3-mono fw-semibold">{{ getCustomerCreditUtilization(cust) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 5px;">
+                      <div class="progress-bar"
+                           [class.bg-danger]="getCustomerCreditUtilization(cust) > 80"
+                           [class.bg-warning]="getCustomerCreditUtilization(cust) > 50 && getCustomerCreditUtilization(cust) <= 80"
+                           [class.bg-success]="getCustomerCreditUtilization(cust) <= 50"
+                           [style.width.%]="getCustomerCreditUtilization(cust)"></div>
                     </div>
                   </td>
                   <td>
                     <span class="v3-badge" [ngClass]="cust.status === 'active' ? 'v3-badge-paid' : 'v3-badge-overdue'">
-                      {{ cust.status === 'active' ? 'Active' : 'Credit Hold' }}
+                      {{ cust.status === 'active' ? 'Aktif' : 'Credit Hold' }}
                     </span>
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex gap-1">
-                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem;" (click)="viewCustomer(cust)">
-                        View
+                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewCustomer(cust)" title="Lihat Profil">
+                        Profil
                       </button>
-                      <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;" (click)="startCreateInvoice(cust.id)">
-                        Bill
+                      <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;"
+                              [disabled]="isViewer()" (click)="openEditCustomerModal(cust)" title="Ubah Data">
+                        Ubah
+                      </button>
+                      <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
+                              [disabled]="isViewer()" (click)="startCreateInvoice(cust.id)" title="Buat Invoice">
+                        Tagih
+                      </button>
+                      <!-- Delete Customer Button (triggers SRS-F-03 check) -->
+                      <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
+                              [disabled]="isViewer()" (click)="requestDeleteCustomer(cust)" title="Hapus Pelanggan">
+                        Hapus
                       </button>
                     </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredCustomers().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    Tidak ditemukan data pelanggan yang cocok.
                   </td>
                 </tr>
               </tbody>
@@ -914,19 +1146,25 @@
       </div>
 
       <!-- =========================================================
-           6. CUSTOMER DETAIL VIEW
+           6. CUSTOMER DETAIL VIEW (Customer 360, Invoices, Payments)
            ========================================================= -->
       <div *ngIf="activeView() === 'customer-detail' && selectedCustomer() as cust" class="d-flex flex-column gap-3">
         <div class="d-flex align-items-center justify-content-between">
           <button type="button" class="v3-btn-secondary" (click)="navigateTo('customers')">
-            &larr; Back to Directory
+            &larr; Kembali ke Data Pelanggan
           </button>
           <div class="d-flex gap-2">
-            <button type="button" class="v3-btn-secondary" (click)="openPaymentModal(cust.id)">
-              Record Payment
+            <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="isViewer()" (click)="openEditCustomerModal(cust)">
+              Ubah Profil
             </button>
-            <button type="button" class="v3-btn-primary" (click)="startCreateInvoice(cust.id)">
-              + Create Invoice
+            <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="isViewer()" (click)="requestDeleteCustomer(cust)">
+              Hapus Pelanggan
+            </button>
+            <button type="button" class="v3-btn-secondary" [disabled]="isViewer()" (click)="openPaymentModal(cust.id)">
+              Catat Pembayaran
+            </button>
+            <button type="button" class="v3-btn-primary" [disabled]="isViewer()" (click)="startCreateInvoice(cust.id)">
+              + Buat Invoice
             </button>
           </div>
         </div>
@@ -934,28 +1172,32 @@
         <!-- Customer Summary Card -->
         <div class="v3-card p-4">
           <div class="row g-3 align-items-center">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-7">
               <div class="d-flex align-items-center gap-2">
-                <h2 class="fw-bold text-dark mb-0" style="font-size: 1.25rem;">{{ cust.name }}</h2>
+                <h2 class="fw-bold text-dark mb-0" style="font-size: 1.3rem;">{{ cust.name }}</h2>
                 <span class="v3-badge" [ngClass]="cust.status === 'active' ? 'v3-badge-paid' : 'v3-badge-overdue'">
-                  {{ cust.status === 'active' ? 'Active' : 'Credit Hold' }}
+                  {{ cust.status === 'active' ? 'Aktif' : 'Credit Hold' }}
                 </span>
               </div>
+              <div class="text-muted small mt-2">
+                <span class="me-3">Kode: <strong class="v3-mono text-dark">{{ cust.code }}</strong></span>
+                <span class="me-3">NIK: <strong class="v3-mono text-dark">{{ cust.nik || '-' }}</strong></span>
+                <span class="me-3">NPWP: <strong class="v3-mono text-dark">{{ cust.npwp || '-' }}</strong></span>
+                <span>Termin: Net {{ cust.dueDays }} hari</span>
+              </div>
               <div class="text-muted small mt-1">
-                Code: <strong class="v3-mono text-dark">{{ cust.code }}</strong> &bull;
-                Contact: {{ cust.contactPerson }} &bull;
-                Terms: Net {{ cust.dueDays }}d
+                Alamat: {{ cust.address }} &bull; Kontak: {{ cust.contactPerson }} ({{ cust.phone }}) &bull; Email: {{ cust.email }}
               </div>
             </div>
 
-            <div class="col-12 col-md-6 text-md-end">
+            <div class="col-12 col-md-5 text-md-end">
               <div class="d-inline-flex gap-4">
                 <div>
-                  <div class="text-muted small">Current AR Balance</div>
+                  <div class="text-muted small">Sisa Piutang Berjalan</div>
                   <div class="v3-mono fw-bold fs-4 text-danger">{{ formatMoney(arService.getCustomerBalance(cust.id)) }}</div>
                 </div>
                 <div>
-                  <div class="text-muted small">Credit Limit</div>
+                  <div class="text-muted small">Batas Plafon Kredit</div>
                   <div class="v3-mono fw-bold fs-4 text-dark">{{ formatMoney(cust.creditLimit) }}</div>
                 </div>
               </div>
@@ -966,10 +1208,10 @@
         <!-- Sub Tabs: Invoices & Payments -->
         <div class="v3-tabs-bar">
           <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'invoices'" (click)="customerActiveTab.set('invoices')">
-            Invoices ({{ customerInvoices().length }})
+            Riwayat Invoice ({{ customerInvoices().length }})
           </button>
           <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'payments'" (click)="customerActiveTab.set('payments')">
-            Payment History ({{ customerPayments().length }})
+            Riwayat Pembayaran ({{ customerPayments().length }})
           </button>
         </div>
 
@@ -979,14 +1221,15 @@
             <table class="v3-table">
               <thead>
                 <tr>
-                  <th>Invoice #</th>
-                  <th>Issue Date</th>
-                  <th>Due Date</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>Balance Due</th>
+                  <th>No. Invoice</th>
+                  <th>Tgl Terbit</th>
+                  <th>Jatuh Tempo</th>
+                  <th>Jenis Tagihan</th>
+                  <th class="text-end">Total</th>
+                  <th class="text-end">Dibayar</th>
+                  <th class="text-end">Sisa Tagihan</th>
                   <th>Status</th>
-                  <th class="text-end">Action</th>
+                  <th class="text-end">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -998,29 +1241,31 @@
                   </td>
                   <td class="v3-mono text-muted">{{ inv.issueDate }}</td>
                   <td class="v3-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</td>
-                  <td class="v3-mono">{{ formatMoney(inv.total) }}</td>
-                  <td class="v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
-                  <td class="v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+                  <td class="small">{{ inv.invoiceType }}</td>
+                  <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
+                  <td class="text-end v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                  <td class="text-end v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
                   <td>
                     <span class="v3-badge" [ngClass]="{
                       'v3-badge-draft': inv.status === 'Draft',
-                      'v3-badge-sent': inv.status === 'Sent',
-                      'v3-badge-partial': inv.status === 'Partial',
+                      'v3-badge-issued': inv.status === 'Issued',
+                      'v3-badge-partial': inv.status === 'Partially Paid',
                       'v3-badge-paid': inv.status === 'Paid',
                       'v3-badge-overdue': inv.status === 'Overdue',
-                      'v3-badge-void': inv.status === 'Void'
+                      'v3-badge-cancelled': inv.status === 'Cancelled'
                     }">{{ inv.status }}</span>
                   </td>
                   <td class="text-end">
                     <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;"
-                            *ngIf="inv.balanceDue > 0 && inv.status !== 'Void' && inv.status !== 'Draft'"
+                            *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                            [disabled]="isViewer()"
                             (click)="openPaymentModal(cust.id, inv.id)">
-                      Pay
+                      Bayar
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="customerInvoices().length === 0">
-                  <td colspan="8" class="text-center py-4 text-muted">No invoices found for this customer.</td>
+                  <td colspan="9" class="text-center py-4 text-muted">Belum ada invoice yang diterbitkan untuk pelanggan ini.</td>
                 </tr>
               </tbody>
             </table>
@@ -1033,23 +1278,33 @@
             <table class="v3-table">
               <thead>
                 <tr>
-                  <th>Receipt #</th>
-                  <th>Date</th>
-                  <th>Method</th>
-                  <th>Reference</th>
-                  <th class="text-end">Amount</th>
+                  <th>No. Kuitansi</th>
+                  <th>Tanggal</th>
+                  <th>Metode & Kanal</th>
+                  <th>Referensi</th>
+                  <th class="text-end">Nominal</th>
+                  <th class="text-end" *ngIf="isManagerOrAdmin()">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let pay of customerPayments()">
                   <td class="v3-mono fw-bold text-success">{{ pay.paymentNumber }}</td>
                   <td class="v3-mono text-muted">{{ pay.paymentDate }}</td>
-                  <td class="text-capitalize">{{ pay.method.replace('_', ' ') }}</td>
+                  <td>
+                    <span class="text-capitalize fw-medium">{{ pay.method.replace('_', ' ') }}</span>
+                    <small class="d-block text-muted">{{ pay.paymentChannel }}</small>
+                  </td>
                   <td class="v3-mono text-muted">{{ pay.referenceNumber }}</td>
                   <td class="text-end v3-mono fw-bold text-success">{{ formatMoney(pay.amount) }}</td>
+                  <td class="text-end" *ngIf="isManagerOrAdmin()">
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;"
+                            (click)="requestDeletePayment(pay)">
+                      Rollback
+                    </button>
+                  </td>
                 </tr>
                 <tr *ngIf="customerPayments().length === 0">
-                  <td colspan="5" class="text-center py-4 text-muted">No payments recorded for this customer yet.</td>
+                  <td colspan="6" class="text-center py-4 text-muted">Belum ada pembayaran yang dicatat untuk pelanggan ini.</td>
                 </tr>
               </tbody>
             </table>
@@ -1059,16 +1314,18 @@
       </div>
 
       <!-- =========================================================
-           7. AGING REPORT MATRIX
+           7. AGING REPORT MATRIX & EXPANDABLE DRILLDOWN (SRS-F-33..34)
            ========================================================= -->
       <div *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div>
-            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">AR Aging Analysis Matrix</h3>
-            <p class="text-muted small mb-0">Delinquency distribution across standard 30-day buckets</p>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Laporan Analisis Umur Piutang (Aging Report Matrix)</h3>
+            <p class="text-muted small mb-0">Distribusi umur piutang per pelanggan sesuai bucket 30-hari (SRS-F-33 & SRS-F-34). Klik baris untuk melihat rincian faktur.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <label class="small text-muted fw-semibold">As of Date:</label>
+            <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Filter pelanggan..."
+                   [ngModel]="agingCustomerSearch()" (ngModelChange)="agingCustomerSearch.set($event)">
+            <label class="small text-muted fw-semibold text-nowrap">As of Date:</label>
             <input type="date" class="form-control form-control-sm" style="width: 150px;"
                    [ngModel]="agingAsOfDate()" (ngModelChange)="agingAsOfDate.set($event)">
           </div>
@@ -1079,35 +1336,98 @@
             <table class="v3-table">
               <thead>
                 <tr>
-                  <th>Customer</th>
-                  <th class="text-end">Current (Not Due)</th>
-                  <th class="text-end">1–30 Days</th>
-                  <th class="text-end">31–60 Days</th>
-                  <th class="text-end">61–90 Days</th>
-                  <th class="text-end">90+ Days (Critical)</th>
-                  <th class="text-end">Total Outstanding</th>
+                  <th style="width: 30px;"></th>
+                  <th>Pelanggan</th>
+                  <th class="text-end">Belum Jatuh Tempo</th>
+                  <th class="text-end">1–30 Hari</th>
+                  <th class="text-end">31–60 Hari</th>
+                  <th class="text-end">61–90 Hari</th>
+                  <th class="text-end">&gt; 90 Hari (Kritis)</th>
+                  <th class="text-end">Total Piutang</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let b of agingData().buckets">
-                  <td>
-                    <div class="fw-bold">{{ b.customerName }}</div>
-                    <span class="v3-mono text-muted small">{{ b.customerCode }}</span>
+                <ng-container *ngFor="let b of agingData().buckets">
+                  <tr class="cursor-pointer" (click)="toggleAgingRow(b.customerId)">
+                    <td class="text-center text-muted fw-bold">
+                      {{ expandedCustomerAgingId() === b.customerId ? '▼' : '▶' }}
+                    </td>
+                    <td>
+                      <div class="fw-bold text-dark">{{ b.customerName }}</div>
+                      <span class="v3-mono text-muted small">{{ b.customerCode }}</span>
+                    </td>
+                    <td class="text-end v3-mono text-success">{{ formatMoney(b.current) }}</td>
+                    <td class="text-end v3-mono text-primary">{{ formatMoney(b.days1_30) }}</td>
+                    <td class="text-end v3-mono text-warning">{{ formatMoney(b.days31_60) }}</td>
+                    <td class="text-end v3-mono text-danger">{{ formatMoney(b.days61_90) }}</td>
+                    <td class="text-end v3-mono text-danger fw-bold">
+                      {{ formatMoney(b.days90Plus) }}
+                      <span *ngIf="b.days90Plus > 0" class="badge bg-danger-subtle text-danger border ms-1">Hold</span>
+                    </td>
+                    <td class="text-end v3-mono fw-bold fs-6">{{ formatMoney(b.totalOutstanding) }}</td>
+                  </tr>
+
+                  <!-- Expandable Drilldown Row (SRS-F-34) -->
+                  <tr *ngIf="expandedCustomerAgingId() === b.customerId" class="bg-light">
+                    <td></td>
+                    <td colspan="7" class="p-3">
+                      <div class="p-3 bg-white rounded border shadow-sm">
+                        <div class="fw-bold text-dark mb-2 small d-flex justify-content-between align-items-center">
+                          <span>Rincian Invoice Penyusun Saldo Piutang: {{ b.customerName }}</span>
+                          <span class="text-muted">{{ b.invoices?.length || 0 }} invoice aktif</span>
+                        </div>
+                        <table class="table table-sm table-bordered mb-0 small">
+                          <thead class="table-light">
+                            <tr>
+                              <th>No. Invoice</th>
+                              <th>Tgl Invoice</th>
+                              <th>Jatuh Tempo</th>
+                              <th>Status</th>
+                              <th class="text-end">Total</th>
+                              <th class="text-end">Sisa Tagihan</th>
+                              <th class="text-end">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let inv of b.invoices">
+                              <td class="v3-mono fw-bold">{{ inv.invoiceNumber }}</td>
+                              <td class="v3-mono">{{ inv.issueDate }}</td>
+                              <td class="v3-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</td>
+                              <td>
+                                <span class="v3-badge" [ngClass]="{
+                                  'v3-badge-issued': inv.status === 'Issued',
+                                  'v3-badge-partial': inv.status === 'Partially Paid',
+                                  'v3-badge-overdue': inv.status === 'Overdue'
+                                }">{{ inv.status }}</span>
+                              </td>
+                              <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
+                              <td class="text-end v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
+                              <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
+                                  Buka
+                                </button>
+                              </td>
+                            </tr>
+                            <tr *ngIf="!b.invoices || b.invoices.length === 0">
+                              <td colspan="7" class="text-center py-2 text-muted">Tidak ada rincian invoice terbuka.</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+
+                <tr *ngIf="agingData().buckets.length === 0">
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    Tidak ada data piutang berjalan pada tanggal acuan ini (SRS UC-09).
                   </td>
-                  <td class="text-end v3-mono text-success">{{ formatMoney(b.current) }}</td>
-                  <td class="text-end v3-mono text-primary">{{ formatMoney(b.days1_30) }}</td>
-                  <td class="text-end v3-mono text-warning">{{ formatMoney(b.days31_60) }}</td>
-                  <td class="text-end v3-mono text-danger">{{ formatMoney(b.days61_90) }}</td>
-                  <td class="text-end v3-mono text-danger fw-bold">
-                    {{ formatMoney(b.days90Plus) }}
-                    <span *ngIf="b.days90Plus > 0" class="badge bg-danger-subtle text-danger border ms-1">Hold</span>
-                  </td>
-                  <td class="text-end v3-mono fw-bold fs-6">{{ formatMoney(b.totalOutstanding) }}</td>
                 </tr>
               </tbody>
               <tfoot class="bg-light fw-bold border-top">
                 <tr>
-                  <td>TOTAL RECEIVABLES</td>
+                  <td></td>
+                  <td>TOTAL SELURUH PIUTANG</td>
                   <td class="text-end v3-mono text-success">{{ formatMoney(agingData().grandTotal.current) }}</td>
                   <td class="text-end v3-mono text-primary">{{ formatMoney(agingData().grandTotal.days1_30) }}</td>
                   <td class="text-end v3-mono text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
@@ -1116,6 +1436,134 @@
                   <td class="text-end v3-mono fs-5 text-dark">{{ formatMoney(agingData().grandTotal.totalOutstanding) }}</td>
                 </tr>
               </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           8. BANK ACCOUNTS VIEW (UC-07, SRS-F-32)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'bank-accounts'" class="d-flex flex-column gap-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Master Data Rekening Bank Hotel (UC-07)</h3>
+            <p class="text-muted small mb-0">Daftar rekening bank PT Galesong Pratama yang digunakan sebagai tujuan pembayaran pelanggan.</p>
+          </div>
+          <button type="button" class="v3-btn-primary" [disabled]="!isAdmin()" (click)="openNewBankAccountModal()">
+            + Tambah Rekening Bank
+          </button>
+        </div>
+
+        <div class="v3-card">
+          <div class="v3-table-container">
+            <table class="v3-table">
+              <thead>
+                <tr>
+                  <th>Nama Bank</th>
+                  <th>Nomor Rekening</th>
+                  <th>Nama Pemilik Rekening</th>
+                  <th>Status Rekening</th>
+                  <th class="text-end">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let bank of arService.bankAccounts()">
+                  <td class="fw-semibold text-dark">{{ bank.bankName }}</td>
+                  <td class="v3-mono fw-bold fs-6">{{ bank.accountNumber }}</td>
+                  <td>{{ bank.accountHolder }}</td>
+                  <td>
+                    <span *ngIf="bank.isDefault" class="badge bg-success-subtle text-success border border-success-subtle">Utama (Default)</span>
+                    <span *ngIf="!bank.isDefault" class="badge bg-light text-muted border">Operasional</span>
+                  </td>
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-1">
+                      <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.75rem;"
+                              [disabled]="!isAdmin()" (click)="openEditBankAccountModal(bank)">
+                        Ubah
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.75rem;"
+                              [disabled]="!isAdmin()" (click)="requestDeleteBankAccount(bank)">
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           9. ACTIVITY LOGS VIEW (UC-11, SRS-F-39..40)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'activity-logs'" class="d-flex flex-column gap-3">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Log Aktivitas & Audit Trail (SRS-F-39, SRS-F-40)</h3>
+            <p class="text-muted small mb-0">Catatan kronologis immutable atas setiap tindakan penting yang dilakukan pengguna pada sistem.</p>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" style="width: 180px;"
+                    [ngModel]="logTypeFilter()" (ngModelChange)="logTypeFilter.set($event)">
+              <option value="ALL">Semua Jenis Aktivitas</option>
+              <option value="invoice_created">Invoice Dibuat</option>
+              <option value="invoice_issued">Invoice Diterbitkan</option>
+              <option value="invoice_cancelled">Invoice Dibatalkan</option>
+              <option value="invoice_deleted">Invoice Dihapus</option>
+              <option value="payment_recorded">Pembayaran Dicatat</option>
+              <option value="payment_deleted">Pembayaran Di-Rollback</option>
+              <option value="customer_created">Customer Didaftarkan</option>
+              <option value="customer_deleted">Customer Dihapus</option>
+            </select>
+
+            <input type="text" class="form-control form-control-sm" style="width: 220px;" placeholder="Cari keterangan, user, ref..."
+                   [ngModel]="logSearchQuery()" (ngModelChange)="logSearchQuery.set($event)">
+          </div>
+        </div>
+
+        <div class="v3-card">
+          <div class="v3-table-container">
+            <table class="v3-table">
+              <thead>
+                <tr>
+                  <th>Waktu (Timestamp)</th>
+                  <th>Pengguna (User & Role)</th>
+                  <th>Jenis Aktivitas</th>
+                  <th>Referensi</th>
+                  <th>Deskripsi Keterangan</th>
+                  <th class="text-end">Nominal Terkait</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of filteredActivityLogs()">
+                  <td class="v3-mono text-muted small">{{ log.timestamp }}</td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{ log.user || 'Sistem' }}</div>
+                    <small class="badge bg-light text-secondary border" style="font-size: 0.65rem;">{{ log.role || 'Admin' }}</small>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-info-subtle text-info border border-info-subtle': log.badgeType === 'info',
+                      'bg-success-subtle text-success border border-success-subtle': log.badgeType === 'success',
+                      'bg-warning-subtle text-warning border border-warning-subtle': log.badgeType === 'warning',
+                      'bg-danger-subtle text-danger border border-danger-subtle': log.badgeType === 'danger',
+                      'bg-secondary-subtle text-secondary border border-secondary-subtle': log.badgeType === 'secondary'
+                    }">{{ log.type.replace('_', ' ').toUpperCase() }}</span>
+                  </td>
+                  <td class="v3-mono text-dark fw-medium">{{ log.referenceId || '-' }}</td>
+                  <td class="small">{{ log.description }}</td>
+                  <td class="text-end v3-mono fw-semibold">
+                    <span *ngIf="log.amount">{{ formatMoney(log.amount) }}</span>
+                    <span *ngIf="!log.amount" class="text-muted">-</span>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredActivityLogs().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">Tidak ditemukan log aktivitas sesuai filter.</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -1130,235 +1578,435 @@
   <div class="v3-modal-backdrop" *ngIf="showPaymentModal()">
     <div class="v3-modal v3-modal-lg">
       <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5">Record Incoming Payment</h4>
+        <h4 class="fw-bold mb-0 fs-5">Pencatatan Pembayaran Masuk (UC-05, UC-06)</h4>
         <button type="button" class="btn-close" (click)="showPaymentModal.set(false)"></button>
       </div>
       <div class="v3-modal-body">
         <div class="row g-3 mb-3">
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Customer Account *</label>
+            <label class="form-label small fw-semibold">Pelanggan Penerima Tagihan *</label>
             <select class="form-select form-select-sm"
                     [ngModel]="paymentCustomerId()"
                     (ngModelChange)="onPaymentCustomerChange($event)">
-              <option *ngFor="let c of arService.customers()" [value]="c.id">{{ c.name }}</option>
+              <option *ngFor="let c of arService.customers()" [value]="c.id">
+                {{ c.name }} (NPWP: {{ c.npwp }})
+              </option>
             </select>
           </div>
 
           <div class="col-6 col-md-3">
-            <label class="form-label small fw-semibold">Payment Date</label>
+            <label class="form-label small fw-semibold">Tanggal Pembayaran *</label>
             <input type="date" class="form-control form-control-sm"
                    [ngModel]="paymentDate()" (ngModelChange)="paymentDate.set($event)">
           </div>
 
           <div class="col-6 col-md-3">
-            <label class="form-label small fw-semibold">Method</label>
+            <label class="form-label small fw-semibold">Metode Pembayaran (SRS-F-21)</label>
             <select class="form-select form-select-sm"
-                    [ngModel]="paymentMethod()" (ngModelChange)="paymentMethod.set($event)">
-              <option value="bank_transfer">Bank Transfer / Wire</option>
-              <option value="credit_card">Credit Card (EDC)</option>
-              <option value="cash">Cash Settlement</option>
-              <option value="cheque">Company Cheque</option>
+                    [ngModel]="paymentMethod()" (ngModelChange)="onPaymentMethodChange($event)">
+              <option value="bank_transfer">Bank Transfer (Giro / RTGS)</option>
+              <option value="virtual_account">Virtual Account</option>
+              <option value="qris">QRIS Standar Nasional</option>
+              <option value="credit_card">Kartu Kredit (EDC)</option>
+              <option value="e_wallet">E-Wallet (GoPay, OVO, etc.)</option>
+              <option value="cash">Tunai (Kasir Hotel)</option>
             </select>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Total Amount Received (IDR) *</label>
-            <input type="number" step="10000" class="form-control form-control-sm v3-mono fs-6 fw-bold text-success"
-                   [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Kanal Pembayaran (SRS-F-22)</label>
+            <select class="form-select form-select-sm"
+                    [ngModel]="paymentChannel()" (ngModelChange)="paymentChannel.set($event)">
+              <option *ngFor="let ch of availablePaymentChannels()" [value]="ch">{{ ch }}</option>
+            </select>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Reference / Transfer #</label>
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Rekening Bank Tujuan (SRS-F-32)</label>
+            <select class="form-select form-select-sm"
+                    [ngModel]="paymentBankAccountId()" (ngModelChange)="paymentBankAccountId.set($event)">
+              <option *ngFor="let b of arService.bankAccounts()" [value]="b.id">
+                {{ b.bankName }} - {{ b.accountNumber }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Nomor Referensi / Bukti Transfer</label>
             <input type="text" class="form-control form-control-sm v3-mono"
                    [ngModel]="paymentRef()" (ngModelChange)="paymentRef.set($event)">
           </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold">Nominal Pembayaran Diterima (Rp) *</label>
+            <input type="number" step="50000" class="form-control form-control-sm v3-mono fs-6 fw-bold text-success"
+                   [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label class="form-label small fw-semibold">Biaya Administrasi Bank</label>
+            <input type="number" min="0" step="1000" class="form-control form-control-sm v3-mono"
+                   [ngModel]="paymentAdminFee()" (ngModelChange)="paymentAdminFee.set($event)">
+          </div>
+
+          <div class="col-12 col-md-3 d-flex align-items-end">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="dpCheck"
+                     [ngModel]="paymentIsDownPayment()" (ngModelChange)="paymentIsDownPayment.set($event)">
+              <label class="form-check-label small" for="dpCheck">
+                Uang Muka / DP (SRS-F-31)
+              </label>
+            </div>
+          </div>
         </div>
 
-        <!-- Allocations table -->
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <label class="small fw-bold text-dark mb-0">Invoice Allocations</label>
-          <button type="button" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.72rem;" (click)="autoAllocateOldestFirst()">
-            Auto-Allocate (Oldest First)
-          </button>
+        <!-- Invoice Allocations Table -->
+        <div *ngIf="!paymentIsDownPayment()">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="small fw-bold text-dark mb-0">Alokasi Pembayaran ke Invoice (SRS-F-24 & SRS-F-25)</label>
+            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" (click)="autoAllocateOldestFirst()">
+              Auto-Alokasi (Faktur Tertua Dulu)
+            </button>
+          </div>
+
+          <div class="border rounded overflow-hidden mb-3">
+            <table class="v3-table mb-0">
+              <thead>
+                <tr>
+                  <th>No. Invoice</th>
+                  <th>Jatuh Tempo</th>
+                  <th class="text-end">Sisa Tagihan</th>
+                  <th class="text-end" style="width: 200px;">Nominal Dialokasikan (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of paymentAllocations()">
+                  <td class="v3-mono fw-bold text-primary">{{ item.invoiceNumber }}</td>
+                  <td class="v3-mono text-muted">{{ item.dueDate }}</td>
+                  <td class="text-end v3-mono text-danger">{{ formatMoney(item.balanceDue) }}</td>
+                  <td class="text-end">
+                    <input type="number" min="0" [max]="item.balanceDue" class="form-control form-control-sm text-end v3-mono fw-semibold"
+                           [(ngModel)]="item.allocatedAmount">
+                  </td>
+                </tr>
+                <tr *ngIf="paymentAllocations().length === 0">
+                  <td colspan="4" class="text-center py-3 text-muted">
+                    Tidak ada invoice aktif yang memiliki sisa tagihan untuk pelanggan ini.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Allocation Summary Strip -->
+          <div class="d-flex justify-content-between p-2 bg-light rounded text-muted small border">
+            <span>Diterima: <strong class="v3-mono text-dark">{{ formatMoney(paymentAmount()) }}</strong></span>
+            <span>Teralokasi: <strong class="v3-mono text-success">{{ formatMoney(totalAllocatedAmount()) }}</strong></span>
+            <span>Belum Teralokasi: <strong class="v3-mono" [class.text-warning]="unallocatedAmount() > 0">{{ formatMoney(unallocatedAmount()) }}</strong></span>
+          </div>
         </div>
 
-        <div class="border rounded overflow-hidden mb-3">
-          <table class="v3-table mb-0">
-            <thead>
-              <tr>
-                <th>Invoice #</th>
-                <th>Due Date</th>
-                <th class="text-end">Balance Due</th>
-                <th class="text-end" style="width: 180px;">Amount to Apply</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of paymentAllocations()">
-                <td class="v3-mono fw-bold text-primary">{{ item.invoiceNumber }}</td>
-                <td class="v3-mono text-muted">{{ item.dueDate }}</td>
-                <td class="text-end v3-mono text-danger">{{ formatMoney(item.balanceDue) }}</td>
-                <td class="text-end">
-                  <input type="number" min="0" [max]="item.balanceDue" class="form-control form-control-sm text-end v3-mono fw-semibold"
-                         [(ngModel)]="item.allocatedAmount">
-                </td>
-              </tr>
-              <tr *ngIf="paymentAllocations().length === 0">
-                <td colspan="4" class="text-center py-3 text-muted">No open invoices available for this customer.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Allocation Summary Strip -->
-        <div class="d-flex justify-content-between p-2 bg-light rounded text-muted small">
-          <span>Received: <strong class="v3-mono text-dark">{{ formatMoney(paymentAmount()) }}</strong></span>
-          <span>Allocated: <strong class="v3-mono text-success">{{ formatMoney(totalAllocatedAmount()) }}</strong></span>
-          <span>Unallocated: <strong class="v3-mono" [class.text-warning]="unallocatedAmount() > 0">{{ formatMoney(unallocatedAmount()) }}</strong></span>
+        <div *ngIf="paymentIsDownPayment()" class="p-3 bg-light rounded border text-muted small">
+          <strong>Pembayaran Uang Muka (Down Payment):</strong> Nominal pembayaran akan dicatat sebagai deposit uang muka pelanggan dan dapat dipotongkan pada invoice mendatang sesuai SRS-F-31.
         </div>
       </div>
       <div class="v3-modal-footer">
-        <button type="button" class="v3-btn-secondary" (click)="showPaymentModal.set(false)">Cancel</button>
-        <button type="button" class="v3-btn-primary" [disabled]="totalAllocatedAmount() <= 0" (click)="submitPayment()">
-          Confirm & Apply Payment
+        <button type="button" class="v3-btn-secondary" (click)="showPaymentModal.set(false)">Batal</button>
+        <button type="button" class="v3-btn-primary" [disabled]="!paymentIsDownPayment() && totalAllocatedAmount() <= 0" (click)="submitPayment()">
+          Simpan & Terapkan Pembayaran (UC-05)
         </button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================
-       MODAL 2: VOID INVOICE (Audit Trail Gate)
+       MODAL 2: CANCEL INVOICE MODAL (UC-04, SRS-F-18)
        ========================================================= -->
-  <div class="v3-modal-backdrop" *ngIf="showVoidModal()">
+  <div class="v3-modal-backdrop" *ngIf="showCancelModal()">
     <div class="v3-modal">
       <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5 text-danger">Void Invoice {{ voidInvoiceNumber() }}</h4>
-        <button type="button" class="btn-close" (click)="showVoidModal.set(false)"></button>
+        <h4 class="fw-bold mb-0 fs-5 text-danger">Batalkan Invoice {{ cancelInvoiceTarget()?.invoiceNumber }}</h4>
+        <button type="button" class="btn-close" (click)="showCancelModal.set(false)"></button>
       </div>
       <div class="v3-modal-body">
-        <p class="small text-muted mb-3">
-          Voiding an invoice marks it as legally cancelled and zeroes out the accounts receivable ledger.
-          <strong>This action is irreversible and recorded in the audit trail.</strong>
-        </p>
-        <label class="form-label small fw-semibold">Mandatory Void Reason *</label>
-        <textarea class="form-control" rows="3" placeholder="State reason (e.g. Billing error, Duplicate, Cancelled service)..."
-                  [ngModel]="voidReason()" (ngModelChange)="voidReason.set($event)">
+        <div class="alert alert-warning small mb-3">
+          <strong>Perhatian (SRS-F-18):</strong> Pembatalan invoice hanya diperkenankan apabila belum terdapat pembayaran teralokasi. Tindakan ini bernilai final dan dicatat pada audit trail dengan kewenangan role Manager.
+        </div>
+        <label class="form-label small fw-semibold">Alasan Pembatalan (Wajib Diisi) *</label>
+        <textarea class="form-control" rows="3" placeholder="Tuliskan alasan pembatalan (misal: Kesalahan input paket kamar, Duplikasi tagihan)..."
+                  [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)">
         </textarea>
       </div>
       <div class="v3-modal-footer">
-        <button type="button" class="v3-btn-secondary" (click)="showVoidModal.set(false)">Cancel</button>
-        <button type="button" class="btn btn-danger btn-sm fw-semibold" [disabled]="!voidReason().trim()" (click)="confirmVoidInvoice()">
-          Confirm Void
+        <button type="button" class="v3-btn-secondary" (click)="showCancelModal.set(false)">Batal</button>
+        <button type="button" class="btn btn-danger btn-sm fw-semibold" [disabled]="!cancelReason().trim()" (click)="confirmCancelInvoice()">
+          Konfirmasi Pembatalan Invoice
         </button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================
-       MODAL 3: NEW CUSTOMER REGISTRATION
+       MODAL 3: DELETE CONFIRMATION & CONSTRAINT GUARD (SRS-F-03, SRS-F-15)
        ========================================================= -->
-  <div class="v3-modal-backdrop" *ngIf="showCustomerModal()">
+  <div class="v3-modal-backdrop" *ngIf="showDeleteModal() && deleteState() as d">
     <div class="v3-modal">
       <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5">Register New Customer Account</h4>
+        <h4 class="fw-bold mb-0 fs-5" [class.text-danger]="d.canDelete" [class.text-warning]="!d.canDelete">
+          {{ d.title }}
+        </h4>
+        <button type="button" class="btn-close" (click)="showDeleteModal.set(false)"></button>
+      </div>
+      <div class="v3-modal-body">
+        <!-- If Deletion Blocked by Business Rule -->
+        <div *ngIf="!d.canDelete" class="alert alert-danger mb-3">
+          <strong class="d-block mb-1">TINDAKAN DITOLAK OLEH ATURAN SISTEM</strong>
+          <span class="small">{{ d.blockedReason }}</span>
+        </div>
+
+        <p class="small text-muted mb-3">{{ d.message }}</p>
+
+        <div class="p-2 bg-light rounded border text-dark v3-mono small">
+          <strong>Objek Terpilih:</strong> {{ d.name }}
+        </div>
+      </div>
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="showDeleteModal.set(false)">
+          {{ d.canDelete ? 'Batal' : 'Tutup' }}
+        </button>
+        <button type="button" class="btn btn-danger btn-sm fw-semibold" *ngIf="d.canDelete" (click)="executeConfirmedDelete()">
+          Konfirmasi Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 4: CUSTOMER CREATE / EDIT MODAL (SRS-F-01..02)
+       ========================================================= -->
+  <div class="v3-modal-backdrop" *ngIf="showCustomerModal()">
+    <div class="v3-modal v3-modal-lg">
+      <div class="v3-modal-header">
+        <h4 class="fw-bold mb-0 fs-5">
+          {{ isEditingCustomer() ? 'Ubah Data Pelanggan' : 'Pendaftaran Data Pelanggan Baru (UC-01)' }}
+        </h4>
         <button type="button" class="btn-close" (click)="showCustomerModal.set(false)"></button>
       </div>
       <div class="v3-modal-body">
         <div class="row g-3">
-          <div class="col-12">
-            <label class="form-label small fw-semibold">Company Name *</label>
-            <input type="text" class="form-control form-control-sm" placeholder="e.g. PT Mitra Jaya Abadi"
+          <div class="col-12 col-md-8">
+            <label class="form-label small fw-semibold">Nama Lengkap / Nama Badan Usaha *</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Contoh: PT Telekomunikasi Nusantara Tbk"
                    [ngModel]="customerFormName()" (ngModelChange)="customerFormName.set($event)">
           </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Status Akun</label>
+            <select class="form-select form-select-sm"
+                    [ngModel]="customerFormStatus()" (ngModelChange)="customerFormStatus.set($event)">
+              <option value="active">Aktif (Bisa Ditagihkan)</option>
+              <option value="credit_hold">Credit Hold (Ditangguhkan)</option>
+            </select>
+          </div>
+
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Contact Person</label>
+            <label class="form-label small fw-semibold">Nomor Induk Kependudukan (NIK - 16 Digit) *</label>
+            <input type="text" class="form-control form-control-sm v3-mono" placeholder="16 digit angka KTP" maxlength="16"
+                   [ngModel]="customerFormNik()" (ngModelChange)="customerFormNik.set($event)">
+            <small class="text-muted" style="font-size: 0.68rem;">Format: 16 digit angka sesuai KTP (SRS-F-01, SRS-F-02)</small>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold">Nomor Pokok Wajib Pajak (NPWP Perpajakan) *</label>
+            <input type="text" class="form-control form-control-sm v3-mono" placeholder="Contoh: 01.345.678.9-012.000"
+                   [ngModel]="customerFormNpwp()" (ngModelChange)="customerFormNpwp.set($event)">
+            <small class="text-muted" style="font-size: 0.68rem;">Identitas perpajakan badan usaha / pribadi</small>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold">Nama Kontak (Contact Person)</label>
             <input type="text" class="form-control form-control-sm"
                    [ngModel]="customerFormContact()" (ngModelChange)="customerFormContact.set($event)">
           </div>
+
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Billing Email</label>
-            <input type="email" class="form-control form-control-sm"
-                   [ngModel]="customerFormEmail()" (ngModelChange)="customerFormEmail.set($event)">
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Phone Number</label>
+            <label class="form-label small fw-semibold">Nomor Telepon / WhatsApp</label>
             <input type="text" class="form-control form-control-sm"
                    [ngModel]="customerFormPhone()" (ngModelChange)="customerFormPhone.set($event)">
           </div>
+
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Payment Terms (Days)</label>
+            <label class="form-label small fw-semibold">Email Penagihan</label>
+            <input type="email" class="form-control form-control-sm"
+                   [ngModel]="customerFormEmail()" (ngModelChange)="customerFormEmail.set($event)">
+          </div>
+
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-semibold">Termin Tagihan (Hari)</label>
             <input type="number" min="0" class="form-control form-control-sm v3-mono"
                    [ngModel]="customerFormDueDays()" (ngModelChange)="customerFormDueDays.set($event)">
           </div>
-          <div class="col-12">
-            <label class="form-label small fw-semibold">Credit Limit (IDR)</label>
+
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-semibold">Plafon Batas Kredit (Rp)</label>
             <input type="number" step="10000000" class="form-control form-control-sm v3-mono"
                    [ngModel]="customerFormCreditLimit()" (ngModelChange)="customerFormCreditLimit.set($event)">
           </div>
+
           <div class="col-12">
-            <label class="form-label small fw-semibold">Billing Address</label>
+            <label class="form-label small fw-semibold">Alamat Lengkap Kantor / Domisili</label>
             <textarea class="form-control form-control-sm" rows="2"
                       [ngModel]="customerFormAddress()" (ngModelChange)="customerFormAddress.set($event)"></textarea>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Catatan Khusus Pelanggan</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Contoh: Klien City Ledger, perjanjian diskon korporat..."
+                   [ngModel]="customerFormNotes()" (ngModelChange)="customerFormNotes.set($event)">
           </div>
         </div>
       </div>
       <div class="v3-modal-footer">
-        <button type="button" class="v3-btn-secondary" (click)="showCustomerModal.set(false)">Cancel</button>
-        <button type="button" class="v3-btn-primary" [disabled]="!customerFormName().trim()" (click)="submitNewCustomer()">
-          Register Customer
+        <button type="button" class="v3-btn-secondary" (click)="showCustomerModal.set(false)">Batal</button>
+        <button type="button" class="v3-btn-primary" [disabled]="!customerFormName().trim()" (click)="submitCustomerForm()">
+          {{ isEditingCustomer() ? 'Simpan Perubahan' : 'Simpan Pelanggan (UC-01)' }}
         </button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================
-       MODAL 4: INVOICE PRINT / PDF PREVIEW
+       MODAL 5: BANK ACCOUNT CREATE / EDIT (UC-07, SRS-F-32)
+       ========================================================= -->
+  <div class="v3-modal-backdrop" *ngIf="showBankAccountModal()">
+    <div class="v3-modal">
+      <div class="v3-modal-header">
+        <h4 class="fw-bold mb-0 fs-5">
+          {{ isEditingBankAccount() ? 'Ubah Data Rekening Bank' : 'Tambah Rekening Bank Hotel (UC-07)' }}
+        </h4>
+        <button type="button" class="btn-close" (click)="showBankAccountModal.set(false)"></button>
+      </div>
+      <div class="v3-modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Nama Bank Penerima *</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Contoh: Bank Central Asia (BCA)"
+                   [ngModel]="bankAccountFormBankName()" (ngModelChange)="bankAccountFormBankName.set($event)">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Nomor Rekening Bank *</label>
+            <input type="text" class="form-control form-control-sm v3-mono" placeholder="Contoh: 802-099-1234"
+                   [ngModel]="bankAccountFormAccountNumber()" (ngModelChange)="bankAccountFormAccountNumber.set($event)">
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold">Nama Pemilik Rekening *</label>
+            <input type="text" class="form-control form-control-sm" placeholder="Contoh: PT Galesong Pratama"
+                   [ngModel]="bankAccountFormAccountHolder()" (ngModelChange)="bankAccountFormAccountHolder.set($event)">
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="defaultBankCheck"
+                     [ngModel]="bankAccountFormIsDefault()" (ngModelChange)="bankAccountFormIsDefault.set($event)">
+              <label class="form-check-label small" for="defaultBankCheck">
+                Jadikan sebagai rekening utama (default) penagihan
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="showBankAccountModal.set(false)">Batal</button>
+        <button type="button" class="v3-btn-primary" (click)="submitBankAccountForm()">
+          Simpan Rekening Bank
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 6: OFFICIAL HOSPITALITY PDF TAX INVOICE PREVIEW (UC-08)
        ========================================================= -->
   <div class="v3-modal-backdrop" *ngIf="showPdfModal() && selectedInvoice() as inv">
     <div class="v3-modal v3-modal-lg">
       <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5">Official Invoice Preview</h4>
+        <h4 class="fw-bold mb-0 fs-5">Pratinjau Dokumen Invoice Resmi (PDF Preview)</h4>
         <button type="button" class="btn-close" (click)="showPdfModal.set(false)"></button>
       </div>
       <div class="v3-modal-body bg-light p-4">
         <!-- Printable sheet container -->
-        <div class="bg-white p-4 rounded shadow-sm border">
+        <div class="bg-white p-4 rounded shadow-sm border position-relative overflow-hidden">
+
+          <!-- Watermark Stamp for Draft / Cancelled / Paid (SRS UC-08) -->
+          <div class="v3-pdf-watermark" *ngIf="inv.status === 'Draft' || inv.status === 'Cancelled' || inv.status === 'Paid'">
+            <span *ngIf="inv.status === 'Draft'" class="watermark-draft">DRAFT</span>
+            <span *ngIf="inv.status === 'Cancelled'" class="watermark-cancelled">DIBATALKAN</span>
+            <span *ngIf="inv.status === 'Paid'" class="watermark-paid">LUNAS</span>
+          </div>
+
+          <!-- Hotel Header Kop Dokumen -->
           <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
             <div>
-              <h3 class="fw-bold text-dark mb-1">PT SISTEM AKUNTANSI</h3>
-              <p class="text-muted small mb-0">Financial & Enterprise Solutions &bull; Jakarta, Indonesia</p>
+              <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.01em;">PT. GALESONG PRATAMA</h3>
+              <div class="text-secondary small fw-medium">DIVISI OPERASIONAL HOTEL & HOSPITALITY</div>
+              <p class="text-muted small mb-0 mt-1">
+                Jl. Jend. Sudirman Kav. 18, Jakarta Pusat 10220 &bull; Telp: (021) 5299-8800<br>
+                NPWP: 01.002.345.6-021.000 &bull; Email: finance@galesong-hotel.com
+              </p>
             </div>
             <div class="text-end">
-              <h4 class="v3-mono fw-bold text-primary mb-0">{{ inv.invoiceNumber }}</h4>
-              <span class="v3-badge v3-badge-sent mt-1">{{ inv.status }}</span>
+              <span class="badge bg-dark text-white text-uppercase px-2 py-1 mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                FAKTUR PENAGIHAN (INVOICE)
+              </span>
+              <h4 class="v3-mono fw-bold text-primary mb-0 fs-5">{{ inv.invoiceNumber }}</h4>
+              <span class="v3-badge mt-1" [ngClass]="{
+                'v3-badge-draft': inv.status === 'Draft',
+                'v3-badge-issued': inv.status === 'Issued',
+                'v3-badge-partial': inv.status === 'Partially Paid',
+                'v3-badge-paid': inv.status === 'Paid',
+                'v3-badge-overdue': inv.status === 'Overdue',
+                'v3-badge-cancelled': inv.status === 'Cancelled'
+              }">{{ inv.status }}</span>
             </div>
           </div>
 
           <div class="row g-3 mb-4 small">
-            <div class="col-6">
-              <span class="text-muted text-uppercase fw-semibold d-block">Billed To:</span>
-              <strong class="fs-6">{{ inv.customerName }}</strong>
-              <div class="text-muted" *ngIf="arService.getCustomer(inv.customerId) as c">
-                {{ c.address }}<br>{{ c.email }}
+            <div class="col-7">
+              <span class="text-muted text-uppercase fw-semibold d-block">Ditagihkan Kepada:</span>
+              <strong class="fs-6 text-dark">{{ inv.customerName }}</strong>
+              <div class="text-muted mt-1">
+                NIK: <span class="v3-mono text-dark">{{ inv.customerNik || '-' }}</span><br>
+                NPWP: <span class="v3-mono text-dark">{{ inv.customerNpwp || '-' }}</span>
+                <div *ngIf="arService.getCustomer(inv.customerId) as c">
+                  Alamat: {{ c.address }}<br>
+                  Kontak: {{ c.contactPerson }} ({{ c.phone }})
+                </div>
               </div>
             </div>
-            <div class="col-6 text-end">
-              <div>Invoice Date: <strong class="v3-mono">{{ inv.issueDate }}</strong></div>
-              <div>Due Date: <strong class="v3-mono">{{ inv.dueDate }}</strong></div>
+            <div class="col-5 text-end">
+              <div>Tanggal Invoice: <strong class="v3-mono">{{ inv.issueDate }}</strong></div>
+              <div>Tanggal Jatuh Tempo: <strong class="v3-mono">{{ inv.dueDate }}</strong></div>
+              <div>Jenis Tagihan: <strong>{{ inv.invoiceType }}</strong></div>
+              <div>Sumber: <strong>{{ inv.sourceType === 'city_ledger' ? 'City Ledger' : 'Direct Corporate' }}</strong></div>
             </div>
           </div>
 
+          <!-- Items Table -->
           <table class="table table-bordered table-sm small mb-3">
             <thead class="table-light">
               <tr>
-                <th>Description</th>
-                <th class="text-end">Qty</th>
-                <th class="text-end">Unit Price</th>
-                <th class="text-end">Total</th>
+                <th style="width: 30px;">No</th>
+                <th>Deskripsi Rincian Layanan Hotel</th>
+                <th style="width: 100px;">Kategori</th>
+                <th class="text-end" style="width: 80px;">Kuantitas</th>
+                <th class="text-end" style="width: 130px;">Harga Satuan</th>
+                <th class="text-end" style="width: 140px;">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of inv.lineItems">
+              <tr *ngFor="let item of inv.lineItems; let idx = index">
+                <td class="text-center">{{ idx + 1 }}</td>
                 <td>{{ item.description }}</td>
+                <td>{{ item.itemType || 'Service' }}</td>
                 <td class="text-end v3-mono">{{ item.quantity }}</td>
                 <td class="text-end v3-mono">{{ formatMoney(item.unitPrice) }}</td>
                 <td class="text-end v3-mono fw-semibold">{{ formatMoney(item.lineTotal) }}</td>
@@ -1366,39 +2014,79 @@
             </tbody>
           </table>
 
-          <div class="row justify-content-end small">
+          <!-- Financial Calculation Breakdown -->
+          <div class="row justify-content-between small">
+            <div class="col-6">
+              <div class="p-2 border rounded bg-light">
+                <strong class="d-block mb-1">Instruksi Pembayaran Bank Transfer:</strong>
+                <div>Bank: <strong>Bank Central Asia (BCA)</strong></div>
+                <div>No. Rekening: <strong class="v3-mono">802-099-1234</strong></div>
+                <div>Atas Nama: <strong>PT Galesong Pratama</strong></div>
+                <div class="text-muted mt-1" style="font-size: 0.72rem;">* Cantumkan nomor invoice {{ inv.invoiceNumber }} pada berita transfer</div>
+              </div>
+            </div>
+
             <div class="col-5">
               <div class="d-flex justify-content-between py-1 border-bottom">
-                <span>Subtotal:</span>
+                <span>Subtotal Rincian Item:</span>
                 <span class="v3-mono">{{ formatMoney(inv.subtotal) }}</span>
               </div>
               <div class="d-flex justify-content-between py-1 border-bottom">
-                <span>Tax ({{ inv.taxRate }}%):</span>
-                <span class="v3-mono">{{ formatMoney(inv.taxAmount) }}</span>
+                <span>PPN ({{ inv.taxRate }}%):</span>
+                <span class="v3-mono">+ {{ formatMoney(inv.taxAmount) }}</span>
               </div>
-              <div class="d-flex justify-content-between py-1 border-bottom fw-bold">
-                <span>Total:</span>
+              <div class="d-flex justify-content-between py-1 border-bottom">
+                <span>PPh 23 Dipotong ({{ inv.pphRate }}%):</span>
+                <span class="v3-mono text-danger">- {{ formatMoney(inv.pphAmount) }}</span>
+              </div>
+              <div class="d-flex justify-content-between py-1 border-bottom">
+                <span>Potongan Uang Muka (DP):</span>
+                <span class="v3-mono text-danger">- {{ formatMoney(inv.dpDeduction) }}</span>
+              </div>
+              <div class="d-flex justify-content-between py-1 border-bottom fw-bold fs-6">
+                <span>Total Tagihan:</span>
                 <span class="v3-mono text-primary">{{ formatMoney(inv.total) }}</span>
               </div>
-              <div class="d-flex justify-content-between py-1 text-danger fw-bold fs-6">
-                <span>Balance Due:</span>
+              <div class="d-flex justify-content-between py-1 border-bottom text-muted">
+                <span>Telah Dibayar:</span>
+                <span class="v3-mono text-success">- {{ formatMoney(inv.amountPaid) }}</span>
+              </div>
+              <div class="d-flex justify-content-between py-1 text-danger fw-bold fs-5">
+                <span>Sisa Tagihan (AR):</span>
                 <span class="v3-mono">{{ formatMoney(inv.balanceDue) }}</span>
               </div>
             </div>
           </div>
+
+          <!-- Signatures Footer -->
+          <div class="row mt-4 pt-3 border-top text-center small text-muted">
+            <div class="col-6">
+              <div>Penerima Tagihan,</div>
+              <div style="height: 50px;"></div>
+              <div class="border-top mx-auto" style="width: 180px;"></div>
+              <div class="fw-semibold text-dark">{{ inv.customerName }}</div>
+            </div>
+            <div class="col-6">
+              <div>Bagian Keuangan & AR Hotel,</div>
+              <div style="height: 50px;"></div>
+              <div class="border-top mx-auto" style="width: 180px;"></div>
+              <div class="fw-semibold text-dark">PT. Galesong Pratama</div>
+            </div>
+          </div>
+
         </div>
       </div>
       <div class="v3-modal-footer">
-        <button type="button" class="v3-btn-secondary" (click)="showPdfModal.set(false)">Close</button>
+        <button type="button" class="v3-btn-secondary" (click)="showPdfModal.set(false)">Tutup Pratinjau</button>
         <button type="button" class="v3-btn-primary" onclick="window.print()">
-          Print Invoice
+          Cetak Dokumen (Print)
         </button>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div class="v3-toast" *ngIf="toastMessage()">
+  <div class="v3-toast" *ngIf="toastMessage()" [ngClass]="'toast-' + toastType()">
     <span>{{ toastMessage() }}</span>
   </div>
 
