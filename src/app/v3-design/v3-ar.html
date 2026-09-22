@@ -15,10 +15,6 @@
 
     <nav class="v3-sidebar-nav">
       <div class="v3-nav-group-label">Operasional AR</div>
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'dashboard'" (click)="navigateTo('dashboard')">
-        <span>Ringkasan (Overview)</span>
-      </button>
-
       <button type="button" class="v3-nav-item"
               [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create' || activeView() === 'invoice-edit'"
               (click)="navigateTo('invoices')">
@@ -51,8 +47,8 @@
     </nav>
 
     <!-- Sidebar Footer with Role Indicator and Switcher -->
-    <!-- <div class="v3-sidebar-footer">
-      <div class="v3-switcher-label">Simulasi Role (RBAC SRS-F-37)</div>
+     <div class="v3-sidebar-footer">  
+      <div class="v3-switcher-label">Role</div>
       <div class="v3-switcher-group mb-2">
         <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Admin'" (click)="changeUserRole('Admin')">Admin</button>
         <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'User'" (click)="changeUserRole('User')">User (AR)</button>
@@ -78,7 +74,7 @@
           <div class="text-secondary text-truncate" style="font-size: 0.68rem;">Role: {{ currentUser().role }}</div>
         </div>
       </div>
-    </div> -->
+    </div> 
   </aside>
 
   <!-- ==================== V3 MAIN WRAPPER ==================== -->
@@ -96,7 +92,6 @@
           <span class="text-muted">/</span>
           <span class="v3-breadcrumb-current">
             <ng-container [ngSwitch]="activeView()">
-              <span *ngSwitchCase="'dashboard'">Ringkasan Operasional</span>
               <span *ngSwitchCase="'invoices'">Daftar Invoice</span>
               <span *ngSwitchCase="'invoice-create'">{{ editingInvoiceId() ? 'Ubah Invoice Draft' : 'Buat Invoice Baru' }}</span>
               <span *ngSwitchCase="'invoice-edit'">Ubah Invoice Draft</span>
@@ -115,22 +110,14 @@
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <!-- Role badge indicator -->
-        <div class="d-none d-lg-flex align-items-center gap-1 px-2 py-1 bg-light border rounded text-dark" style="font-size: 0.75rem;">
-          <span class="text-muted">Hak Akses:</span>
-          <span class="badge" [ngClass]="{
-            'bg-dark': currentUser().role === 'Admin',
-            'bg-primary': currentUser().role === 'Manager',
-            'bg-info text-dark': currentUser().role === 'User',
-            'bg-secondary': currentUser().role === 'Viewer'
-          }">{{ currentUser().role }}</span>
-          <span *ngIf="isViewer()" class="text-danger fw-semibold ms-1">(Hanya Baca)</span>
-        </div>
-
-        <!-- Overdue detection trigger button (UC-15) -->
-        <button type="button" class="btn btn-sm btn-outline-secondary d-none d-xl-inline-flex align-items-center gap-1"
-                style="font-size: 0.75rem;" (click)="runOverdueDetection()" title="Jalankan Scheduled Job Deteksi Overdue">
-          <span>Deteksi Jatuh Tempo</span>
+        <!-- Action Inbox Drawer Trigger Button (Sleek and compact) -->
+        <button type="button" class="v3-action-pill-btn"
+                (click)="showActionInbox.set(true)" title="Daftar Tindak Lanjut Penagihan & Draft">
+          <i class="bi bi-bell-fill text-danger"></i>
+          <span>Tindak Lanjut</span>
+          <span class="v3-pill-badge" *ngIf="priorityOverdueInvoices().length + draftInvoices().length > 0">
+            {{ priorityOverdueInvoices().length + draftInvoices().length }}
+          </span>
         </button>
 
         <button type="button" class="v3-btn-secondary" [disabled]="isViewer()" (click)="openPaymentModal()">
@@ -147,235 +134,11 @@
     <main class="v3-content">
 
       <!-- =========================================================
-           1. DASHBOARD VIEW (Overview, KPIs, Aging Health, Overdue Queue)
-           ========================================================= -->
-      <div *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-4">
-
-        <!-- 4 Executive KPI Cards -->
-        <div class="row g-3">
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="v3-kpi-card">
-              <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Total Sisa Piutang (Outstanding)</span>
-              </div>
-              <div class="v3-kpi-value v3-mono text-primary">{{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}</div>
-              <div class="v3-kpi-meta text-muted">
-                {{ arService.dashboardMetrics().openInvoicesCount }} invoice aktif belum lunas
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="v3-kpi-card">
-              <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Piutang Jatuh Tempo (Overdue)</span>
-              </div>
-              <div class="v3-kpi-value v3-mono text-danger">{{ formatMoney(arService.dashboardMetrics().totalOverdue) }}</div>
-              <div class="v3-kpi-meta text-danger fw-semibold">
-                {{ arService.dashboardMetrics().overdueInvoicesCount }} invoice lewat jatuh tempo
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="v3-kpi-card">
-              <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Penerimaan Bulan Berjalan</span>
-              </div>
-              <div class="v3-kpi-value v3-mono text-success">{{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}</div>
-              <div class="v3-kpi-meta text-success">
-                {{ arService.dashboardMetrics().paidThisMonthCount }} transaksi pembayaran masuk
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="v3-kpi-card">
-              <div class="v3-kpi-header">
-                <span class="v3-kpi-title">Pelanggan Terdaftar</span>
-              </div>
-              <div class="v3-kpi-value v3-mono">{{ arService.customers().length }}</div>
-              <div class="v3-kpi-meta text-muted">
-                Korporat, Travel Agent & Tamu Individu
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Integrated Aging Health Progress Banner (SRS-F-33) -->
-        <div class="v3-aging-banner">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <span class="fw-bold text-dark" style="font-size: 0.88rem;">Kesehatan Portofolio Piutang Berdasarkan Umur (Aging)</span>
-              <span class="text-muted ms-2" style="font-size: 0.78rem;">Posisi per {{ arService.today }}</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 fw-semibold text-primary"
-                    style="font-size: 0.78rem;" (click)="navigateTo('aging-report')">
-              Lihat Rincian Laporan Aging &rarr;
-            </button>
-          </div>
-
-          <!-- 5-segment colored distribution bar -->
-          <div class="v3-aging-bar">
-            <div class="v3-aging-seg v3-seg-current"
-                 [style.width.%]="(agingData().grandTotal.current / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="Belum Jatuh Tempo: {{ formatMoney(agingData().grandTotal.current) }}"></div>
-            <div class="v3-aging-seg v3-seg-130"
-                 [style.width.%]="(agingData().grandTotal.days1_30 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="1-30 Hari: {{ formatMoney(agingData().grandTotal.days1_30) }}"></div>
-            <div class="v3-aging-seg v3-seg-3160"
-                 [style.width.%]="(agingData().grandTotal.days31_60 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="31-60 Hari: {{ formatMoney(agingData().grandTotal.days31_60) }}"></div>
-            <div class="v3-aging-seg v3-seg-6190"
-                 [style.width.%]="(agingData().grandTotal.days61_90 / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="61-90 Hari: {{ formatMoney(agingData().grandTotal.days61_90) }}"></div>
-            <div class="v3-aging-seg v3-seg-90plus"
-                 [style.width.%]="(agingData().grandTotal.days90Plus / (agingData().grandTotal.totalOutstanding || 1)) * 100"
-                 title="> 90 Hari: {{ formatMoney(agingData().grandTotal.days90Plus) }}"></div>
-          </div>
-
-          <div class="v3-aging-legend">
-            <div class="v3-legend-item">
-              <span class="v3-legend-dot v3-seg-current"></span>
-              <span class="text-muted">Belum Jatuh Tempo:</span>
-              <strong class="v3-mono text-dark">{{ formatMoney(agingData().grandTotal.current) }}</strong>
-            </div>
-            <div class="v3-legend-item">
-              <span class="v3-legend-dot v3-seg-130"></span>
-              <span class="text-muted">1–30 Hari:</span>
-              <strong class="v3-mono text-dark">{{ formatMoney(agingData().grandTotal.days1_30) }}</strong>
-            </div>
-            <div class="v3-legend-item">
-              <span class="v3-legend-dot v3-seg-3160"></span>
-              <span class="text-muted">31–60 Hari:</span>
-              <strong class="v3-mono text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</strong>
-            </div>
-            <div class="v3-legend-item">
-              <span class="v3-legend-dot v3-seg-6190"></span>
-              <span class="text-muted">61–90 Hari:</span>
-              <strong class="v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</strong>
-            </div>
-            <div class="v3-legend-item">
-              <span class="v3-legend-dot v3-seg-90plus"></span>
-              <span class="text-muted">&gt; 90 Hari (Kritis):</span>
-              <strong class="v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2 Action Columns: Priority Overdue Queue & Live Audit Activity -->
-        <div class="row g-4">
-          <!-- Left: Priority Overdue Queue -->
-          <div class="col-12 col-xl-7">
-            <div class="v3-card h-100 d-flex flex-column">
-              <div class="v3-card-header">
-                <div>
-                  <h3 class="v3-card-title text-danger">Antrian Penagihan Jatuh Tempo (Overdue)</h3>
-                  <p class="v3-card-subtitle">Invoice melewati batas tanggal jatuh tempo yang memerlukan tindak lanjut penagihan</p>
-                </div>
-                <span class="v3-badge v3-badge-overdue">{{ priorityOverdueInvoices().length }} Overdue</span>
-              </div>
-              <div class="v3-table-container flex-grow-1" style="max-height: 380px; overflow-y: auto;">
-                <table class="v3-table v3-table-compact">
-                  <thead>
-                    <tr>
-                      <th>Invoice & Pelanggan</th>
-                      <th>Jatuh Tempo</th>
-                      <th class="text-end">Sisa Tagihan</th>
-                      <th class="text-end">Tindakan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let inv of priorityOverdueInvoices()">
-                      <td>
-                        <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono d-block" (click)="viewInvoice(inv)">
-                          {{ inv.invoiceNumber }}
-                        </a>
-                        <div class="text-truncate text-dark small" style="max-width: 170px;" [title]="inv.customerName">
-                          {{ inv.customerName }}
-                        </div>
-                      </td>
-                      <td>
-                        <div class="v3-mono text-muted" style="font-size: 0.75rem;">{{ inv.dueDate }}</div>
-                        <span class="v3-badge v3-badge-overdue mt-1" style="font-size: 0.65rem; padding: 0.1rem 0.35rem;">
-                          +{{ getDaysPastDue(inv.dueDate) }} hari
-                        </span>
-                      </td>
-                      <td class="text-end">
-                        <div class="v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</div>
-                        <div class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.amountPaid > 0">
-                          Total: {{ formatMoney(inv.total) }}
-                        </div>
-                      </td>
-                      <td class="text-end">
-                        <div class="d-inline-flex gap-1">
-                          <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)" title="Lihat Rincian">
-                            Rincian
-                          </button>
-                          <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
-                                  [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
-                            Bayar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr *ngIf="priorityOverdueInvoices().length === 0">
-                      <td colspan="4" class="text-center py-4 text-muted">
-                        Tidak ada invoice yang lewat jatuh tempo. Posisi piutang lancar.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right: Recent Activity Audit Stream -->
-          <div class="col-12 col-xl-5">
-            <div class="v3-card h-100">
-              <div class="v3-card-header">
-                <div>
-                  <h3 class="v3-card-title">Audit Trail & Log Aktivitas Terakhir</h3>
-                  <p class="v3-card-subtitle">Rekaman transaksi dan perubahan status real-time (SRS-F-39)</p>
-                </div>
-                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-primary" style="font-size: 0.75rem;" (click)="navigateTo('activity-logs')">
-                  Lihat Semua &rarr;
-                </button>
-              </div>
-              <div class="p-3" style="max-height: 380px; overflow-y: auto;">
-                <div class="d-flex flex-column gap-2">
-                  <div *ngFor="let log of arService.activityLogs().slice(0, 8)" class="d-flex align-items-center justify-content-between py-2 border-bottom border-light" style="font-size: 0.78rem;">
-                    <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
-                      <span class="v3-log-dot" [ngClass]="{
-                        'dot-blue': log.badgeType === 'info',
-                        'dot-green': log.badgeType === 'success',
-                        'dot-yellow': log.badgeType === 'warning',
-                        'dot-red': log.badgeType === 'danger',
-                        'dot-gray': log.badgeType === 'secondary'
-                      }"></span>
-                      <div class="overflow-hidden">
-                        <div class="text-dark fw-medium text-truncate">{{ log.description }}</div>
-                        <small class="text-muted" style="font-size: 0.68rem;">Oleh: {{ log.user || 'Sistem' }} &bull; {{ log.timestamp }}</small>
-                      </div>
-                    </div>
-                    <div class="text-nowrap text-end" *ngIf="log.amount">
-                      <span class="v3-mono fw-semibold text-dark d-block" style="font-size: 0.75rem;">{{ formatMoney(log.amount) }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- =========================================================
            2. INVOICES LEDGER VIEW (Strict SRS Status Codes & Colors)
            ========================================================= -->
       <div *ngIf="activeView() === 'invoices'" class="d-flex flex-column gap-3">
 
-        <!-- Controls Toolbar: Status Tabs per Table 4.4.2 & Color Code SRS 4.3.1 -->
+        <!-- Controls Toolbar: Status Tabs per Table 4.4.2 & Action Button -->
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
           <div class="v3-tabs-bar">
             <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'ALL'" (click)="invoiceCategoryFilter.set('ALL')">
@@ -401,15 +164,85 @@
             </button>
           </div>
 
-          <!-- Search & Action -->
           <div class="d-flex align-items-center gap-2">
-            <div style="width: 250px;">
-              <input type="text" class="form-control form-control-sm" placeholder="Cari no invoice, pelanggan, NPWP..."
-                     [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
-            </div>
             <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="startCreateInvoice()">
               + Buat Invoice
             </button>
+          </div>
+        </div>
+
+        <!-- Secondary Filter Bar (Search, Customer Dropdown, Period Dropdown, Optional Date Range, Sort Dropdown & Reset) -->
+        <div class="p-2.5 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+            <!-- Search Text -->
+            <div style="min-width: 200px; max-width: 260px;" class="flex-grow-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari invoice, pelanggan, NPWP..."
+                       [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
+              </div>
+            </div>
+
+            <!-- Customer Filter Dropdown -->
+            <div style="min-width: 170px;">
+              <select class="form-select form-select-sm" [ngModel]="invoiceCustomerFilter()" (ngModelChange)="invoiceCustomerFilter.set($event)">
+                <option value="ALL">Semua Pelanggan</option>
+                <option *ngFor="let c of arService.customers()" [value]="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+
+            <!-- Date Range / Period Filter Dropdown -->
+            <div style="min-width: 135px;">
+              <select class="form-select form-select-sm" [ngModel]="invoiceDateFilter()" (ngModelChange)="invoiceDateFilter.set($event)">
+                <option value="ALL">Semua Periode</option>
+                <option value="THIS_MONTH">Bulan Berjalan</option>
+                <option value="LAST_MONTH">Bulan Lalu</option>
+                <option value="THIS_YEAR">Tahun Ini</option>
+              </select>
+            </div>
+
+            <!-- Optional Date Range Picker (From - To) -->
+            <div class="d-flex align-items-center gap-1.5 bg-light border rounded px-2" style="height: 31px;">
+              <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
+              <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
+              <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                     style="font-size: 0.75rem; width: 108px; height: auto;"
+                     title="Dari tanggal (Opsional)"
+                     [ngModel]="invoiceStartDate()" (ngModelChange)="invoiceStartDate.set($event)">
+              <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
+              <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                     style="font-size: 0.75rem; width: 108px; height: auto;"
+                     title="Sampai tanggal (Opsional)"
+                     [ngModel]="invoiceEndDate()" (ngModelChange)="invoiceEndDate.set($event)">
+              <button type="button" class="btn btn-link text-muted p-0 ms-1"
+                      *ngIf="invoiceStartDate() || invoiceEndDate()"
+                      (click)="invoiceStartDate.set(''); invoiceEndDate.set('')"
+                      title="Hapus filter rentang tanggal">
+                <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
+              </button>
+            </div>
+
+            <!-- Sorting Dropdown -->
+            <div style="min-width: 160px;">
+              <select class="form-select form-select-sm" [ngModel]="invoiceSortBy()" (ngModelChange)="invoiceSortBy.set($event)">
+                <option value="dueDate_asc">Jatuh Tempo: Terdekat</option>
+                <option value="dueDate_desc">Jatuh Tempo: Terlama</option>
+                <option value="issueDate_desc">Tgl Terbit: Terbaru</option>
+                <option value="balanceDue_desc">Sisa Tagihan: Terbesar</option>
+                <option value="total_desc">Total Nilai: Terbesar</option>
+              </select>
+            </div>
+
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
+                    *ngIf="hasActiveInvoiceFilters()" (click)="resetInvoiceFilters()" title="Kembalikan semua filter">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
+          </div>
+
+          <!-- Total Counter -->
+          <div class="text-muted small text-nowrap d-none d-md-block">
+            Hasil: <strong class="text-dark">{{ filteredInvoices().length }}</strong> dokumen
           </div>
         </div>
 
@@ -1046,14 +879,52 @@
             </button>
           </div>
 
-          <div class="d-flex align-items-center gap-2">
-            <div style="width: 250px;">
-              <input type="text" class="form-control form-control-sm" placeholder="Cari nama, NIK, NPWP, kontak..."
-                     [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
+          <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="openNewCustomerModal()">
+            + Tambah Pelanggan
+          </button>
+        </div>
+
+        <!-- Customers Secondary Filter Bar (Search, Status Saldo, Sort & Reset) -->
+        <div class="p-2.5 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+            <!-- Search Text -->
+            <div style="min-width: 220px; max-width: 280px;" class="flex-grow-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari nama, NIK, NPWP, kontak..."
+                       [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
+              </div>
             </div>
-            <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="openNewCustomerModal()">
-              + Tambah Pelanggan
+
+            <!-- Balance / Credit Status Filter -->
+            <div style="min-width: 175px;">
+              <select class="form-select form-select-sm" [ngModel]="customerBalanceFilter()" (ngModelChange)="customerBalanceFilter.set($event)">
+                <option value="ALL">Semua Kondisi Saldo</option>
+                <option value="HAS_BALANCE">Memiliki Piutang (> 0)</option>
+                <option value="NEAR_LIMIT">Mendekati Batas Kredit (≥ 70%)</option>
+                <option value="ZERO_BALANCE">Saldo Lunas (Rp 0)</option>
+              </select>
+            </div>
+
+            <!-- Sorting Dropdown -->
+            <div style="min-width: 175px;">
+              <select class="form-select form-select-sm" [ngModel]="customerSortBy()" (ngModelChange)="customerSortBy.set($event)">
+                <option value="balance_desc">Sisa Piutang: Terbesar</option>
+                <option value="name_asc">Nama Pelanggan: A–Z</option>
+                <option value="creditLimit_desc">Batas Plafon: Terbesar</option>
+              </select>
+            </div>
+
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
+                    *ngIf="hasActiveCustomerFilters()" (click)="resetCustomerFilters()" title="Kembalikan semua filter pelanggan">
+              <i class="bi bi-x-circle me-1"></i>Reset
             </button>
+          </div>
+
+          <!-- Total Counter -->
+          <div class="text-muted small text-nowrap d-none d-md-block">
+            Hasil: <strong class="text-dark">{{ filteredCustomers().length }}</strong> pelanggan
           </div>
         </div>
 
@@ -1216,59 +1087,111 @@
         </div>
 
         <!-- Invoices Tab -->
-        <div class="v3-card" *ngIf="customerActiveTab() === 'invoices'">
-          <div class="v3-table-container">
-            <table class="v3-table">
-              <thead>
-                <tr>
-                  <th>No. Invoice</th>
-                  <th>Tgl Terbit</th>
-                  <th>Jatuh Tempo</th>
-                  <th>Jenis Tagihan</th>
-                  <th class="text-end">Total</th>
-                  <th class="text-end">Dibayar</th>
-                  <th class="text-end">Sisa Tagihan</th>
-                  <th>Status</th>
-                  <th class="text-end">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let inv of customerInvoices()">
-                  <td class="v3-mono fw-bold">
-                    <a href="javascript:void(0)" class="text-primary text-decoration-none" (click)="viewInvoice(inv)">
-                      {{ inv.invoiceNumber }}
-                    </a>
-                  </td>
-                  <td class="v3-mono text-muted">{{ inv.issueDate }}</td>
-                  <td class="v3-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</td>
-                  <td class="small">{{ inv.invoiceType }}</td>
-                  <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
-                  <td class="text-end v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
-                  <td class="text-end v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
-                  <td>
-                    <span class="v3-badge" [ngClass]="{
-                      'v3-badge-draft': inv.status === 'Draft',
-                      'v3-badge-issued': inv.status === 'Issued',
-                      'v3-badge-partial': inv.status === 'Partially Paid',
-                      'v3-badge-paid': inv.status === 'Paid',
-                      'v3-badge-overdue': inv.status === 'Overdue',
-                      'v3-badge-cancelled': inv.status === 'Cancelled'
-                    }">{{ inv.status }}</span>
-                  </td>
-                  <td class="text-end">
-                    <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;"
-                            *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
-                            [disabled]="isViewer()"
-                            (click)="openPaymentModal(cust.id, inv.id)">
-                      Bayar
-                    </button>
-                  </td>
-                </tr>
-                <tr *ngIf="customerInvoices().length === 0">
-                  <td colspan="9" class="text-center py-4 text-muted">Belum ada invoice yang diterbitkan untuk pelanggan ini.</td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="d-flex flex-column gap-2" *ngIf="customerActiveTab() === 'invoices'">
+          <!-- Invoices Sub Filter Bar -->
+          <div class="p-2 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <div style="min-width: 160px;">
+                <select class="form-select form-select-sm" [ngModel]="custDetailInvoiceStatus()" (ngModelChange)="custDetailInvoiceStatus.set($event)">
+                  <option value="ALL">Semua Status Invoice</option>
+                  <option value="Draft">Draft</option>
+                  <option value="Issued">Issued</option>
+                  <option value="Partially Paid">Sebagian Dibayar</option>
+                  <option value="Overdue">Overdue (Jatuh Tempo)</option>
+                  <option value="Paid">Lunas (Paid)</option>
+                  <option value="Cancelled">Dibatalkan</option>
+                </select>
+              </div>
+
+              <!-- Optional Date Range Picker -->
+              <div class="d-flex align-items-center gap-1.5 bg-light border rounded px-2" style="height: 31px;">
+                <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
+                <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
+                <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                       style="font-size: 0.75rem; width: 108px; height: auto;"
+                       title="Dari tanggal (Opsional)"
+                       [ngModel]="custDetailInvoiceStartDate()" (ngModelChange)="custDetailInvoiceStartDate.set($event)">
+                <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
+                <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                       style="font-size: 0.75rem; width: 108px; height: auto;"
+                       title="Sampai tanggal (Opsional)"
+                       [ngModel]="custDetailInvoiceEndDate()" (ngModelChange)="custDetailInvoiceEndDate.set($event)">
+                <button type="button" class="btn btn-link text-muted p-0 ms-1"
+                        *ngIf="custDetailInvoiceStartDate() || custDetailInvoiceEndDate()"
+                        (click)="custDetailInvoiceStartDate.set(''); custDetailInvoiceEndDate.set('')"
+                        title="Hapus filter rentang tanggal">
+                  <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
+                </button>
+              </div>
+
+              <!-- Reset Button -->
+              <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
+                      *ngIf="hasActiveCustDetailInvoiceFilters()" (click)="resetCustDetailInvoiceFilters()" title="Reset filter">
+                <i class="bi bi-x-circle me-1"></i>Reset
+              </button>
+            </div>
+
+            <div class="text-muted small">
+              Menampilkan <strong class="text-dark">{{ filteredCustomerInvoices().length }}</strong> dari {{ customerInvoices().length }} invoice
+            </div>
+          </div>
+
+          <div class="v3-card">
+            <div class="v3-table-container">
+              <table class="v3-table">
+                <thead>
+                  <tr>
+                    <th>No. Invoice</th>
+                    <th>Tgl Terbit</th>
+                    <th>Jatuh Tempo</th>
+                    <th>Jenis Tagihan</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Dibayar</th>
+                    <th class="text-end">Sisa Tagihan</th>
+                    <th>Status</th>
+                    <th class="text-end">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let inv of filteredCustomerInvoices()">
+                    <td class="v3-mono fw-bold">
+                      <a href="javascript:void(0)" class="text-primary text-decoration-none" (click)="viewInvoice(inv)">
+                        {{ inv.invoiceNumber }}
+                      </a>
+                    </td>
+                    <td class="v3-mono text-muted">{{ inv.issueDate }}</td>
+                    <td class="v3-mono" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</td>
+                    <td class="small">{{ inv.invoiceType }}</td>
+                    <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
+                    <td class="text-end v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
+                    <td class="text-end v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+                    <td>
+                      <span class="v3-badge" [ngClass]="{
+                        'v3-badge-draft': inv.status === 'Draft',
+                        'v3-badge-issued': inv.status === 'Issued',
+                        'v3-badge-partial': inv.status === 'Partially Paid',
+                        'v3-badge-paid': inv.status === 'Paid',
+                        'v3-badge-overdue': inv.status === 'Overdue',
+                        'v3-badge-cancelled': inv.status === 'Cancelled'
+                      }">{{ inv.status }}</span>
+                    </td>
+                    <td class="text-end">
+                      <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;"
+                              *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                              [disabled]="isViewer()"
+                              (click)="openPaymentModal(cust.id, inv.id)">
+                        Bayar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="filteredCustomerInvoices().length === 0">
+                    <td colspan="9" class="text-center py-4 text-muted">
+                      {{ customerInvoices().length === 0 ? 'Belum ada invoice yang diterbitkan untuk pelanggan ini.' : 'Tidak ada invoice yang cocok dengan filter yang dipilih.' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1323,11 +1246,53 @@
             <p class="text-muted small mb-0">Distribusi umur piutang per pelanggan sesuai bucket 30-hari (SRS-F-33 & SRS-F-34). Klik baris untuk melihat rincian faktur.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Filter pelanggan..."
-                   [ngModel]="agingCustomerSearch()" (ngModelChange)="agingCustomerSearch.set($event)">
             <label class="small text-muted fw-semibold text-nowrap">As of Date:</label>
-            <input type="date" class="form-control form-control-sm" style="width: 150px;"
+            <input type="date" class="form-control form-control-sm" style="width: 140px;"
                    [ngModel]="agingAsOfDate()" (ngModelChange)="agingAsOfDate.set($event)">
+          </div>
+        </div>
+
+        <!-- Aging Filter Bar (Search, Risk Level, Sort & Reset) -->
+        <div class="p-2.5 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+            <!-- Search Text -->
+            <div style="min-width: 220px; max-width: 280px;" class="flex-grow-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari nama atau kode pelanggan..."
+                       [ngModel]="agingCustomerSearch()" (ngModelChange)="agingCustomerSearch.set($event)">
+              </div>
+            </div>
+
+            <!-- Risk Filter Dropdown -->
+            <div style="min-width: 180px;">
+              <select class="form-select form-select-sm" [ngModel]="agingRiskFilter()" (ngModelChange)="agingRiskFilter.set($event)">
+                <option value="ALL">Semua Tingkat Risiko</option>
+                <option value="OVERDUE_ONLY">Hanya Menunggak (> 0 Hari)</option>
+                <option value="CRITICAL_ONLY">Tunggakan Kritis (> 60 Hari)</option>
+                <option value="CURRENT_ONLY">Belum Jatuh Tempo (Lancar)</option>
+              </select>
+            </div>
+
+            <!-- Sorting Dropdown -->
+            <div style="min-width: 175px;">
+              <select class="form-select form-select-sm" [ngModel]="agingSortBy()" (ngModelChange)="agingSortBy.set($event)">
+                <option value="total_desc">Total Piutang: Terbesar</option>
+                <option value="critical_desc">Tunggakan Kritis: Terbesar</option>
+                <option value="name_asc">Nama Pelanggan: A–Z</option>
+              </select>
+            </div>
+
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
+                    *ngIf="hasActiveAgingFilters()" (click)="resetAgingFilters()" title="Kembalikan semua filter umur piutang">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
+          </div>
+
+          <!-- Total Counter -->
+          <div class="text-muted small text-nowrap d-none d-md-block">
+            Hasil: <strong class="text-dark">{{ agingData().buckets.length }}</strong> pelanggan
           </div>
         </div>
 
@@ -1499,28 +1464,77 @@
            9. ACTIVITY LOGS VIEW (UC-11, SRS-F-39..40)
            ========================================================= -->
       <div *ngIf="activeView() === 'activity-logs'" class="d-flex flex-column gap-3">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div>
-            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Log Aktivitas & Audit Trail (SRS-F-39, SRS-F-40)</h3>
-            <p class="text-muted small mb-0">Catatan kronologis immutable atas setiap tindakan penting yang dilakukan pengguna pada sistem.</p>
+        <div>
+          <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Log Aktivitas & Audit Trail (SRS-F-39, SRS-F-40)</h3>
+          <p class="text-muted small mb-0">Catatan kronologis immutable atas setiap tindakan penting yang dilakukan pengguna pada sistem.</p>
+        </div>
+
+        <!-- Activity Logs Filter Bar (Search, Type, User, Optional Date Range & Reset) -->
+        <div class="p-2.5 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+          <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+            <!-- Search Text -->
+            <div style="min-width: 200px; max-width: 250px;" class="flex-grow-1">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari keterangan, user, ref..."
+                       [ngModel]="logSearchQuery()" (ngModelChange)="logSearchQuery.set($event)">
+              </div>
+            </div>
+
+            <!-- Activity Type Filter -->
+            <div style="min-width: 175px;">
+              <select class="form-select form-select-sm" [ngModel]="logTypeFilter()" (ngModelChange)="logTypeFilter.set($event)">
+                <option value="ALL">Semua Jenis Aktivitas</option>
+                <option value="invoice_created">Invoice Dibuat</option>
+                <option value="invoice_issued">Invoice Diterbitkan</option>
+                <option value="invoice_cancelled">Invoice Dibatalkan</option>
+                <option value="invoice_deleted">Invoice Dihapus</option>
+                <option value="payment_recorded">Pembayaran Dicatat</option>
+                <option value="payment_deleted">Pembayaran Di-Rollback</option>
+                <option value="customer_created">Customer Didaftarkan</option>
+                <option value="customer_deleted">Customer Dihapus</option>
+              </select>
+            </div>
+
+            <!-- User Filter -->
+            <div style="min-width: 155px;">
+              <select class="form-select form-select-sm" [ngModel]="logUserFilter()" (ngModelChange)="logUserFilter.set($event)">
+                <option value="ALL">Semua Pengguna</option>
+                <option *ngFor="let u of availableLogUsers()" [value]="u">{{ u }}</option>
+              </select>
+            </div>
+
+            <!-- Optional Date Range Picker -->
+            <div class="d-flex align-items-center gap-1.5 bg-light border rounded px-2" style="height: 31px;">
+              <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
+              <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
+              <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                     style="font-size: 0.75rem; width: 108px; height: auto;"
+                     title="Dari tanggal (Opsional)"
+                     [ngModel]="logStartDate()" (ngModelChange)="logStartDate.set($event)">
+              <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
+              <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
+                     style="font-size: 0.75rem; width: 108px; height: auto;"
+                     title="Sampai tanggal (Opsional)"
+                     [ngModel]="logEndDate()" (ngModelChange)="logEndDate.set($event)">
+              <button type="button" class="btn btn-link text-muted p-0 ms-1"
+                      *ngIf="logStartDate() || logEndDate()"
+                      (click)="logStartDate.set(''); logEndDate.set('')"
+                      title="Hapus filter rentang tanggal">
+                <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
+              </button>
+            </div>
+
+            <!-- Reset Button -->
+            <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
+                    *ngIf="hasActiveLogFilters()" (click)="resetLogFilters()" title="Kembalikan semua filter log">
+              <i class="bi bi-x-circle me-1"></i>Reset
+            </button>
           </div>
 
-          <div class="d-flex align-items-center gap-2">
-            <select class="form-select form-select-sm" style="width: 180px;"
-                    [ngModel]="logTypeFilter()" (ngModelChange)="logTypeFilter.set($event)">
-              <option value="ALL">Semua Jenis Aktivitas</option>
-              <option value="invoice_created">Invoice Dibuat</option>
-              <option value="invoice_issued">Invoice Diterbitkan</option>
-              <option value="invoice_cancelled">Invoice Dibatalkan</option>
-              <option value="invoice_deleted">Invoice Dihapus</option>
-              <option value="payment_recorded">Pembayaran Dicatat</option>
-              <option value="payment_deleted">Pembayaran Di-Rollback</option>
-              <option value="customer_created">Customer Didaftarkan</option>
-              <option value="customer_deleted">Customer Dihapus</option>
-            </select>
-
-            <input type="text" class="form-control form-control-sm" style="width: 220px;" placeholder="Cari keterangan, user, ref..."
-                   [ngModel]="logSearchQuery()" (ngModelChange)="logSearchQuery.set($event)">
+          <!-- Total Counter -->
+          <div class="text-muted small text-nowrap d-none d-md-block">
+            Hasil: <strong class="text-dark">{{ filteredActivityLogs().length }}</strong> entri log
           </div>
         </div>
 
@@ -2082,6 +2096,167 @@
           Cetak Dokumen (Print)
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== ACTION INBOX SLIDE-OVER DRAWER ==================== -->
+  <div class="v3-drawer-backdrop" *ngIf="showActionInbox()" (click)="showActionInbox.set(false)">
+    <div class="v3-drawer" (click)="$event.stopPropagation()">
+      
+      <!-- Drawer Header -->
+      <div class="v3-drawer-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-2 p-1.5 bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="bi bi-bell-fill fs-6"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Agenda Tindak Lanjut Penagihan</div>
+            <div class="text-muted" style="font-size: 0.72rem;">Daftar tugas penagihan overdue dan draft yang perlu diproses hari ini</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" (click)="showActionInbox.set(false)" title="Tutup Panel"></button>
+      </div>
+
+      <!-- Quick Filter Tabs inside Drawer -->
+      <div class="px-3 pt-2.5 pb-2 bg-white border-bottom d-flex align-items-center gap-1.5">
+        <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
+                [ngClass]="actionInboxTab() === 'all' ? 'btn-dark' : 'btn-light border text-muted'"
+                style="font-size: 0.75rem;" (click)="actionInboxTab.set('all')">
+          Semua ({{ priorityOverdueInvoices().length + draftInvoices().length }})
+        </button>
+        <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
+                [ngClass]="actionInboxTab() === 'overdue' ? 'btn-danger' : 'btn-light border text-muted'"
+                style="font-size: 0.75rem;" (click)="actionInboxTab.set('overdue')">
+          Overdue Penagihan ({{ priorityOverdueInvoices().length }})
+        </button>
+        <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
+                [ngClass]="actionInboxTab() === 'draft' ? 'btn-secondary' : 'btn-light border text-muted'"
+                style="font-size: 0.75rem;" (click)="actionInboxTab.set('draft')">
+          Draft Siap Terbit ({{ draftInvoices().length }})
+        </button>
+      </div>
+
+      <!-- Drawer Body -->
+      <div class="v3-drawer-body d-flex flex-column gap-3">
+
+        <!-- 1. Overdue Section -->
+        <div *ngIf="actionInboxTab() === 'all' || actionInboxTab() === 'overdue'">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="text-uppercase fw-bold text-danger" style="font-size: 0.7rem; letter-spacing: 0.05em;">
+              <i class="bi bi-telephone-outbound-fill me-1"></i>Tagih Hari Ini (Lewat Jatuh Tempo)
+            </div>
+            <span class="v3-badge v3-badge-overdue py-0 px-1.5">{{ priorityOverdueInvoices().length }}</span>
+          </div>
+
+          <div class="d-flex flex-column gap-2">
+            <div *ngFor="let inv of priorityOverdueInvoices()" class="v3-inbox-card v3-inbox-card-overdue shadow-sm">
+              <div class="d-flex align-items-start justify-content-between gap-2">
+                <div>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <a href="javascript:void(0)" class="v3-mono fw-bold text-primary text-decoration-none" style="font-size: 0.85rem;" (click)="viewInvoice(inv)">
+                      {{ inv.invoiceNumber }}
+                    </a>
+                    <span class="v3-badge v3-badge-overdue" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">
+                      +{{ getDaysPastDue(inv.dueDate) }} hari
+                    </span>
+                  </div>
+                  <div class="fw-bold text-dark mt-1" style="font-size: 0.85rem;">{{ inv.customerName }}</div>
+                  
+                  <!-- Contact info for instant dialing -->
+                  <div class="text-muted small mt-1 d-flex flex-wrap align-items-center gap-2" *ngIf="getCustomer(inv.customerId) as cust">
+                    <span><i class="bi bi-person me-1"></i>{{ cust.contactPerson }}</span>
+                    <span>&bull;</span>
+                    <a [href]="'tel:' + cust.phone" class="text-primary text-decoration-none v3-mono fw-medium">
+                      <i class="bi bi-telephone-fill me-1"></i>{{ cust.phone }}
+                    </a>
+                  </div>
+                </div>
+
+                <div class="text-end">
+                  <div class="v3-mono fw-bold text-danger fs-6">{{ formatMoney(inv.balanceDue) }}</div>
+                  <div class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.amountPaid > 0">
+                    Sisa dari {{ formatMoney(inv.total) }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between pt-2 mt-2 border-top border-light">
+                <span class="text-muted" style="font-size: 0.72rem;">
+                  Jatuh tempo: <strong class="v3-mono text-dark">{{ inv.dueDate }}</strong>
+                </span>
+                <div class="d-flex gap-1.5">
+                  <button type="button" class="btn btn-sm btn-light border py-1 px-2.5" style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
+                    Rincian
+                  </button>
+                  <button type="button" class="v3-btn-primary py-1 px-3" style="font-size: 0.72rem;"
+                          [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
+                    Catat Bayar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="priorityOverdueInvoices().length === 0" class="text-center py-4 bg-white rounded border text-muted">
+              <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-1"></i>
+              <div class="fw-medium text-dark" style="font-size: 0.85rem;">Semua tagihan lancar!</div>
+              <small style="font-size: 0.72rem;">Tidak ada invoice yang lewat jatuh tempo.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Draft Section -->
+        <div *ngIf="actionInboxTab() === 'all' || actionInboxTab() === 'draft'">
+          <div class="d-flex align-items-center justify-content-between mb-2 mt-2">
+            <div class="text-uppercase fw-bold text-secondary" style="font-size: 0.7rem; letter-spacing: 0.05em;">
+              <i class="bi bi-file-earmark-check me-1"></i>Draft Invoice (Menunggu Penerbitan)
+            </div>
+            <span class="v3-badge v3-badge-draft py-0 px-1.5">{{ draftInvoices().length }}</span>
+          </div>
+
+          <div class="d-flex flex-column gap-2">
+            <div *ngFor="let inv of draftInvoices()" class="v3-inbox-card v3-inbox-card-draft shadow-sm">
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <div>
+                  <div class="d-flex align-items-center gap-1.5">
+                    <span class="v3-mono fw-bold text-secondary" style="font-size: 0.85rem;">{{ inv.invoiceNumber }}</span>
+                    <span class="v3-badge v3-badge-draft" style="font-size: 0.65rem;">Draft</span>
+                  </div>
+                  <div class="fw-semibold text-dark mt-0.5 text-truncate" style="max-width: 250px; font-size: 0.82rem;">
+                    {{ inv.customerName }}
+                  </div>
+                  <div class="text-muted" style="font-size: 0.7rem;">Dibuat: {{ inv.issueDate }}</div>
+                </div>
+
+                <div class="text-end">
+                  <div class="v3-mono fw-bold text-dark fs-6">{{ formatMoney(inv.total) }}</div>
+                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 mt-1.5" style="font-size: 0.72rem;"
+                          (click)="viewInvoice(inv)">
+                    Buka & Terbitkan &rarr;
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="draftInvoices().length === 0" class="text-center py-4 bg-white rounded border text-muted">
+              <i class="bi bi-clipboard-check text-success fs-3 d-block mb-1"></i>
+              <div class="fw-medium text-dark" style="font-size: 0.85rem;">Semua draft telah diterbitkan!</div>
+              <small style="font-size: 0.72rem;">Tidak ada dokumen draft tertunda.</small>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer -->
+      <div class="v3-drawer-footer">
+        <div class="text-muted" style="font-size: 0.75rem;">
+          Total tertunggak: <strong class="v3-mono text-danger">{{ formatMoney(overdueTotalBalance()) }}</strong>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showActionInbox.set(false)" style="font-size: 0.75rem;">
+          Tutup
+        </button>
+      </div>
+
     </div>
   </div>
 

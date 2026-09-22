@@ -11,7 +11,7 @@
   overflow-x: hidden;
   background-color: #f8fafc;
   color: #0f172a;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -520,6 +520,38 @@
 }
 
 /* Filter Tabs */
+.v3-action-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.65rem;
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+}
+
+.v3-action-pill-btn:hover {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+}
+
+.v3-pill-badge {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.38rem;
+  border-radius: 10px;
+  line-height: 1.1;
+  display: inline-block;
+}
+
 .v3-tabs-bar {
   display: flex;
   flex-wrap: wrap;
@@ -832,6 +864,88 @@
 .watermark-cancelled { color: #dc2626; }
 .watermark-paid { color: #16a34a; }
 
+/* =========================================================
+   Slide-over Action Inbox Drawer (Offcanvas Right)
+   ========================================================= */
+.v3-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 1550;
+  display: flex;
+  justify-content: flex-end;
+  animation: v3DrawerFade 0.2s ease;
+}
+
+@keyframes v3DrawerFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.v3-drawer {
+  background: #ffffff;
+  width: 100%;
+  max-width: 540px;
+  height: 100vh;
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: v3DrawerSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes v3DrawerSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.v3-drawer-header {
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+}
+
+.v3-drawer-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+  background-color: #f8fafc;
+}
+
+.v3-drawer-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.v3-inbox-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  transition: all 0.15s ease;
+}
+
+.v3-inbox-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+}
+
+.v3-inbox-card-overdue {
+  border-left: 3.5px solid #ef4444;
+}
+
+.v3-inbox-card-draft {
+  border-left: 3.5px solid #94a3b8;
+}
+
 /* Responsive adjustment */
 @media (max-width: 992px) {
   .v3-sidebar {
@@ -843,4 +957,8 @@
   .v3-main {
     margin-left: 0;
   }
+  .v3-drawer {
+    max-width: 100%;
+  }
 }
+

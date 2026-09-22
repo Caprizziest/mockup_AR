@@ -1,15 +1,15 @@
 <!-- Toggle between Classic V1, Minimalist V2, Focused V3, and ERP V4 Component -->
-<ng-container *ngIf="designMode() === 'v4'">
+<!-- <ng-container *ngIf="designMode() === 'v4'">
   <app-v4-ar (switchMode)="toggleDesignMode($event)"></app-v4-ar>
-</ng-container>
+</ng-container> -->
 
 <ng-container *ngIf="designMode() === 'v3'">
   <app-v3-ar (switchMode)="toggleDesignMode($event)"></app-v3-ar>
 </ng-container>
 
-<ng-container *ngIf="designMode() === 'minimal'">
+<!-- <ng-container *ngIf="designMode() === 'minimal'">
   <app-minimal-ar (switchToClassic)="toggleDesignMode('classic')" (switchMode)="toggleDesignMode($event)"></app-minimal-ar>
-</ng-container>
+</ng-container> -->
 
 <div class="app-container" *ngIf="designMode() === 'classic'">
 

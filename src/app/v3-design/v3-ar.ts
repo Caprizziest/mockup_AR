@@ -46,8 +46,8 @@ export class V3ArComponent {
   readonly arService = inject(ArDataService);
   readonly switchMode = output<'classic' | 'minimal' | 'v3' | 'v4'>();
 
-  // Navigation State
-  activeView = signal<V3ActiveView>('dashboard');
+  // Navigation State (Default to 'invoices' as the primary workspace)
+  activeView = signal<V3ActiveView>('invoices');
   sidebarMobileOpen = signal<boolean>(false);
 
   // Selection state
@@ -55,18 +55,125 @@ export class V3ArComponent {
   selectedCustomer = signal<Customer | null>(null);
   customerActiveTab = signal<'invoices' | 'payments' | 'profile'>('invoices');
 
-  // Filters & Search
+  // Invoices Filters & Search
   invoiceCategoryFilter = signal<'ALL' | 'Draft' | 'Issued' | 'Partially Paid' | 'Overdue' | 'Paid' | 'Cancelled'>('ALL');
   invoiceSearchQuery = signal<string>('');
+  invoiceCustomerFilter = signal<string>('ALL');
+  invoiceDateFilter = signal<'ALL' | 'THIS_MONTH' | 'LAST_MONTH' | 'THIS_YEAR'>('ALL');
+  invoiceStartDate = signal<string>('');
+  invoiceEndDate = signal<string>('');
+  invoiceSortBy = signal<'dueDate_asc' | 'dueDate_desc' | 'issueDate_desc' | 'balanceDue_desc' | 'total_desc'>('dueDate_asc');
+
+  // Customer Filters
   customerSearchQuery = signal<string>('');
   customerFilter = signal<'ALL' | 'OVERDUE' | 'HOLD'>('ALL');
+  customerBalanceFilter = signal<'ALL' | 'HAS_BALANCE' | 'NEAR_LIMIT' | 'ZERO_BALANCE'>('ALL');
+  customerSortBy = signal<'balance_desc' | 'name_asc' | 'creditLimit_desc'>('balance_desc');
+
+  // Aging Report Filters
   agingAsOfDate = signal<string>(this.arService.today);
   agingCustomerSearch = signal<string>('');
+  agingRiskFilter = signal<'ALL' | 'OVERDUE_ONLY' | 'CRITICAL_ONLY' | 'CURRENT_ONLY'>('ALL');
+  agingSortBy = signal<'total_desc' | 'critical_desc' | 'name_asc'>('total_desc');
   expandedCustomerAgingId = signal<string | null>(null);
 
-  // Activity Log Filter
+  // Activity Log Filters
   logSearchQuery = signal<string>('');
   logTypeFilter = signal<string>('ALL');
+  logUserFilter = signal<string>('ALL');
+  logStartDate = signal<string>('');
+  logEndDate = signal<string>('');
+
+  // Customer Detail Invoices Filters
+  custDetailInvoiceStatus = signal<string>('ALL');
+  custDetailInvoiceStartDate = signal<string>('');
+  custDetailInvoiceEndDate = signal<string>('');
+
+  hasActiveCustDetailInvoiceFilters = computed(() => {
+    return this.custDetailInvoiceStatus() !== 'ALL' ||
+      this.custDetailInvoiceStartDate() !== '' ||
+      this.custDetailInvoiceEndDate() !== '';
+  });
+
+  resetCustDetailInvoiceFilters() {
+    this.custDetailInvoiceStatus.set('ALL');
+    this.custDetailInvoiceStartDate.set('');
+    this.custDetailInvoiceEndDate.set('');
+  }
+
+  // Action Inbox Slide-over Drawer State
+  showActionInbox = signal<boolean>(false);
+  actionInboxTab = signal<'all' | 'overdue' | 'draft'>('all');
+
+  hasActiveInvoiceFilters = computed(() => {
+    return this.invoiceCategoryFilter() !== 'ALL' ||
+      this.invoiceSearchQuery().trim().length > 0 ||
+      this.invoiceCustomerFilter() !== 'ALL' ||
+      this.invoiceDateFilter() !== 'ALL' ||
+      this.invoiceStartDate() !== '' ||
+      this.invoiceEndDate() !== '' ||
+      this.invoiceSortBy() !== 'dueDate_asc';
+  });
+
+  resetInvoiceFilters() {
+    this.invoiceCategoryFilter.set('ALL');
+    this.invoiceSearchQuery.set('');
+    this.invoiceCustomerFilter.set('ALL');
+    this.invoiceDateFilter.set('ALL');
+    this.invoiceStartDate.set('');
+    this.invoiceEndDate.set('');
+    this.invoiceSortBy.set('dueDate_asc');
+  }
+
+  hasActiveCustomerFilters = computed(() => {
+    return this.customerFilter() !== 'ALL' ||
+      this.customerBalanceFilter() !== 'ALL' ||
+      this.customerSearchQuery().trim().length > 0 ||
+      this.customerSortBy() !== 'balance_desc';
+  });
+
+  resetCustomerFilters() {
+    this.customerFilter.set('ALL');
+    this.customerBalanceFilter.set('ALL');
+    this.customerSearchQuery.set('');
+    this.customerSortBy.set('balance_desc');
+  }
+
+  hasActiveAgingFilters = computed(() => {
+    return this.agingCustomerSearch().trim().length > 0 ||
+      this.agingRiskFilter() !== 'ALL' ||
+      this.agingSortBy() !== 'total_desc';
+  });
+
+  resetAgingFilters() {
+    this.agingCustomerSearch.set('');
+    this.agingRiskFilter.set('ALL');
+    this.agingSortBy.set('total_desc');
+  }
+
+  hasActiveLogFilters = computed(() => {
+    return this.logSearchQuery().trim().length > 0 ||
+      this.logTypeFilter() !== 'ALL' ||
+      this.logUserFilter() !== 'ALL' ||
+      this.logStartDate() !== '' ||
+      this.logEndDate() !== '';
+  });
+
+  resetLogFilters() {
+    this.logSearchQuery.set('');
+    this.logTypeFilter.set('ALL');
+    this.logUserFilter.set('ALL');
+    this.logStartDate.set('');
+    this.logEndDate.set('');
+  }
+
+  availableLogUsers = computed(() => {
+    const users = new Set<string>();
+    this.arService.activityLogs().forEach(l => {
+      if (l.user) users.add(l.user);
+    });
+    return Array.from(users);
+  });
 
   // Toast Notification
   toastMessage = signal<string | null>(null);
@@ -157,11 +264,16 @@ export class V3ArComponent {
   isManagerOrAdmin = computed(() => this.currentUser().role === 'Manager' || this.currentUser().role === 'Admin');
   isAdmin = computed(() => this.currentUser().role === 'Admin');
 
-  // Filtered Invoices
+  // Filtered Invoices with multi-filter and sort support
   filteredInvoices = computed(() => {
     const q = this.invoiceSearchQuery().toLowerCase().trim();
     const cat = this.invoiceCategoryFilter();
-    return this.arService.invoices().filter(inv => {
+    const custId = this.invoiceCustomerFilter();
+    const dateFilter = this.invoiceDateFilter();
+    const sort = this.invoiceSortBy();
+
+    let list = this.arService.invoices().filter(inv => {
+      // 1. Text Search Query
       const matchesQuery = !q ||
         inv.invoiceNumber.toLowerCase().includes(q) ||
         inv.customerName.toLowerCase().includes(q) ||
@@ -169,8 +281,42 @@ export class V3ArComponent {
         (inv.invoiceType && inv.invoiceType.toLowerCase().includes(q));
 
       if (!matchesQuery) return false;
-      if (cat === 'ALL') return true;
-      return inv.status === cat;
+
+      // 2. Status Category Tab
+      if (cat !== 'ALL' && inv.status !== cat) return false;
+
+      // 3. Customer Filter
+      if (custId !== 'ALL' && inv.customerId !== custId) return false;
+
+      // 4. Date Range Filter
+      if (dateFilter !== 'ALL') {
+        const invDate = new Date(inv.issueDate);
+        const refDate = new Date(this.arService.today);
+        if (dateFilter === 'THIS_MONTH') {
+          if (invDate.getFullYear() !== refDate.getFullYear() || invDate.getMonth() !== refDate.getMonth()) return false;
+        } else if (dateFilter === 'LAST_MONTH') {
+          const lastMonth = new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1);
+          if (invDate.getFullYear() !== lastMonth.getFullYear() || invDate.getMonth() !== lastMonth.getMonth()) return false;
+        } else if (dateFilter === 'THIS_YEAR') {
+          if (invDate.getFullYear() !== refDate.getFullYear()) return false;
+        }
+      }
+
+      // 4b. Optional Date Range Filter
+      if (this.invoiceStartDate() && inv.issueDate < this.invoiceStartDate()) return false;
+      if (this.invoiceEndDate() && inv.issueDate > this.invoiceEndDate()) return false;
+
+      return true;
+    });
+
+    // 5. Sorting
+    return list.sort((a, b) => {
+      if (sort === 'dueDate_asc') return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      if (sort === 'dueDate_desc') return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+      if (sort === 'issueDate_desc') return new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime();
+      if (sort === 'balanceDue_desc') return b.balanceDue - a.balanceDue;
+      if (sort === 'total_desc') return b.total - a.total;
+      return 0;
     });
   });
 
@@ -200,6 +346,9 @@ export class V3ArComponent {
     };
   });
 
+  // Dashboard Concepts Switcher: 'inbox' (Morning Triage), 'overdue-queue' (Full-width Collection), 'direct-ledger' (Direct Invoices)
+  dashboardConcept = signal<'inbox' | 'overdue-queue' | 'direct-ledger'>('overdue-queue');
+
   // Priority Overdue Invoices
   priorityOverdueInvoices = computed(() => {
     return this.arService.invoices()
@@ -207,11 +356,40 @@ export class V3ArComponent {
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   });
 
-  // Filtered Customers
+  overdueTotalBalance = computed(() => {
+    return this.priorityOverdueInvoices().reduce((sum, inv) => sum + inv.balanceDue, 0);
+  });
+
+  // Draft Invoices awaiting issuance
+  draftInvoices = computed(() => {
+    return this.arService.invoices().filter(i => i.status === 'Draft');
+  });
+
+  // Invoices due within the next 7 days (proactive reminder)
+  upcomingDueInvoices = computed(() => {
+    const today = new Date(this.arService.today).getTime();
+    const sevenDaysLater = today + 7 * 24 * 60 * 60 * 1000;
+    return this.arService.invoices()
+      .filter(i => {
+        if (i.status !== 'Issued' && i.status !== 'Partially Paid') return false;
+        const due = new Date(i.dueDate).getTime();
+        return due >= today && due <= sevenDaysLater;
+      })
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  });
+
+  getCustomer(customerId: string): Customer | undefined {
+    return this.arService.customers().find(c => c.id === customerId);
+  }
+
+  // Filtered Customers with multi-filter and sort support
   filteredCustomers = computed(() => {
     const q = this.customerSearchQuery().toLowerCase().trim();
     const filter = this.customerFilter();
-    return this.arService.customers().filter(cust => {
+    const balanceFilter = this.customerBalanceFilter();
+    const sort = this.customerSortBy();
+
+    let list = this.arService.customers().filter(cust => {
       const matchesQuery = !q ||
         cust.name.toLowerCase().includes(q) ||
         cust.code.toLowerCase().includes(q) ||
@@ -219,11 +397,27 @@ export class V3ArComponent {
         (cust.nik ? cust.nik.toLowerCase().includes(q) : false) ||
         (cust.npwp ? cust.npwp.toLowerCase().includes(q) : false);
 
-      const hasOverdue = this.arService.invoices().some(i => i.customerId === cust.id && i.status === 'Overdue');
+      if (!matchesQuery) return false;
 
-      if (filter === 'OVERDUE') return matchesQuery && hasOverdue;
-      if (filter === 'HOLD') return matchesQuery && cust.status === 'credit_hold';
-      return matchesQuery;
+      const hasOverdue = this.arService.invoices().some(i => i.customerId === cust.id && i.status === 'Overdue');
+      if (filter === 'OVERDUE' && !hasOverdue) return false;
+      if (filter === 'HOLD' && cust.status !== 'credit_hold') return false;
+
+      const totalBalance = this.arService.getCustomerBalance(cust.id);
+      const limitUsage = cust.creditLimit > 0 ? (totalBalance / cust.creditLimit) * 100 : 0;
+
+      if (balanceFilter === 'HAS_BALANCE' && totalBalance <= 0) return false;
+      if (balanceFilter === 'ZERO_BALANCE' && totalBalance > 0) return false;
+      if (balanceFilter === 'NEAR_LIMIT' && limitUsage < 70) return false;
+
+      return true;
+    });
+
+    return list.sort((a, b) => {
+      if (sort === 'balance_desc') return this.arService.getCustomerBalance(b.id) - this.arService.getCustomerBalance(a.id);
+      if (sort === 'name_asc') return a.name.localeCompare(b.name);
+      if (sort === 'creditLimit_desc') return b.creditLimit - a.creditLimit;
+      return 0;
     });
   });
 
@@ -234,6 +428,23 @@ export class V3ArComponent {
     return this.arService.invoices().filter(i => i.customerId === cust.id);
   });
 
+  // Filtered Customer Invoices in Detail View
+  filteredCustomerInvoices = computed(() => {
+    const cust = this.selectedCustomer();
+    if (!cust) return [];
+    const status = this.custDetailInvoiceStatus();
+    const startDate = this.custDetailInvoiceStartDate();
+    const endDate = this.custDetailInvoiceEndDate();
+
+    return this.arService.invoices().filter(i => {
+      if (i.customerId !== cust.id) return false;
+      if (status !== 'ALL' && i.status !== status) return false;
+      if (startDate && i.issueDate < startDate) return false;
+      if (endDate && i.issueDate > endDate) return false;
+      return true;
+    });
+  });
+
   // Selected Customer's Payments
   customerPayments = computed(() => {
     const cust = this.selectedCustomer();
@@ -241,25 +452,51 @@ export class V3ArComponent {
     return this.arService.payments().filter(p => p.customerId === cust.id);
   });
 
-  // Aging Data with Invoices
+  // Aging Data with Invoices, Risk Filter & Sorting
   agingData = computed(() => {
     const data = this.arService.getAgingReport(this.agingAsOfDate());
     const q = this.agingCustomerSearch().toLowerCase().trim();
-    if (!q) return data;
+    const risk = this.agingRiskFilter();
+    const sort = this.agingSortBy();
 
-    const filteredBuckets = data.buckets.filter(b =>
-      b.customerName.toLowerCase().includes(q) || b.customerCode.toLowerCase().includes(q)
-    );
+    let filteredBuckets = data.buckets.filter(b => {
+      const matchesQuery = !q ||
+        b.customerName.toLowerCase().includes(q) ||
+        b.customerCode.toLowerCase().includes(q);
+
+      if (!matchesQuery) return false;
+
+      const overdueAmount = b.days1_30 + b.days31_60 + b.days61_90 + b.days90Plus;
+      const criticalAmount = b.days61_90 + b.days90Plus;
+
+      if (risk === 'OVERDUE_ONLY' && overdueAmount <= 0) return false;
+      if (risk === 'CRITICAL_ONLY' && criticalAmount <= 0) return false;
+      if (risk === 'CURRENT_ONLY' && overdueAmount > 0) return false;
+
+      return true;
+    });
+
+    filteredBuckets.sort((a, b) => {
+      if (sort === 'total_desc') return b.totalOutstanding - a.totalOutstanding;
+      if (sort === 'critical_desc') return (b.days61_90 + b.days90Plus) - (a.days61_90 + a.days90Plus);
+      if (sort === 'name_asc') return a.customerName.localeCompare(b.customerName);
+      return 0;
+    });
+
     return {
       buckets: filteredBuckets,
       grandTotal: data.grandTotal
     };
   });
 
-  // Filtered Activity Logs
+  // Filtered Activity Logs with User & Date Range Filter
   filteredActivityLogs = computed(() => {
     const q = this.logSearchQuery().toLowerCase().trim();
     const filterType = this.logTypeFilter();
+    const user = this.logUserFilter();
+    const startDate = this.logStartDate();
+    const endDate = this.logEndDate();
+
     return this.arService.activityLogs().filter(log => {
       const matchesQuery = !q ||
         log.description.toLowerCase().includes(q) ||
@@ -267,8 +504,13 @@ export class V3ArComponent {
         (log.referenceId && log.referenceId.toLowerCase().includes(q));
 
       if (!matchesQuery) return false;
-      if (filterType === 'ALL') return true;
-      return log.type === filterType;
+      if (filterType !== 'ALL' && log.type !== filterType) return false;
+      if (user !== 'ALL' && log.user !== user) return false;
+
+      if (startDate && log.timestamp.split(' ')[0] < startDate) return false;
+      if (endDate && log.timestamp.split(' ')[0] > endDate) return false;
+
+      return true;
     });
   });
 
@@ -349,6 +591,7 @@ export class V3ArComponent {
   }
 
   viewInvoice(inv: Invoice) {
+    this.showActionInbox.set(false);
     this.selectedInvoice.set(inv);
     this.navigateTo('invoice-detail');
   }
@@ -389,6 +632,7 @@ export class V3ArComponent {
   // ==========================================
 
   startCreateInvoice(preselectedCustomerId?: string) {
+    this.showActionInbox.set(false);
     if (this.isViewer()) {
       this.showToast('Akses Ditolak: Akun Viewer hanya memiliki izin baca (Read-Only).', 'danger');
       return;
@@ -614,6 +858,7 @@ export class V3ArComponent {
     this.paymentIsDownPayment.set(false);
 
     this.loadInvoicesForPayment(custId, targetInvoiceId);
+    this.showActionInbox.set(false);
     this.showPaymentModal.set(true);
   }
 

@@ -3,16 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ArDataService } from './services/ar-data.service';
 import { Customer, Invoice, Payment, InvoiceStatus, PaymentMethod } from './models/ar.models';
-import { MinimalArComponent } from './minimal-design/minimal-ar';
+
 import { V3ArComponent } from './v3-design/v3-ar';
-import { V4ArComponent } from './v4-design/v4-ar';
+
 
 type ActiveView = 'dashboard' | 'invoices' | 'invoice-create' | 'invoice-detail' | 'customers' | 'customer-detail' | 'aging-report';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, MinimalArComponent, V3ArComponent, V4ArComponent],
+  imports: [CommonModule, FormsModule, V3ArComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
