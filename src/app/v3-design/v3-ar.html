@@ -2,79 +2,78 @@
 
   <!-- ==================== V3 SIDEBAR ==================== -->
   <aside class="v3-sidebar" [class.mobile-open]="sidebarMobileOpen()">
-    <!-- <div class="v3-sidebar-header">
-      <div class="v3-brand">
-        <div class="v3-brand-monogram">AR</div>
-        <div>
-          <span class="d-block lh-1">Sistem Piutang</span>
-          <small class="text-secondary" style="font-size: 0.65rem; font-weight: 500;">PT Galesong Pratama</small>
-        </div>
+    <div class="v3-sidebar-header">
+      <div class="v3-brand" (click)="navigateTo('invoices')" role="button" tabindex="0"
+        title="PT Galesong Pratama - Sistem Piutang">
+        <img src="asset/image3.png" alt="PT Galesong Pratama" class="v3-sidebar-logo" />
       </div>
-      <span class="v3-version-tag">V3 Mockup</span>
-    </div> -->
+
+    </div>
 
     <nav class="v3-sidebar-nav">
       <div class="v3-nav-group-label">Operasional AR</div>
       <button type="button" class="v3-nav-item"
-              [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create' || activeView() === 'invoice-edit'"
-              (click)="navigateTo('invoices')">
+        [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create' || activeView() === 'invoice-edit'"
+        (click)="navigateTo('invoices')">
         <span>Daftar Invoice</span>
         <span class="v3-nav-pill-danger" *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
           {{ arService.dashboardMetrics().overdueInvoicesCount }}
         </span>
       </button>
 
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'" (click)="navigateTo('customers')">
+      <button type="button" class="v3-nav-item"
+        [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'"
+        (click)="navigateTo('customers')">
         <span>Data Pelanggan</span>
-        <span class="v3-nav-pill-muted">{{ arService.customers().length }}</span>
+        <!-- <span class="v3-nav-pill-muted">{{ arService.customers().length }}</span> -->
       </button>
 
       <div class="v3-nav-group-label mt-3">Laporan & Audit</div>
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'aging-report'" (click)="navigateTo('aging-report')">
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'aging-report'"
+        (click)="navigateTo('aging-report')">
         <span>Laporan Aging</span>
       </button>
 
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'activity-logs'" (click)="navigateTo('activity-logs')">
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'activity-logs'"
+        (click)="navigateTo('activity-logs')">
         <span>Log Aktivitas (Audit)</span>
-        <span class="v3-nav-pill-muted">{{ arService.activityLogs().length }}</span>
+        <!-- <span class="v3-nav-pill-muted">{{ arService.activityLogs().length }}</span> -->
       </button>
 
       <div class="v3-nav-group-label mt-3">Master Data & Pengaturan</div>
-      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'bank-accounts'" (click)="navigateTo('bank-accounts')">
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'bank-accounts'"
+        (click)="navigateTo('bank-accounts')">
         <span>Rekening Bank Hotel</span>
-        <span class="v3-nav-pill-muted">{{ arService.bankAccounts().length }}</span>
+        <!-- <span class="v3-nav-pill-muted">{{ arService.bankAccounts().length }}</span> -->
       </button>
     </nav>
 
     <!-- Sidebar Footer with Role Indicator and Switcher -->
-     <div class="v3-sidebar-footer">  
-      <div class="v3-switcher-label">Role</div>
+    <div class="v3-sidebar-footer">
+      <!-- <div class="v3-switcher-label">Role</div>
       <div class="v3-switcher-group mb-2">
-        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Admin'" (click)="changeUserRole('Admin')">Admin</button>
-        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'User'" (click)="changeUserRole('User')">User (AR)</button>
-        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Manager'" (click)="changeUserRole('Manager')">Manager</button>
-        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Viewer'" (click)="changeUserRole('Viewer')">Viewer</button>
-      </div>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Admin'"
+          (click)="changeUserRole('Admin')">Admin</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'User'"
+          (click)="changeUserRole('User')">User (AR)</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Manager'"
+          (click)="changeUserRole('Manager')">Manager</button>
+        <button type="button" class="v3-switcher-btn" [class.active]="currentUser().role === 'Viewer'"
+          (click)="changeUserRole('Viewer')">Viewer</button>
+      </div> -->
 
-      <div class="v3-switcher-label mt-2">Versi Desain Antarmuka</div>
-      <div class="v3-switcher-group">
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('classic')">V1</button>
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('minimal')">V2</button>
-        <button type="button" class="v3-switcher-btn active">V3 (SRS)</button>
-        <button type="button" class="v3-switcher-btn" (click)="switchMode.emit('v4')">V4</button>
-      </div>
-
-      <div class="d-flex align-items-center gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
+      <div class="d-flex align-items-center gap-2">
         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-             style="width: 28px; height: 28px; font-size: 0.72rem; font-weight: 700;">
+          style="width: 28px; height: 28px; font-size: 0.72rem; font-weight: 700;">
           {{ currentUser().role.substring(0, 2).toUpperCase() }}
         </div>
         <div class="overflow-hidden">
-          <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">{{ currentUser().fullName }}</div>
+          <div class="text-white fw-semibold text-truncate" style="font-size: 0.78rem;">{{ currentUser().fullName }}
+          </div>
           <div class="text-secondary text-truncate" style="font-size: 0.68rem;">Role: {{ currentUser().role }}</div>
         </div>
       </div>
-    </div> 
+    </div>
   </aside>
 
   <!-- ==================== V3 MAIN WRAPPER ==================== -->
@@ -93,7 +92,8 @@
           <span class="v3-breadcrumb-current">
             <ng-container [ngSwitch]="activeView()">
               <span *ngSwitchCase="'invoices'">Daftar Invoice</span>
-              <span *ngSwitchCase="'invoice-create'">{{ editingInvoiceId() ? 'Ubah Invoice Draft' : 'Buat Invoice Baru' }}</span>
+              <span *ngSwitchCase="'invoice-create'">{{ editingInvoiceId() ? 'Ubah Invoice Draft' : 'Buat Invoice Baru'
+                }}</span>
               <span *ngSwitchCase="'invoice-edit'">Ubah Invoice Draft</span>
               <span *ngSwitchCase="'invoice-detail'">Faktur {{ selectedInvoice()?.invoiceNumber }}</span>
               <span *ngSwitchCase="'customers'">Data Pelanggan</span>
@@ -111,8 +111,8 @@
 
       <div class="d-flex align-items-center gap-2">
         <!-- Action Inbox Drawer Trigger Button (Sleek and compact) -->
-        <button type="button" class="v3-action-pill-btn"
-                (click)="showActionInbox.set(true)" title="Daftar Tindak Lanjut Penagihan & Draft">
+        <button type="button" class="v3-action-pill-btn" (click)="showActionInbox.set(true)"
+          title="Daftar Tindak Lanjut Penagihan & Draft">
           <i class="bi bi-bell-fill text-danger"></i>
           <span>Tindak Lanjut</span>
           <span class="v3-pill-badge" *ngIf="priorityOverdueInvoices().length + draftInvoices().length > 0">
@@ -141,31 +141,39 @@
         <!-- Controls Toolbar: Status Tabs per Table 4.4.2 & Action Button -->
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
           <div class="v3-tabs-bar">
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'ALL'" (click)="invoiceCategoryFilter.set('ALL')">
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'ALL'"
+              (click)="invoiceCategoryFilter.set('ALL')">
               Semua <span class="v3-tab-count">{{ invoiceCategoryCounts().all }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Draft'" (click)="invoiceCategoryFilter.set('Draft')">
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Draft'"
+              (click)="invoiceCategoryFilter.set('Draft')">
               Draft <span class="v3-tab-count">{{ invoiceCategoryCounts().draft }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Issued'" (click)="invoiceCategoryFilter.set('Issued')">
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Issued'"
+              (click)="invoiceCategoryFilter.set('Issued')">
               Issued <span class="v3-tab-count">{{ invoiceCategoryCounts().issued }}</span>
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Partially Paid'" (click)="invoiceCategoryFilter.set('Partially Paid')">
+            <button type="button" class="v3-tab-btn" [class.active]="invoiceCategoryFilter() === 'Partially Paid'"
+              (click)="invoiceCategoryFilter.set('Partially Paid')">
               Partially Paid <span class="v3-tab-count">{{ invoiceCategoryCounts().partiallyPaid }}</span>
             </button>
-            <button type="button" class="v3-tab-btn text-danger" [class.active]="invoiceCategoryFilter() === 'Overdue'" (click)="invoiceCategoryFilter.set('Overdue')">
+            <button type="button" class="v3-tab-btn text-danger" [class.active]="invoiceCategoryFilter() === 'Overdue'"
+              (click)="invoiceCategoryFilter.set('Overdue')">
               Overdue <span class="v3-tab-count">{{ invoiceCategoryCounts().overdue }}</span>
             </button>
-            <button type="button" class="v3-tab-btn text-success" [class.active]="invoiceCategoryFilter() === 'Paid'" (click)="invoiceCategoryFilter.set('Paid')">
+            <button type="button" class="v3-tab-btn text-success" [class.active]="invoiceCategoryFilter() === 'Paid'"
+              (click)="invoiceCategoryFilter.set('Paid')">
               Paid <span class="v3-tab-count">{{ invoiceCategoryCounts().paid }}</span>
             </button>
-            <button type="button" class="v3-tab-btn text-muted" [class.active]="invoiceCategoryFilter() === 'Cancelled'" (click)="invoiceCategoryFilter.set('Cancelled')">
+            <button type="button" class="v3-tab-btn text-muted" [class.active]="invoiceCategoryFilter() === 'Cancelled'"
+              (click)="invoiceCategoryFilter.set('Cancelled')">
               Cancelled <span class="v3-tab-count">{{ invoiceCategoryCounts().cancelled }}</span>
             </button>
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="startCreateInvoice()">
+            <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()"
+              (click)="startCreateInvoice()">
               + Buat Invoice
             </button>
           </div>
@@ -178,14 +186,16 @@
             <div style="min-width: 200px; max-width: 260px;" class="flex-grow-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari invoice, pelanggan, NPWP..."
-                       [ngModel]="invoiceSearchQuery()" (ngModelChange)="invoiceSearchQuery.set($event)">
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0"
+                  placeholder="Cari invoice, pelanggan, NPWP..." [ngModel]="invoiceSearchQuery()"
+                  (ngModelChange)="invoiceSearchQuery.set($event)">
               </div>
             </div>
 
             <!-- Customer Filter Dropdown -->
             <div style="min-width: 170px;">
-              <select class="form-select form-select-sm" [ngModel]="invoiceCustomerFilter()" (ngModelChange)="invoiceCustomerFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="invoiceCustomerFilter()"
+                (ngModelChange)="invoiceCustomerFilter.set($event)">
                 <option value="ALL">Semua Pelanggan</option>
                 <option *ngFor="let c of arService.customers()" [value]="c.id">{{ c.name }}</option>
               </select>
@@ -193,7 +203,8 @@
 
             <!-- Date Range / Period Filter Dropdown -->
             <div style="min-width: 135px;">
-              <select class="form-select form-select-sm" [ngModel]="invoiceDateFilter()" (ngModelChange)="invoiceDateFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="invoiceDateFilter()"
+                (ngModelChange)="invoiceDateFilter.set($event)">
                 <option value="ALL">Semua Periode</option>
                 <option value="THIS_MONTH">Bulan Berjalan</option>
                 <option value="LAST_MONTH">Bulan Lalu</option>
@@ -206,25 +217,23 @@
               <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
               <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
               <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                     style="font-size: 0.75rem; width: 108px; height: auto;"
-                     title="Dari tanggal (Opsional)"
-                     [ngModel]="invoiceStartDate()" (ngModelChange)="invoiceStartDate.set($event)">
+                style="font-size: 0.75rem; width: 108px; height: auto;" title="Dari tanggal (Opsional)"
+                [ngModel]="invoiceStartDate()" (ngModelChange)="invoiceStartDate.set($event)">
               <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
               <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                     style="font-size: 0.75rem; width: 108px; height: auto;"
-                     title="Sampai tanggal (Opsional)"
-                     [ngModel]="invoiceEndDate()" (ngModelChange)="invoiceEndDate.set($event)">
+                style="font-size: 0.75rem; width: 108px; height: auto;" title="Sampai tanggal (Opsional)"
+                [ngModel]="invoiceEndDate()" (ngModelChange)="invoiceEndDate.set($event)">
               <button type="button" class="btn btn-link text-muted p-0 ms-1"
-                      *ngIf="invoiceStartDate() || invoiceEndDate()"
-                      (click)="invoiceStartDate.set(''); invoiceEndDate.set('')"
-                      title="Hapus filter rentang tanggal">
+                *ngIf="invoiceStartDate() || invoiceEndDate()"
+                (click)="invoiceStartDate.set(''); invoiceEndDate.set('')" title="Hapus filter rentang tanggal">
                 <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
               </button>
             </div>
 
             <!-- Sorting Dropdown -->
             <div style="min-width: 160px;">
-              <select class="form-select form-select-sm" [ngModel]="invoiceSortBy()" (ngModelChange)="invoiceSortBy.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="invoiceSortBy()"
+                (ngModelChange)="invoiceSortBy.set($event)">
                 <option value="dueDate_asc">Jatuh Tempo: Terdekat</option>
                 <option value="dueDate_desc">Jatuh Tempo: Terlama</option>
                 <option value="issueDate_desc">Tgl Terbit: Terbaru</option>
@@ -235,7 +244,7 @@
 
             <!-- Reset Button -->
             <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
-                    *ngIf="hasActiveInvoiceFilters()" (click)="resetInvoiceFilters()" title="Kembalikan semua filter">
+              *ngIf="hasActiveInvoiceFilters()" (click)="resetInvoiceFilters()" title="Kembalikan semua filter">
               <i class="bi bi-x-circle me-1"></i>Reset
             </button>
           </div>
@@ -247,11 +256,15 @@
         </div>
 
         <!-- Summary Strip -->
-        <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-white rounded border border-light text-muted" style="font-size: 0.78rem;">
+        <div
+          class="d-flex align-items-center justify-content-between px-3 py-2 bg-white rounded border border-light text-muted"
+          style="font-size: 0.78rem;">
           <span>Menampilkan <strong>{{ filteredSummary().count }}</strong> dokumen invoice</span>
           <div class="d-flex gap-4">
-            <span>Total Nilai: <strong class="v3-mono text-dark">{{ formatMoney(filteredSummary().totalAmount) }}</strong></span>
-            <span>Total Sisa Tagihan (AR): <strong class="v3-mono text-danger">{{ formatMoney(filteredSummary().balanceDue) }}</strong></span>
+            <span>Total Nilai: <strong class="v3-mono text-dark">{{ formatMoney(filteredSummary().totalAmount)
+                }}</strong></span>
+            <span>Total Sisa Tagihan (AR): <strong class="v3-mono text-danger">{{
+                formatMoney(filteredSummary().balanceDue) }}</strong></span>
           </div>
         </div>
 
@@ -273,7 +286,8 @@
               <tbody>
                 <tr *ngFor="let inv of filteredInvoices()">
                   <td>
-                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono d-block" (click)="viewInvoice(inv)">
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none v3-mono d-block"
+                      (click)="viewInvoice(inv)">
                       {{ inv.invoiceNumber }}
                     </a>
                     <span class="v3-mono text-muted" style="font-size: 0.7rem;">{{ inv.issueDate }}</span>
@@ -286,14 +300,17 @@
                       <span class="badge bg-light text-secondary border px-1 py-0" style="font-size: 0.65rem;">
                         {{ inv.invoiceType || 'General AR' }}
                       </span>
-                      <span class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.customerNpwp">NPWP: {{ inv.customerNpwp }}</span>
+                      <span class="text-muted v3-mono" style="font-size: 0.68rem;" *ngIf="inv.customerNpwp">NPWP: {{
+                        inv.customerNpwp }}</span>
                     </div>
                   </td>
                   <td>
-                    <span class="v3-mono" [class.text-danger]="inv.status === 'Overdue'" [class.fw-bold]="inv.status === 'Overdue'">
+                    <span class="v3-mono" [class.text-danger]="inv.status === 'Overdue'"
+                      [class.fw-bold]="inv.status === 'Overdue'">
                       {{ inv.dueDate }}
                     </span>
-                    <span *ngIf="inv.status === 'Overdue'" class="v3-badge v3-badge-overdue d-block mt-1" style="font-size: 0.62rem; width: fit-content; padding: 0.05rem 0.35rem;">
+                    <span *ngIf="inv.status === 'Overdue'" class="v3-badge v3-badge-overdue d-block mt-1"
+                      style="font-size: 0.62rem; width: fit-content; padding: 0.05rem 0.35rem;">
                       +{{ getDaysPastDue(inv.dueDate) }}h
                     </span>
                   </td>
@@ -304,7 +321,8 @@
                     </div>
                   </td>
                   <td class="text-end">
-                    <div class="v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
+                    <div class="v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0"
+                      [class.text-success]="inv.balanceDue === 0">
                       {{ formatMoney(inv.balanceDue) }}
                     </div>
                   </td>
@@ -323,39 +341,41 @@
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex align-items-center gap-1">
-                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)" title="Lihat Rincian">
+                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;"
+                        (click)="viewInvoice(inv)" title="Lihat Rincian">
                         Lihat
                       </button>
 
                       <!-- Pay Button (Only if open balance, not draft, not cancelled) -->
                       <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
-                              *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
-                              [disabled]="isViewer()"
-                              (click)="openPaymentModal(inv.customerId, inv.id)">
+                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                        [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
                         Bayar
                       </button>
 
                       <!-- Draft Actions: Issue & Edit & Delete Draft -->
                       <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size: 0.72rem;"
-                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="issueDraftInvoice(inv)" title="Terbitkan Invoice (Draft -> Issued)">
+                        *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="issueDraftInvoice(inv)"
+                        title="Terbitkan Invoice (Draft -> Issued)">
                         Terbitkan
                       </button>
 
                       <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;"
-                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)" title="Ubah Isi Draft (SRS-F-15)">
+                        *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)"
+                        title="Ubah Isi Draft">
                         Ubah
                       </button>
 
                       <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
-                              *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)" title="Hapus Draft Invoice">
+                        *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)"
+                        title="Hapus Draft Invoice">
                         Hapus
                       </button>
 
                       <!-- Cancel Button for Issued/Overdue (Manager or Admin only, if no payments) -->
                       <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
-                              *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'"
-                              [disabled]="isViewer()"
-                              (click)="openCancelInvoiceModal(inv)" title="Batalkan Invoice (SRS-F-18)">
+                        *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'" [disabled]="isViewer()"
+                        (click)="openCancelInvoiceModal(inv)" title="Batalkan Invoice">
                         Batal
                       </button>
                     </div>
@@ -386,54 +406,54 @@
 
           <div class="d-flex align-items-center gap-2">
             <button type="button" class="v3-btn-secondary" (click)="openPdfPreview(inv)">
-              Cetak / Export PDF (UC-08)
+              Cetak / Export PDF
             </button>
 
             <!-- Edit Draft Button -->
-            <button type="button" class="btn btn-sm btn-outline-primary"
-                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)">
+            <button type="button" class="btn btn-sm btn-outline-primary" *ngIf="inv.status === 'Draft'"
+              [disabled]="isViewer()" (click)="startEditDraftInvoice(inv)">
               Ubah Draft
             </button>
 
             <!-- Issue Draft Button -->
-            <button type="button" class="btn btn-sm btn-success"
-                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="issueDraftInvoice(inv)">
-              Terbitkan Invoice Resmi (UC-03)
+            <button type="button" class="btn btn-sm btn-success" *ngIf="inv.status === 'Draft'" [disabled]="isViewer()"
+              (click)="issueDraftInvoice(inv)">
+              Terbitkan Invoice Resmi
             </button>
 
             <!-- Delete Draft Button -->
-            <button type="button" class="btn btn-sm btn-outline-danger"
-                    *ngIf="inv.status === 'Draft'" [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)">
+            <button type="button" class="btn btn-sm btn-outline-danger" *ngIf="inv.status === 'Draft'"
+              [disabled]="isViewer()" (click)="requestDeleteInvoice(inv)">
               Hapus Draft
             </button>
 
-            <!-- Cancel Button per SRS-F-18 -->
+            <!-- Cancel Button -->
             <button type="button" class="v3-btn-danger-outline"
-                    *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'"
-                    [disabled]="isViewer()"
-                    (click)="openCancelInvoiceModal(inv)">
-              Batalkan Invoice (UC-04)
+              *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'" [disabled]="isViewer()"
+              (click)="openCancelInvoiceModal(inv)">
+              Batalkan Invoice
             </button>
 
             <!-- Record Payment Button -->
             <button type="button" class="v3-btn-primary"
-                    *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
-                    [disabled]="isViewer()"
-                    (click)="openPaymentModal(inv.customerId, inv.id)">
+              *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'" [disabled]="isViewer()"
+              (click)="openPaymentModal(inv.customerId, inv.id)">
               Catat Pembayaran
             </button>
           </div>
         </div>
 
         <!-- Cancellation Banner if Cancelled -->
-        <div class="alert alert-dark border-secondary d-flex align-items-start gap-3" *ngIf="inv.status === 'Cancelled'">
+        <div class="alert alert-dark border-secondary d-flex align-items-start gap-3"
+          *ngIf="inv.status === 'Cancelled'">
           <div>
             <strong class="d-block text-danger">INVOICE TELAH DIBATALKAN (CANCELLED)</strong>
             <div class="small text-muted mt-1">
-              Dibatalkan pada: <strong>{{ inv.cancelledAt }}</strong> oleh <strong>{{ inv.cancelledBy || 'Manager' }}</strong>
+              Dibatalkan pada: <strong>{{ inv.cancelledAt }}</strong> oleh <strong>{{ inv.cancelledBy || 'Manager'
+                }}</strong>
             </div>
             <div class="small mt-1">
-              <strong>Alasan Pembatalan (SRS-F-18):</strong> "{{ inv.cancellationReason || 'Pembatalan transaksi administrasi' }}"
+              <strong>Alasan Pembatalan:</strong> "{{ inv.cancellationReason || 'Pembatalan transaksi administrasi' }}"
             </div>
           </div>
         </div>
@@ -454,19 +474,23 @@
                 {{ inv.status }}
               </span>
               <span class="badge bg-light text-dark border">{{ inv.invoiceType }}</span>
-              <span *ngIf="inv.sourceType === 'city_ledger'" class="badge bg-primary-subtle text-primary border border-primary-subtle">City Ledger</span>
+              <span *ngIf="inv.sourceType === 'city_ledger'"
+                class="badge bg-primary-subtle text-primary border border-primary-subtle">City Ledger</span>
             </div>
             <div class="text-muted small mt-1">
               Tanggal Terbit: <span class="v3-mono text-dark fw-medium">{{ inv.issueDate }}</span> &bull;
-              Jatuh Tempo: <span class="v3-mono fw-medium" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate }}</span>
-              <span *ngIf="inv.status === 'Overdue'" class="text-danger fw-bold ms-1">(Terlambat {{ getDaysPastDue(inv.dueDate) }} hari)</span>
+              Jatuh Tempo: <span class="v3-mono fw-medium" [class.text-danger]="inv.status === 'Overdue'">{{ inv.dueDate
+                }}</span>
+              <span *ngIf="inv.status === 'Overdue'" class="text-danger fw-bold ms-1">(Terlambat {{
+                getDaysPastDue(inv.dueDate) }} hari)</span>
               &bull; Pembuat: {{ inv.createdByName || 'Staf AR' }}
             </div>
           </div>
 
           <div class="text-end">
             <div class="text-muted small">Sisa Tagihan (Outstanding)</div>
-            <div class="v3-mono fw-bold fs-3" [class.text-danger]="inv.balanceDue > 0" [class.text-success]="inv.balanceDue === 0">
+            <div class="v3-mono fw-bold fs-3" [class.text-danger]="inv.balanceDue > 0"
+              [class.text-success]="inv.balanceDue === 0">
               {{ formatMoney(inv.balanceDue) }}
             </div>
           </div>
@@ -480,20 +504,18 @@
           </div>
           <div class="v3-ribbon-divider" [class.done]="inv.status !== 'Draft'"></div>
 
-          <div class="v3-ribbon-step"
-               [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"
-               [class.current]="inv.status === 'Issued'"
-               [class.overdue]="inv.status === 'Overdue'">
+          <div class="v3-ribbon-step" [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"
+            [class.current]="inv.status === 'Issued'" [class.overdue]="inv.status === 'Overdue'">
             <div class="v3-ribbon-circle">
-              {{ (inv.status === 'Partially Paid' || inv.status === 'Paid') ? '✓' : (inv.status === 'Overdue' ? '!' : '2') }}
+              {{ (inv.status === 'Partially Paid' || inv.status === 'Paid') ? '✓' : (inv.status === 'Overdue' ? '!' :
+              '2') }}
             </div>
             <span>{{ inv.status === 'Overdue' ? '2. Overdue (Lewat Tempo)' : '2. Issued (Diterbitkan)' }}</span>
           </div>
           <div class="v3-ribbon-divider" [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"></div>
 
-          <div class="v3-ribbon-step"
-               [class.done]="inv.status === 'Paid'"
-               [class.current]="inv.status === 'Partially Paid'">
+          <div class="v3-ribbon-step" [class.done]="inv.status === 'Paid'"
+            [class.current]="inv.status === 'Partially Paid'">
             <div class="v3-ribbon-circle">{{ inv.status === 'Paid' ? '✓' : '3' }}</div>
             <span>3. Partially Paid (Bertahap)</span>
           </div>
@@ -517,7 +539,8 @@
                     <span class="text-muted small text-uppercase fw-semibold">Ditagihkan Kepada (Pelanggan)</span>
                     <h4 class="fw-bold text-dark mt-1 mb-1" style="font-size: 1.1rem;">{{ inv.customerName }}</h4>
                     <div class="text-muted small">
-                      <span class="me-3">NIK: <strong class="v3-mono text-dark">{{ inv.customerNik || '-' }}</strong></span>
+                      <span class="me-3">NIK: <strong class="v3-mono text-dark">{{ inv.customerNik || '-'
+                          }}</strong></span>
                       <span>NPWP: <strong class="v3-mono text-dark">{{ inv.customerNpwp || '-' }}</strong></span>
                     </div>
                     <div class="text-muted small mt-1" *ngIf="arService.getCustomer(inv.customerId) as cust">
@@ -525,8 +548,7 @@
                     </div>
                   </div>
                   <button type="button" class="btn btn-sm btn-link text-decoration-none p-0"
-                          *ngIf="arService.getCustomer(inv.customerId) as cust"
-                          (click)="viewCustomer(cust)">
+                    *ngIf="arService.getCustomer(inv.customerId) as cust" (click)="viewCustomer(cust)">
                     Profil Pelanggan &rarr;
                   </button>
                 </div>
@@ -535,7 +557,7 @@
               <!-- Line Items Table -->
               <div class="v3-card">
                 <div class="v3-card-header">
-                  <h3 class="v3-card-title">Rincian Item / Layanan Hotel (SRS-F-07)</h3>
+                  <h3 class="v3-card-title">Rincian Item / Layanan Hotel</h3>
                   <span class="text-muted small">{{ inv.lineItems.length }} item</span>
                 </div>
                 <div class="v3-table-container">
@@ -571,7 +593,7 @@
                 </div>
               </div>
 
-              <!-- Payment Receipts Allocation History (Installments - SRS-F-25) -->
+              <!-- Payment Receipts Allocation History (Installments) -->
               <div class="v3-card" *ngIf="getPaymentsForInvoice(inv.id).length > 0">
                 <div class="v3-card-header">
                   <h3 class="v3-card-title text-success">Riwayat Pembayaran Masuk (Termin / Installment)</h3>
@@ -607,8 +629,9 @@
                         </td>
                         <td class="text-end v3-mono fw-bold text-success">{{ formatMoney(p.amount) }}</td>
                         <td class="text-end" *ngIf="isManagerOrAdmin()">
-                          <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;"
-                                  (click)="requestDeletePayment(p)" title="Batalkan dan pulihkan saldo">
+                          <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2"
+                            style="font-size: 0.72rem;" (click)="requestDeletePayment(p)"
+                            title="Batalkan dan pulihkan saldo">
                             Rollback
                           </button>
                         </td>
@@ -623,7 +646,7 @@
           <!-- Right: Financial Breakdown Card -->
           <div class="col-12 col-xl-4">
             <div class="v3-card p-3">
-              <h3 class="v3-card-title mb-3">Ringkasan Nilai & Pajak (SRS-F-08..13)</h3>
+              <h3 class="v3-card-title mb-3">Ringkasan Nilai & Pajak</h3>
 
               <div class="d-flex flex-column gap-2 border-bottom pb-3">
                 <div class="d-flex justify-content-between text-muted" style="font-size: 0.82rem;">
@@ -642,7 +665,8 @@
                   <span>Potongan Uang Muka (DP)</span>
                   <span class="v3-mono text-danger">- {{ formatMoney(inv.dpDeduction) }}</span>
                 </div>
-                <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top" style="font-size: 0.95rem;">
+                <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top"
+                  style="font-size: 0.95rem;">
                   <span>Total Tagihan Bersih</span>
                   <span class="v3-mono text-primary">{{ formatMoney(inv.total) }}</span>
                 </div>
@@ -655,17 +679,17 @@
                 </div>
 
                 <div class="p-3 rounded mt-2 text-center"
-                     [ngClass]="inv.balanceDue > 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle'">
-                  <div class="small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Sisa Tagihan (Balance Due)</div>
+                  [ngClass]="inv.balanceDue > 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-success-subtle text-success border border-success-subtle'">
+                  <div class="small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Sisa Tagihan (Balance
+                    Due)</div>
                   <div class="v3-mono fw-bold fs-3 mt-1">{{ formatMoney(inv.balanceDue) }}</div>
                   <div class="small mt-1" *ngIf="inv.balanceDue === 0">Lunas &bull; Saldo Nol</div>
                   <div class="small mt-1" *ngIf="inv.balanceDue > 0">Piutang Belum Dilunasi</div>
                 </div>
 
                 <button type="button" class="v3-btn-primary w-100 justify-content-center mt-3 py-2"
-                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
-                        [disabled]="isViewer()"
-                        (click)="openPaymentModal(inv.customerId, inv.id)">
+                  *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                  [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
                   Catat Pembayaran Sekarang
                 </button>
               </div>
@@ -705,9 +729,8 @@
           <div class="row g-3 mb-4">
             <div class="col-12 col-md-5">
               <label class="form-label small fw-semibold">Pilih Pelanggan (Customer) *</label>
-              <select class="form-select form-select-sm"
-                      [ngModel]="invoiceFormCustomerId()"
-                      (ngModelChange)="onCustomerSelectedForInvoice($event)">
+              <select class="form-select form-select-sm" [ngModel]="invoiceFormCustomerId()"
+                (ngModelChange)="onCustomerSelectedForInvoice($event)">
                 <option *ngFor="let c of arService.customers()" [value]="c.id">
                   {{ c.name }} (Termin: {{ c.dueDays }} hari &bull; NPWP: {{ c.npwp }})
                 </option>
@@ -716,26 +739,24 @@
 
             <div class="col-6 col-md-2">
               <label class="form-label small fw-semibold">Tanggal Invoice *</label>
-              <input type="date" class="form-control form-control-sm"
-                     [ngModel]="invoiceFormIssueDate()"
-                     (ngModelChange)="invoiceFormIssueDate.set($event)">
+              <input type="date" class="form-control form-control-sm" [ngModel]="invoiceFormIssueDate()"
+                (ngModelChange)="invoiceFormIssueDate.set($event)">
             </div>
 
             <div class="col-6 col-md-2">
               <label class="form-label small fw-semibold">Tanggal Jatuh Tempo *</label>
-              <input type="date" class="form-control form-control-sm"
-                     [ngModel]="invoiceFormDueDate()"
-                     (ngModelChange)="invoiceFormDueDate.set($event)">
-              <small class="text-danger" *ngIf="invoiceFormDueDate() < invoiceFormIssueDate()" style="font-size: 0.68rem;">
+              <input type="date" class="form-control form-control-sm" [ngModel]="invoiceFormDueDate()"
+                (ngModelChange)="invoiceFormDueDate.set($event)">
+              <small class="text-danger" *ngIf="invoiceFormDueDate() < invoiceFormIssueDate()"
+                style="font-size: 0.68rem;">
                 Tidak boleh lebih awal dari tgl invoice
               </small>
             </div>
 
             <div class="col-12 col-md-3">
               <label class="form-label small fw-semibold">Jenis Tagihan / Layanan</label>
-              <select class="form-select form-select-sm"
-                      [ngModel]="invoiceFormInvoiceType()"
-                      (ngModelChange)="invoiceFormInvoiceType.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="invoiceFormInvoiceType()"
+                (ngModelChange)="invoiceFormInvoiceType.set($event)">
                 <option value="Banquet & Event Billing">Banquet & Event Billing</option>
                 <option value="Room & Suites Accommodation">Room & Suites Accommodation</option>
                 <option value="City Ledger Folio Transfer">City Ledger Folio Transfer</option>
@@ -748,7 +769,8 @@
           <!-- Dynamic Line Items Table (SRS-F-07, SRS-F-08) -->
           <div class="d-flex align-items-center justify-content-between mb-2">
             <label class="small fw-bold text-dark mb-0">Rincian Item Barang / Jasa (Invoice Detail)</label>
-            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;" (click)="addLineItem()">
+            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;"
+              (click)="addLineItem()">
               + Tambah Baris Rincian
             </button>
           </div>
@@ -768,8 +790,18 @@
               <tbody>
                 <tr *ngFor="let item of invoiceFormLineItems(); let i = index">
                   <td>
-                    <input type="text" class="form-control form-control-sm" placeholder="Contoh: Sewa Ruang Meeting 1 Hari..."
-                           [(ngModel)]="item.description">
+                    <div class="d-flex gap-1 align-items-center">
+                      <input type="text" class="form-control form-control-sm"
+                        placeholder="Ketik deskripsi atau pilih katalog..." list="catalogDatalist"
+                        [(ngModel)]="item.description" (change)="onCatalogItemSelect(i, item.description)">
+                      <select class="form-select form-select-sm text-muted" style="width: 125px; font-size: 0.72rem;"
+                        (change)="onCatalogItemSelect(i, $any($event.target).value); $any($event.target).value=''">
+                        <option value="" selected disabled>+ Katalog...</option>
+                        <option *ngFor="let cat of standardCatalogItems" [value]="cat.name">
+                          {{ cat.name }} ({{ formatMoney(cat.defaultPrice) }})
+                        </option>
+                      </select>
+                    </div>
                   </td>
                   <td>
                     <select class="form-select form-select-sm" [(ngModel)]="item.itemType">
@@ -783,18 +815,18 @@
                   </td>
                   <td>
                     <input type="number" min="1" class="form-control form-control-sm v3-mono"
-                           [(ngModel)]="item.quantity">
+                      [(ngModel)]="item.quantity">
                   </td>
                   <td>
                     <input type="number" min="0" step="10000" class="form-control form-control-sm v3-mono"
-                           [(ngModel)]="item.unitPrice">
+                      [(ngModel)]="item.unitPrice">
                   </td>
                   <td class="text-end v3-mono fw-semibold">
                     {{ formatMoney((item.quantity || 0) * (item.unitPrice || 0)) }}
                   </td>
                   <td class="text-center">
                     <button type="button" class="btn btn-sm text-danger p-0 fw-bold fs-5" (click)="removeLineItem(i)"
-                            *ngIf="invoiceFormLineItems().length > 1" title="Hapus baris ini">
+                      *ngIf="invoiceFormLineItems().length > 1" title="Hapus baris ini">
                       &times;
                     </button>
                   </td>
@@ -803,26 +835,32 @@
             </table>
           </div>
 
+          <datalist id="catalogDatalist">
+            <option *ngFor="let cat of standardCatalogItems" [value]="cat.name">{{ cat.itemType }} — {{
+              formatMoney(cat.defaultPrice) }}</option>
+          </datalist>
+
           <!-- Bottom Totals & Notes -->
           <div class="row g-4 border-top pt-3">
             <div class="col-12 col-md-7">
-              <label class="form-label small fw-semibold">Catatan / Instruksi Rekening Transfer</label>
-              <textarea class="form-control form-control-sm" rows="4" placeholder="Instruksi transfer pembayaran, no referensi pesanan hotel..."
-                        [ngModel]="invoiceFormNotes()" (ngModelChange)="invoiceFormNotes.set($event)"></textarea>
+              <label class="form-label small fw-semibold">Catatan</label>
+              <textarea class="form-control form-control-sm" rows="4"
+                placeholder="Instruksi transfer pembayaran, no referensi pesanan hotel..."
+                [ngModel]="invoiceFormNotes()" (ngModelChange)="invoiceFormNotes.set($event)"></textarea>
             </div>
 
             <div class="col-12 col-md-5">
               <div class="p-3 bg-light rounded d-flex flex-column gap-2 border">
                 <div class="d-flex justify-content-between text-muted small">
-                  <span>Subtotal Item (SRS-F-09)</span>
+                  <span>Subtotal Item</span>
                   <span class="v3-mono text-dark fw-medium">{{ formatMoney(invoiceFormSubtotal()) }}</span>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center text-muted small">
-                  <span>PPN / Pajak (SRS-F-10)</span>
+                  <span>PPN / Pajak</span>
                   <div class="d-flex align-items-center gap-1">
                     <select class="form-select form-select-sm py-0" style="width: 80px;"
-                            [ngModel]="invoiceFormTaxRate()" (ngModelChange)="invoiceFormTaxRate.set($event)">
+                      [ngModel]="invoiceFormTaxRate()" (ngModelChange)="invoiceFormTaxRate.set($event)">
                       <option [value]="11">11%</option>
                       <option [value]="12">12%</option>
                       <option [value]="0">0%</option>
@@ -832,10 +870,10 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center text-muted small">
-                  <span>PPh 23 Dipotong (SRS-F-11)</span>
+                  <span>PPh 23 Dipotong</span>
                   <div class="d-flex align-items-center gap-1">
                     <select class="form-select form-select-sm py-0" style="width: 80px;"
-                            [ngModel]="invoiceFormPphRate()" (ngModelChange)="invoiceFormPphRate.set($event)">
+                      [ngModel]="invoiceFormPphRate()" (ngModelChange)="invoiceFormPphRate.set($event)">
                       <option [value]="2">2%</option>
                       <option [value]="10">10%</option>
                       <option [value]="0">0%</option>
@@ -845,15 +883,16 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center text-muted small">
-                  <span>Potongan Uang Muka / DP (SRS-F-13)</span>
+                  <span>Potongan Uang Muka / DP</span>
                   <div class="d-flex align-items-center gap-1" style="width: 170px;">
-                    <input type="number" min="0" step="100000" class="form-control form-control-sm text-end v3-mono py-0"
-                           [ngModel]="invoiceFormDpDeduction()" (ngModelChange)="invoiceFormDpDeduction.set($event)">
+                    <input type="number" min="0" step="100000"
+                      class="form-control form-control-sm text-end v3-mono py-0" [ngModel]="invoiceFormDpDeduction()"
+                      (ngModelChange)="invoiceFormDpDeduction.set($event)">
                   </div>
                 </div>
 
                 <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top fs-5">
-                  <span>Total Tagihan (SRS-F-12)</span>
+                  <span>Total Tagihan</span>
                   <span class="v3-mono text-primary">{{ formatMoney(invoiceFormTotal()) }}</span>
                 </div>
               </div>
@@ -868,18 +907,22 @@
       <div *ngIf="activeView() === 'customers'" class="d-flex flex-column gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div class="v3-tabs-bar">
-            <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'ALL'" (click)="customerFilter.set('ALL')">
+            <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'ALL'"
+              (click)="customerFilter.set('ALL')">
               Semua Pelanggan ({{ arService.customers().length }})
             </button>
-            <button type="button" class="v3-tab-btn text-danger" [class.active]="customerFilter() === 'OVERDUE'" (click)="customerFilter.set('OVERDUE')">
+            <button type="button" class="v3-tab-btn text-danger" [class.active]="customerFilter() === 'OVERDUE'"
+              (click)="customerFilter.set('OVERDUE')">
               Memiliki Overdue
             </button>
-            <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'HOLD'" (click)="customerFilter.set('HOLD')">
+            <button type="button" class="v3-tab-btn" [class.active]="customerFilter() === 'HOLD'"
+              (click)="customerFilter.set('HOLD')">
               Credit Hold
             </button>
           </div>
 
-          <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()" (click)="openNewCustomerModal()">
+          <button type="button" class="v3-btn-primary text-nowrap" [disabled]="isViewer()"
+            (click)="openNewCustomerModal()">
             + Tambah Pelanggan
           </button>
         </div>
@@ -891,14 +934,16 @@
             <div style="min-width: 220px; max-width: 280px;" class="flex-grow-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari nama, NIK, NPWP, kontak..."
-                       [ngModel]="customerSearchQuery()" (ngModelChange)="customerSearchQuery.set($event)">
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0"
+                  placeholder="Cari nama, NIK, NPWP, kontak..." [ngModel]="customerSearchQuery()"
+                  (ngModelChange)="customerSearchQuery.set($event)">
               </div>
             </div>
 
             <!-- Balance / Credit Status Filter -->
             <div style="min-width: 175px;">
-              <select class="form-select form-select-sm" [ngModel]="customerBalanceFilter()" (ngModelChange)="customerBalanceFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="customerBalanceFilter()"
+                (ngModelChange)="customerBalanceFilter.set($event)">
                 <option value="ALL">Semua Kondisi Saldo</option>
                 <option value="HAS_BALANCE">Memiliki Piutang (> 0)</option>
                 <option value="NEAR_LIMIT">Mendekati Batas Kredit (≥ 70%)</option>
@@ -908,7 +953,8 @@
 
             <!-- Sorting Dropdown -->
             <div style="min-width: 175px;">
-              <select class="form-select form-select-sm" [ngModel]="customerSortBy()" (ngModelChange)="customerSortBy.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="customerSortBy()"
+                (ngModelChange)="customerSortBy.set($event)">
                 <option value="balance_desc">Sisa Piutang: Terbesar</option>
                 <option value="name_asc">Nama Pelanggan: A–Z</option>
                 <option value="creditLimit_desc">Batas Plafon: Terbesar</option>
@@ -917,7 +963,8 @@
 
             <!-- Reset Button -->
             <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
-                    *ngIf="hasActiveCustomerFilters()" (click)="resetCustomerFilters()" title="Kembalikan semua filter pelanggan">
+              *ngIf="hasActiveCustomerFilters()" (click)="resetCustomerFilters()"
+              title="Kembalikan semua filter pelanggan">
               <i class="bi bi-x-circle me-1"></i>Reset
             </button>
           </div>
@@ -944,7 +991,8 @@
               <tbody>
                 <tr *ngFor="let cust of filteredCustomers()">
                   <td>
-                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none text-truncate d-block" style="max-width: 190px;" [title]="cust.name" (click)="viewCustomer(cust)">
+                    <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none text-truncate d-block"
+                      style="max-width: 190px;" [title]="cust.name" (click)="viewCustomer(cust)">
                       {{ cust.name }}
                     </a>
                     <div class="text-muted v3-mono" style="font-size: 0.7rem;">
@@ -962,7 +1010,8 @@
                     <div class="v3-mono fw-bold" [class.text-danger]="arService.getCustomerBalance(cust.id) > 0">
                       {{ formatMoney(arService.getCustomerBalance(cust.id)) }}
                     </div>
-                    <small class="text-muted" style="font-size: 0.68rem;" *ngIf="arService.getCustomerInvoiceCount(cust.id) as count">
+                    <small class="text-muted" style="font-size: 0.68rem;"
+                      *ngIf="arService.getCustomerInvoiceCount(cust.id) as count">
                       {{ count }} invoice
                     </small>
                   </td>
@@ -972,11 +1021,10 @@
                       <span class="v3-mono fw-semibold">{{ getCustomerCreditUtilization(cust) }}%</span>
                     </div>
                     <div class="progress" style="height: 5px;">
-                      <div class="progress-bar"
-                           [class.bg-danger]="getCustomerCreditUtilization(cust) > 80"
-                           [class.bg-warning]="getCustomerCreditUtilization(cust) > 50 && getCustomerCreditUtilization(cust) <= 80"
-                           [class.bg-success]="getCustomerCreditUtilization(cust) <= 50"
-                           [style.width.%]="getCustomerCreditUtilization(cust)"></div>
+                      <div class="progress-bar" [class.bg-danger]="getCustomerCreditUtilization(cust) > 80"
+                        [class.bg-warning]="getCustomerCreditUtilization(cust) > 50 && getCustomerCreditUtilization(cust) <= 80"
+                        [class.bg-success]="getCustomerCreditUtilization(cust) <= 50"
+                        [style.width.%]="getCustomerCreditUtilization(cust)"></div>
                     </div>
                   </td>
                   <td>
@@ -986,20 +1034,21 @@
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex gap-1">
-                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;" (click)="viewCustomer(cust)" title="Lihat Profil">
+                      <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.72rem;"
+                        (click)="viewCustomer(cust)" title="Lihat Profil">
                         Profil
                       </button>
                       <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem;"
-                              [disabled]="isViewer()" (click)="openEditCustomerModal(cust)" title="Ubah Data">
+                        [disabled]="isViewer()" (click)="openEditCustomerModal(cust)" title="Ubah Data">
                         Ubah
                       </button>
                       <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.72rem;"
-                              [disabled]="isViewer()" (click)="startCreateInvoice(cust.id)" title="Buat Invoice">
+                        [disabled]="isViewer()" (click)="startCreateInvoice(cust.id)" title="Buat Invoice">
                         Tagih
                       </button>
                       <!-- Delete Customer Button (triggers SRS-F-03 check) -->
                       <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
-                              [disabled]="isViewer()" (click)="requestDeleteCustomer(cust)" title="Hapus Pelanggan">
+                        [disabled]="isViewer()" (click)="requestDeleteCustomer(cust)" title="Hapus Pelanggan">
                         Hapus
                       </button>
                     </div>
@@ -1025,10 +1074,12 @@
             &larr; Kembali ke Data Pelanggan
           </button>
           <div class="d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="isViewer()" (click)="openEditCustomerModal(cust)">
+            <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="isViewer()"
+              (click)="openEditCustomerModal(cust)">
               Ubah Profil
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="isViewer()" (click)="requestDeleteCustomer(cust)">
+            <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="isViewer()"
+              (click)="requestDeleteCustomer(cust)">
               Hapus Pelanggan
             </button>
             <button type="button" class="v3-btn-secondary" [disabled]="isViewer()" (click)="openPaymentModal(cust.id)">
@@ -1057,7 +1108,8 @@
                 <span>Termin: Net {{ cust.dueDays }} hari</span>
               </div>
               <div class="text-muted small mt-1">
-                Alamat: {{ cust.address }} &bull; Kontak: {{ cust.contactPerson }} ({{ cust.phone }}) &bull; Email: {{ cust.email }}
+                Alamat: {{ cust.address }} &bull; Kontak: {{ cust.contactPerson }} ({{ cust.phone }}) &bull; Email: {{
+                cust.email }}
               </div>
             </div>
 
@@ -1065,7 +1117,8 @@
               <div class="d-inline-flex gap-4">
                 <div>
                   <div class="text-muted small">Sisa Piutang Berjalan</div>
-                  <div class="v3-mono fw-bold fs-4 text-danger">{{ formatMoney(arService.getCustomerBalance(cust.id)) }}</div>
+                  <div class="v3-mono fw-bold fs-4 text-danger">{{ formatMoney(arService.getCustomerBalance(cust.id)) }}
+                  </div>
                 </div>
                 <div>
                   <div class="text-muted small">Batas Plafon Kredit</div>
@@ -1078,10 +1131,12 @@
 
         <!-- Sub Tabs: Invoices & Payments -->
         <div class="v3-tabs-bar">
-          <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'invoices'" (click)="customerActiveTab.set('invoices')">
+          <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'invoices'"
+            (click)="customerActiveTab.set('invoices')">
             Riwayat Invoice ({{ customerInvoices().length }})
           </button>
-          <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'payments'" (click)="customerActiveTab.set('payments')">
+          <button type="button" class="v3-tab-btn" [class.active]="customerActiveTab() === 'payments'"
+            (click)="customerActiveTab.set('payments')">
             Riwayat Pembayaran ({{ customerPayments().length }})
           </button>
         </div>
@@ -1092,7 +1147,8 @@
           <div class="p-2 bg-white rounded border d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex flex-wrap align-items-center gap-2">
               <div style="min-width: 160px;">
-                <select class="form-select form-select-sm" [ngModel]="custDetailInvoiceStatus()" (ngModelChange)="custDetailInvoiceStatus.set($event)">
+                <select class="form-select form-select-sm" [ngModel]="custDetailInvoiceStatus()"
+                  (ngModelChange)="custDetailInvoiceStatus.set($event)">
                   <option value="ALL">Semua Status Invoice</option>
                   <option value="Draft">Draft</option>
                   <option value="Issued">Issued</option>
@@ -1108,31 +1164,31 @@
                 <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
                 <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
                 <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                       style="font-size: 0.75rem; width: 108px; height: auto;"
-                       title="Dari tanggal (Opsional)"
-                       [ngModel]="custDetailInvoiceStartDate()" (ngModelChange)="custDetailInvoiceStartDate.set($event)">
+                  style="font-size: 0.75rem; width: 108px; height: auto;" title="Dari tanggal (Opsional)"
+                  [ngModel]="custDetailInvoiceStartDate()" (ngModelChange)="custDetailInvoiceStartDate.set($event)">
                 <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
                 <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                       style="font-size: 0.75rem; width: 108px; height: auto;"
-                       title="Sampai tanggal (Opsional)"
-                       [ngModel]="custDetailInvoiceEndDate()" (ngModelChange)="custDetailInvoiceEndDate.set($event)">
+                  style="font-size: 0.75rem; width: 108px; height: auto;" title="Sampai tanggal (Opsional)"
+                  [ngModel]="custDetailInvoiceEndDate()" (ngModelChange)="custDetailInvoiceEndDate.set($event)">
                 <button type="button" class="btn btn-link text-muted p-0 ms-1"
-                        *ngIf="custDetailInvoiceStartDate() || custDetailInvoiceEndDate()"
-                        (click)="custDetailInvoiceStartDate.set(''); custDetailInvoiceEndDate.set('')"
-                        title="Hapus filter rentang tanggal">
+                  *ngIf="custDetailInvoiceStartDate() || custDetailInvoiceEndDate()"
+                  (click)="custDetailInvoiceStartDate.set(''); custDetailInvoiceEndDate.set('')"
+                  title="Hapus filter rentang tanggal">
                   <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
                 </button>
               </div>
 
               <!-- Reset Button -->
               <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
-                      *ngIf="hasActiveCustDetailInvoiceFilters()" (click)="resetCustDetailInvoiceFilters()" title="Reset filter">
+                *ngIf="hasActiveCustDetailInvoiceFilters()" (click)="resetCustDetailInvoiceFilters()"
+                title="Reset filter">
                 <i class="bi bi-x-circle me-1"></i>Reset
               </button>
             </div>
 
             <div class="text-muted small">
-              Menampilkan <strong class="text-dark">{{ filteredCustomerInvoices().length }}</strong> dari {{ customerInvoices().length }} invoice
+              Menampilkan <strong class="text-dark">{{ filteredCustomerInvoices().length }}</strong> dari {{
+              customerInvoices().length }} invoice
             </div>
           </div>
 
@@ -1164,7 +1220,8 @@
                     <td class="small">{{ inv.invoiceType }}</td>
                     <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
                     <td class="text-end v3-mono text-muted">{{ formatMoney(inv.amountPaid) }}</td>
-                    <td class="text-end v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{ formatMoney(inv.balanceDue) }}</td>
+                    <td class="text-end v3-mono fw-bold" [class.text-danger]="inv.balanceDue > 0">{{
+                      formatMoney(inv.balanceDue) }}</td>
                     <td>
                       <span class="v3-badge" [ngClass]="{
                         'v3-badge-draft': inv.status === 'Draft',
@@ -1177,16 +1234,16 @@
                     </td>
                     <td class="text-end">
                       <button type="button" class="v3-btn-primary py-1 px-2" style="font-size: 0.75rem;"
-                              *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
-                              [disabled]="isViewer()"
-                              (click)="openPaymentModal(cust.id, inv.id)">
+                        *ngIf="inv.balanceDue > 0 && inv.status !== 'Cancelled' && inv.status !== 'Draft'"
+                        [disabled]="isViewer()" (click)="openPaymentModal(cust.id, inv.id)">
                         Bayar
                       </button>
                     </td>
                   </tr>
                   <tr *ngIf="filteredCustomerInvoices().length === 0">
                     <td colspan="9" class="text-center py-4 text-muted">
-                      {{ customerInvoices().length === 0 ? 'Belum ada invoice yang diterbitkan untuk pelanggan ini.' : 'Tidak ada invoice yang cocok dengan filter yang dipilih.' }}
+                      {{ customerInvoices().length === 0 ? 'Belum ada invoice yang diterbitkan untuk pelanggan ini.' :
+                      'Tidak ada invoice yang cocok dengan filter yang dipilih.' }}
                     </td>
                   </tr>
                 </tbody>
@@ -1221,13 +1278,14 @@
                   <td class="text-end v3-mono fw-bold text-success">{{ formatMoney(pay.amount) }}</td>
                   <td class="text-end" *ngIf="isManagerOrAdmin()">
                     <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;"
-                            (click)="requestDeletePayment(pay)">
+                      (click)="requestDeletePayment(pay)">
                       Rollback
                     </button>
                   </td>
                 </tr>
                 <tr *ngIf="customerPayments().length === 0">
-                  <td colspan="6" class="text-center py-4 text-muted">Belum ada pembayaran yang dicatat untuk pelanggan ini.</td>
+                  <td colspan="6" class="text-center py-4 text-muted">Belum ada pembayaran yang dicatat untuk pelanggan
+                    ini.</td>
                 </tr>
               </tbody>
             </table>
@@ -1242,13 +1300,15 @@
       <div *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div>
-            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Laporan Analisis Umur Piutang (Aging Report Matrix)</h3>
-            <p class="text-muted small mb-0">Distribusi umur piutang per pelanggan sesuai bucket 30-hari (SRS-F-33 & SRS-F-34). Klik baris untuk melihat rincian faktur.</p>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Laporan Analisis Umur Piutang (Aging Report Matrix)
+            </h3>
+            <p class="text-muted small mb-0">Distribusi umur piutang per pelanggan per interval periode 30 hari. Klik
+              baris untuk melihat rincian faktur.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
             <label class="small text-muted fw-semibold text-nowrap">As of Date:</label>
-            <input type="date" class="form-control form-control-sm" style="width: 140px;"
-                   [ngModel]="agingAsOfDate()" (ngModelChange)="agingAsOfDate.set($event)">
+            <input type="date" class="form-control form-control-sm" style="width: 140px;" [ngModel]="agingAsOfDate()"
+              (ngModelChange)="agingAsOfDate.set($event)">
           </div>
         </div>
 
@@ -1259,14 +1319,16 @@
             <div style="min-width: 220px; max-width: 280px;" class="flex-grow-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari nama atau kode pelanggan..."
-                       [ngModel]="agingCustomerSearch()" (ngModelChange)="agingCustomerSearch.set($event)">
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0"
+                  placeholder="Cari nama atau kode pelanggan..." [ngModel]="agingCustomerSearch()"
+                  (ngModelChange)="agingCustomerSearch.set($event)">
               </div>
             </div>
 
             <!-- Risk Filter Dropdown -->
             <div style="min-width: 180px;">
-              <select class="form-select form-select-sm" [ngModel]="agingRiskFilter()" (ngModelChange)="agingRiskFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="agingRiskFilter()"
+                (ngModelChange)="agingRiskFilter.set($event)">
                 <option value="ALL">Semua Tingkat Risiko</option>
                 <option value="OVERDUE_ONLY">Hanya Menunggak (> 0 Hari)</option>
                 <option value="CRITICAL_ONLY">Tunggakan Kritis (> 60 Hari)</option>
@@ -1276,7 +1338,8 @@
 
             <!-- Sorting Dropdown -->
             <div style="min-width: 175px;">
-              <select class="form-select form-select-sm" [ngModel]="agingSortBy()" (ngModelChange)="agingSortBy.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="agingSortBy()"
+                (ngModelChange)="agingSortBy.set($event)">
                 <option value="total_desc">Total Piutang: Terbesar</option>
                 <option value="critical_desc">Tunggakan Kritis: Terbesar</option>
                 <option value="name_asc">Nama Pelanggan: A–Z</option>
@@ -1285,7 +1348,8 @@
 
             <!-- Reset Button -->
             <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
-                    *ngIf="hasActiveAgingFilters()" (click)="resetAgingFilters()" title="Kembalikan semua filter umur piutang">
+              *ngIf="hasActiveAgingFilters()" (click)="resetAgingFilters()"
+              title="Kembalikan semua filter umur piutang">
               <i class="bi bi-x-circle me-1"></i>Reset
             </button>
           </div>
@@ -1368,13 +1432,15 @@
                               <td class="text-end v3-mono">{{ formatMoney(inv.total) }}</td>
                               <td class="text-end v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</td>
                               <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
+                                  style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
                                   Buka
                                 </button>
                               </td>
                             </tr>
                             <tr *ngIf="!b.invoices || b.invoices.length === 0">
-                              <td colspan="7" class="text-center py-2 text-muted">Tidak ada rincian invoice terbuka.</td>
+                              <td colspan="7" class="text-center py-2 text-muted">Tidak ada rincian invoice terbuka.
+                              </td>
                             </tr>
                           </tbody>
                         </table>
@@ -1385,7 +1451,7 @@
 
                 <tr *ngIf="agingData().buckets.length === 0">
                   <td colspan="8" class="text-center py-5 text-muted">
-                    Tidak ada data piutang berjalan pada tanggal acuan ini (SRS UC-09).
+                    Tidak ada data piutang berjalan pada tanggal acuan ini.
                   </td>
                 </tr>
               </tbody>
@@ -1398,7 +1464,8 @@
                   <td class="text-end v3-mono text-warning">{{ formatMoney(agingData().grandTotal.days31_60) }}</td>
                   <td class="text-end v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days61_90) }}</td>
                   <td class="text-end v3-mono text-danger">{{ formatMoney(agingData().grandTotal.days90Plus) }}</td>
-                  <td class="text-end v3-mono fs-5 text-dark">{{ formatMoney(agingData().grandTotal.totalOutstanding) }}</td>
+                  <td class="text-end v3-mono fs-5 text-dark">{{ formatMoney(agingData().grandTotal.totalOutstanding) }}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -1407,13 +1474,14 @@
       </div>
 
       <!-- =========================================================
-           8. BANK ACCOUNTS VIEW (UC-07, SRS-F-32)
+           8. BANK ACCOUNTS VIEW
            ========================================================= -->
       <div *ngIf="activeView() === 'bank-accounts'" class="d-flex flex-column gap-3">
         <div class="d-flex align-items-center justify-content-between">
           <div>
-            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Master Data Rekening Bank Hotel (UC-07)</h3>
-            <p class="text-muted small mb-0">Daftar rekening bank PT Galesong Pratama yang digunakan sebagai tujuan pembayaran pelanggan.</p>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Master Data Rekening Bank Hotel</h3>
+            <p class="text-muted small mb-0">Daftar rekening bank PT Galesong Pratama yang digunakan sebagai tujuan
+              pembayaran pelanggan.</p>
           </div>
           <button type="button" class="v3-btn-primary" [disabled]="!isAdmin()" (click)="openNewBankAccountModal()">
             + Tambah Rekening Bank
@@ -1438,17 +1506,18 @@
                   <td class="v3-mono fw-bold fs-6">{{ bank.accountNumber }}</td>
                   <td>{{ bank.accountHolder }}</td>
                   <td>
-                    <span *ngIf="bank.isDefault" class="badge bg-success-subtle text-success border border-success-subtle">Utama (Default)</span>
+                    <span *ngIf="bank.isDefault"
+                      class="badge bg-success-subtle text-success border border-success-subtle">Utama (Default)</span>
                     <span *ngIf="!bank.isDefault" class="badge bg-light text-muted border">Operasional</span>
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex gap-1">
                       <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.75rem;"
-                              [disabled]="!isAdmin()" (click)="openEditBankAccountModal(bank)">
+                        [disabled]="!isAdmin()" (click)="openEditBankAccountModal(bank)">
                         Ubah
                       </button>
                       <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.75rem;"
-                              [disabled]="!isAdmin()" (click)="requestDeleteBankAccount(bank)">
+                        [disabled]="!isAdmin()" (click)="requestDeleteBankAccount(bank)">
                         Hapus
                       </button>
                     </div>
@@ -1461,12 +1530,13 @@
       </div>
 
       <!-- =========================================================
-           9. ACTIVITY LOGS VIEW (UC-11, SRS-F-39..40)
+           9. ACTIVITY LOGS VIEW
            ========================================================= -->
       <div *ngIf="activeView() === 'activity-logs'" class="d-flex flex-column gap-3">
         <div>
-          <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Log Aktivitas & Audit Trail (SRS-F-39, SRS-F-40)</h3>
-          <p class="text-muted small mb-0">Catatan kronologis immutable atas setiap tindakan penting yang dilakukan pengguna pada sistem.</p>
+          <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Log Aktivitas & Audit Trail</h3>
+          <p class="text-muted small mb-0">Catatan kronologis immutable atas setiap tindakan penting yang dilakukan
+            pengguna pada sistem.</p>
         </div>
 
         <!-- Activity Logs Filter Bar (Search, Type, User, Optional Date Range & Reset) -->
@@ -1476,14 +1546,16 @@
             <div style="min-width: 200px; max-width: 250px;" class="flex-grow-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control form-control-sm border-start-0 ps-0" placeholder="Cari keterangan, user, ref..."
-                       [ngModel]="logSearchQuery()" (ngModelChange)="logSearchQuery.set($event)">
+                <input type="text" class="form-control form-control-sm border-start-0 ps-0"
+                  placeholder="Cari keterangan, user, ref..." [ngModel]="logSearchQuery()"
+                  (ngModelChange)="logSearchQuery.set($event)">
               </div>
             </div>
 
             <!-- Activity Type Filter -->
             <div style="min-width: 175px;">
-              <select class="form-select form-select-sm" [ngModel]="logTypeFilter()" (ngModelChange)="logTypeFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="logTypeFilter()"
+                (ngModelChange)="logTypeFilter.set($event)">
                 <option value="ALL">Semua Jenis Aktivitas</option>
                 <option value="invoice_created">Invoice Dibuat</option>
                 <option value="invoice_issued">Invoice Diterbitkan</option>
@@ -1498,7 +1570,8 @@
 
             <!-- User Filter -->
             <div style="min-width: 155px;">
-              <select class="form-select form-select-sm" [ngModel]="logUserFilter()" (ngModelChange)="logUserFilter.set($event)">
+              <select class="form-select form-select-sm" [ngModel]="logUserFilter()"
+                (ngModelChange)="logUserFilter.set($event)">
                 <option value="ALL">Semua Pengguna</option>
                 <option *ngFor="let u of availableLogUsers()" [value]="u">{{ u }}</option>
               </select>
@@ -1509,25 +1582,21 @@
               <i class="bi bi-calendar3 text-muted" style="font-size: 0.75rem;"></i>
               <span class="text-muted" style="font-size: 0.75rem;">Dari:</span>
               <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                     style="font-size: 0.75rem; width: 108px; height: auto;"
-                     title="Dari tanggal (Opsional)"
-                     [ngModel]="logStartDate()" (ngModelChange)="logStartDate.set($event)">
+                style="font-size: 0.75rem; width: 108px; height: auto;" title="Dari tanggal (Opsional)"
+                [ngModel]="logStartDate()" (ngModelChange)="logStartDate.set($event)">
               <span class="text-muted" style="font-size: 0.75rem;">s/d</span>
               <input type="date" class="form-control form-control-sm border-0 bg-transparent p-0"
-                     style="font-size: 0.75rem; width: 108px; height: auto;"
-                     title="Sampai tanggal (Opsional)"
-                     [ngModel]="logEndDate()" (ngModelChange)="logEndDate.set($event)">
-              <button type="button" class="btn btn-link text-muted p-0 ms-1"
-                      *ngIf="logStartDate() || logEndDate()"
-                      (click)="logStartDate.set(''); logEndDate.set('')"
-                      title="Hapus filter rentang tanggal">
+                style="font-size: 0.75rem; width: 108px; height: auto;" title="Sampai tanggal (Opsional)"
+                [ngModel]="logEndDate()" (ngModelChange)="logEndDate.set($event)">
+              <button type="button" class="btn btn-link text-muted p-0 ms-1" *ngIf="logStartDate() || logEndDate()"
+                (click)="logStartDate.set(''); logEndDate.set('')" title="Hapus filter rentang tanggal">
                 <i class="bi bi-x-circle-fill text-secondary" style="font-size: 0.8rem;"></i>
               </button>
             </div>
 
             <!-- Reset Button -->
             <button type="button" class="btn btn-sm btn-link text-decoration-none text-danger p-0 ms-1"
-                    *ngIf="hasActiveLogFilters()" (click)="resetLogFilters()" title="Kembalikan semua filter log">
+              *ngIf="hasActiveLogFilters()" (click)="resetLogFilters()" title="Kembalikan semua filter log">
               <i class="bi bi-x-circle me-1"></i>Reset
             </button>
           </div>
@@ -1556,7 +1625,8 @@
                   <td class="v3-mono text-muted small">{{ log.timestamp }}</td>
                   <td>
                     <div class="fw-semibold text-dark">{{ log.user || 'Sistem' }}</div>
-                    <small class="badge bg-light text-secondary border" style="font-size: 0.65rem;">{{ log.role || 'Admin' }}</small>
+                    <small class="badge bg-light text-secondary border" style="font-size: 0.65rem;">{{ log.role ||
+                      'Admin' }}</small>
                   </td>
                   <td>
                     <span class="badge" [ngClass]="{
@@ -1592,16 +1662,15 @@
   <div class="v3-modal-backdrop" *ngIf="showPaymentModal()">
     <div class="v3-modal v3-modal-lg">
       <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5">Pencatatan Pembayaran Masuk (UC-05, UC-06)</h4>
+        <h4 class="fw-bold mb-0 fs-5">Pencatatan Pembayaran Masuk</h4>
         <button type="button" class="btn-close" (click)="showPaymentModal.set(false)"></button>
       </div>
       <div class="v3-modal-body">
         <div class="row g-3 mb-3">
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Pelanggan Penerima Tagihan *</label>
-            <select class="form-select form-select-sm"
-                    [ngModel]="paymentCustomerId()"
-                    (ngModelChange)="onPaymentCustomerChange($event)">
+            <select class="form-select form-select-sm" [ngModel]="paymentCustomerId()"
+              (ngModelChange)="onPaymentCustomerChange($event)">
               <option *ngFor="let c of arService.customers()" [value]="c.id">
                 {{ c.name }} (NPWP: {{ c.npwp }})
               </option>
@@ -1610,14 +1679,14 @@
 
           <div class="col-6 col-md-3">
             <label class="form-label small fw-semibold">Tanggal Pembayaran *</label>
-            <input type="date" class="form-control form-control-sm"
-                   [ngModel]="paymentDate()" (ngModelChange)="paymentDate.set($event)">
+            <input type="date" class="form-control form-control-sm" [ngModel]="paymentDate()"
+              (ngModelChange)="paymentDate.set($event)">
           </div>
 
           <div class="col-6 col-md-3">
-            <label class="form-label small fw-semibold">Metode Pembayaran (SRS-F-21)</label>
-            <select class="form-select form-select-sm"
-                    [ngModel]="paymentMethod()" (ngModelChange)="onPaymentMethodChange($event)">
+            <label class="form-label small fw-semibold">Metode Pembayaran</label>
+            <select class="form-select form-select-sm" [ngModel]="paymentMethod()"
+              (ngModelChange)="onPaymentMethodChange($event)">
               <option value="bank_transfer">Bank Transfer (Giro / RTGS)</option>
               <option value="virtual_account">Virtual Account</option>
               <option value="qris">QRIS Standar Nasional</option>
@@ -1628,17 +1697,17 @@
           </div>
 
           <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Kanal Pembayaran (SRS-F-22)</label>
-            <select class="form-select form-select-sm"
-                    [ngModel]="paymentChannel()" (ngModelChange)="paymentChannel.set($event)">
+            <label class="form-label small fw-semibold">Kanal Pembayaran</label>
+            <select class="form-select form-select-sm" [ngModel]="paymentChannel()"
+              (ngModelChange)="paymentChannel.set($event)">
               <option *ngFor="let ch of availablePaymentChannels()" [value]="ch">{{ ch }}</option>
             </select>
           </div>
 
           <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Rekening Bank Tujuan (SRS-F-32)</label>
-            <select class="form-select form-select-sm"
-                    [ngModel]="paymentBankAccountId()" (ngModelChange)="paymentBankAccountId.set($event)">
+            <label class="form-label small fw-semibold">Rekening Bank Tujuan</label>
+            <select class="form-select form-select-sm" [ngModel]="paymentBankAccountId()"
+              (ngModelChange)="paymentBankAccountId.set($event)">
               <option *ngFor="let b of arService.bankAccounts()" [value]="b.id">
                 {{ b.bankName }} - {{ b.accountNumber }}
               </option>
@@ -1647,39 +1716,47 @@
 
           <div class="col-12 col-md-4">
             <label class="form-label small fw-semibold">Nomor Referensi / Bukti Transfer</label>
-            <input type="text" class="form-control form-control-sm v3-mono"
-                   [ngModel]="paymentRef()" (ngModelChange)="paymentRef.set($event)">
+            <input type="text" class="form-control form-control-sm v3-mono" [ngModel]="paymentRef()"
+              (ngModelChange)="paymentRef.set($event)">
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-5">
             <label class="form-label small fw-semibold">Nominal Pembayaran Diterima (Rp) *</label>
             <input type="number" step="50000" class="form-control form-control-sm v3-mono fs-6 fw-bold text-success"
-                   [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
+              [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
           </div>
 
           <div class="col-12 col-md-3">
-            <label class="form-label small fw-semibold">Biaya Administrasi Bank</label>
+            <label class="form-label small fw-semibold">Biaya Admin Bank</label>
             <input type="number" min="0" step="1000" class="form-control form-control-sm v3-mono"
-                   [ngModel]="paymentAdminFee()" (ngModelChange)="paymentAdminFee.set($event)">
+              [ngModel]="paymentAdminFee()" (ngModelChange)="paymentAdminFee.set($event)">
           </div>
 
-          <div class="col-12 col-md-3 d-flex align-items-end">
-            <div class="form-check mb-2">
-              <input class="form-check-input" type="checkbox" id="dpCheck"
-                     [ngModel]="paymentIsDownPayment()" (ngModelChange)="paymentIsDownPayment.set($event)">
-              <label class="form-check-label small" for="dpCheck">
-                Uang Muka / DP (SRS-F-31)
-              </label>
+          <!-- Clear Segmented Button for Uang Muka / DP vs Pelunasan Tagihan -->
+          <div class="col-12 col-md-4">
+            <label class="form-label small fw-semibold">Tipe Pembayaran</label>
+            <div class="btn-group w-100" role="group">
+              <button type="button" class="btn btn-sm py-1" [class.btn-primary]="!paymentIsDownPayment()"
+                [class.btn-outline-secondary]="paymentIsDownPayment()" (click)="paymentIsDownPayment.set(false)">
+                <i class="bi bi-receipt me-1"></i> Pelunasan Tagihan
+              </button>
+              <button type="button" class="btn btn-sm py-1" [class.btn-warning]="paymentIsDownPayment()"
+                [class.text-dark]="paymentIsDownPayment()" [class.fw-bold]="paymentIsDownPayment()"
+                [class.btn-outline-secondary]="!paymentIsDownPayment()" (click)="paymentIsDownPayment.set(true)">
+                <i class="bi bi-wallet2 me-1"></i> Uang Muka / DP
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Invoice Allocations Table -->
+        <!-- Invoice Allocations Table (if not DP) -->
         <div *ngIf="!paymentIsDownPayment()">
           <div class="d-flex align-items-center justify-content-between mb-2">
-            <label class="small fw-bold text-dark mb-0">Alokasi Pembayaran ke Invoice (SRS-F-24 & SRS-F-25)</label>
-            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" (click)="autoAllocateOldestFirst()">
-              Auto-Alokasi (Faktur Tertua Dulu)
+            <label class="small fw-bold text-dark mb-0">Alokasi Pembayaran ke Invoice</label>
+            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 fw-semibold"
+              style="font-size: 0.75rem;" (click)="autoAllocateOldestFirst()"
+              title="Otomatis mendistribusikan nominal ke tagihan paling awal (metode FIFO)">
+              <i class="bi bi-magic me-1"></i> Auto-Alokasi (Faktur Tertua Dulu)
             </button>
           </div>
 
@@ -1699,8 +1776,9 @@
                   <td class="v3-mono text-muted">{{ item.dueDate }}</td>
                   <td class="text-end v3-mono text-danger">{{ formatMoney(item.balanceDue) }}</td>
                   <td class="text-end">
-                    <input type="number" min="0" [max]="item.balanceDue" class="form-control form-control-sm text-end v3-mono fw-semibold"
-                           [(ngModel)]="item.allocatedAmount">
+                    <input type="number" min="0" [max]="item.balanceDue"
+                      class="form-control form-control-sm text-end v3-mono fw-semibold"
+                      [(ngModel)]="item.allocatedAmount">
                   </td>
                 </tr>
                 <tr *ngIf="paymentAllocations().length === 0">
@@ -1715,26 +1793,30 @@
           <!-- Allocation Summary Strip -->
           <div class="d-flex justify-content-between p-2 bg-light rounded text-muted small border">
             <span>Diterima: <strong class="v3-mono text-dark">{{ formatMoney(paymentAmount()) }}</strong></span>
-            <span>Teralokasi: <strong class="v3-mono text-success">{{ formatMoney(totalAllocatedAmount()) }}</strong></span>
-            <span>Belum Teralokasi: <strong class="v3-mono" [class.text-warning]="unallocatedAmount() > 0">{{ formatMoney(unallocatedAmount()) }}</strong></span>
+            <span>Teralokasi: <strong class="v3-mono text-success">{{ formatMoney(totalAllocatedAmount())
+                }}</strong></span>
+            <span>Belum Teralokasi: <strong class="v3-mono" [class.text-warning]="unallocatedAmount() > 0">{{
+                formatMoney(unallocatedAmount()) }}</strong></span>
           </div>
         </div>
 
         <div *ngIf="paymentIsDownPayment()" class="p-3 bg-light rounded border text-muted small">
-          <strong>Pembayaran Uang Muka (Down Payment):</strong> Nominal pembayaran akan dicatat sebagai deposit uang muka pelanggan dan dapat dipotongkan pada invoice mendatang sesuai SRS-F-31.
+          <strong>Pembayaran Uang Muka (Down Payment):</strong> Nominal pembayaran akan dicatat sebagai deposit uang
+          muka pelanggan dan dapat dipotongkan pada invoice mendatang.
         </div>
       </div>
       <div class="v3-modal-footer">
         <button type="button" class="v3-btn-secondary" (click)="showPaymentModal.set(false)">Batal</button>
-        <button type="button" class="v3-btn-primary" [disabled]="!paymentIsDownPayment() && totalAllocatedAmount() <= 0" (click)="submitPayment()">
-          Simpan & Terapkan Pembayaran (UC-05)
+        <button type="button" class="v3-btn-primary" [disabled]="!paymentIsDownPayment() && totalAllocatedAmount() <= 0"
+          (click)="submitPayment()">
+          Simpan & Terapkan Pembayaran
         </button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================
-       MODAL 2: CANCEL INVOICE MODAL (UC-04, SRS-F-18)
+       MODAL 2: CANCEL INVOICE MODAL
        ========================================================= -->
   <div class="v3-modal-backdrop" *ngIf="showCancelModal()">
     <div class="v3-modal">
@@ -1744,16 +1826,19 @@
       </div>
       <div class="v3-modal-body">
         <div class="alert alert-warning small mb-3">
-          <strong>Perhatian (SRS-F-18):</strong> Pembatalan invoice hanya diperkenankan apabila belum terdapat pembayaran teralokasi. Tindakan ini bernilai final dan dicatat pada audit trail dengan kewenangan role Manager.
+          <strong>Perhatian:</strong> Pembatalan invoice hanya diperkenankan apabila belum terdapat pembayaran
+          teralokasi. Tindakan ini bernilai final dan dicatat pada audit trail dengan kewenangan role Manager.
         </div>
         <label class="form-label small fw-semibold">Alasan Pembatalan (Wajib Diisi) *</label>
-        <textarea class="form-control" rows="3" placeholder="Tuliskan alasan pembatalan (misal: Kesalahan input paket kamar, Duplikasi tagihan)..."
-                  [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)">
+        <textarea class="form-control" rows="3"
+          placeholder="Tuliskan alasan pembatalan (misal: Kesalahan input paket kamar, Duplikasi tagihan)..."
+          [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)">
         </textarea>
       </div>
       <div class="v3-modal-footer">
         <button type="button" class="v3-btn-secondary" (click)="showCancelModal.set(false)">Batal</button>
-        <button type="button" class="btn btn-danger btn-sm fw-semibold" [disabled]="!cancelReason().trim()" (click)="confirmCancelInvoice()">
+        <button type="button" class="btn btn-danger btn-sm fw-semibold" [disabled]="!cancelReason().trim()"
+          (click)="confirmCancelInvoice()">
           Konfirmasi Pembatalan Invoice
         </button>
       </div>
@@ -1788,7 +1873,8 @@
         <button type="button" class="v3-btn-secondary" (click)="showDeleteModal.set(false)">
           {{ d.canDelete ? 'Batal' : 'Tutup' }}
         </button>
-        <button type="button" class="btn btn-danger btn-sm fw-semibold" *ngIf="d.canDelete" (click)="executeConfirmedDelete()">
+        <button type="button" class="btn btn-danger btn-sm fw-semibold" *ngIf="d.canDelete"
+          (click)="executeConfirmedDelete()">
           Konfirmasi Hapus
         </button>
       </div>
@@ -1802,7 +1888,7 @@
     <div class="v3-modal v3-modal-lg">
       <div class="v3-modal-header">
         <h4 class="fw-bold mb-0 fs-5">
-          {{ isEditingCustomer() ? 'Ubah Data Pelanggan' : 'Pendaftaran Data Pelanggan Baru (UC-01)' }}
+          {{ isEditingCustomer() ? 'Ubah Data Pelanggan' : 'Pendaftaran Data Pelanggan Baru' }}
         </h4>
         <button type="button" class="btn-close" (click)="showCustomerModal.set(false)"></button>
       </div>
@@ -1810,14 +1896,15 @@
         <div class="row g-3">
           <div class="col-12 col-md-8">
             <label class="form-label small fw-semibold">Nama Lengkap / Nama Badan Usaha *</label>
-            <input type="text" class="form-control form-control-sm" placeholder="Contoh: PT Telekomunikasi Nusantara Tbk"
-                   [ngModel]="customerFormName()" (ngModelChange)="customerFormName.set($event)">
+            <input type="text" class="form-control form-control-sm"
+              placeholder="Contoh: PT Telekomunikasi Nusantara Tbk" [ngModel]="customerFormName()"
+              (ngModelChange)="customerFormName.set($event)">
           </div>
 
           <div class="col-12 col-md-4">
             <label class="form-label small fw-semibold">Status Akun</label>
-            <select class="form-select form-select-sm"
-                    [ngModel]="customerFormStatus()" (ngModelChange)="customerFormStatus.set($event)">
+            <select class="form-select form-select-sm" [ngModel]="customerFormStatus()"
+              (ngModelChange)="customerFormStatus.set($event)">
               <option value="active">Aktif (Bisa Ditagihkan)</option>
               <option value="credit_hold">Credit Hold (Ditangguhkan)</option>
             </select>
@@ -1825,78 +1912,80 @@
 
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Nomor Induk Kependudukan (NIK - 16 Digit) *</label>
-            <input type="text" class="form-control form-control-sm v3-mono" placeholder="16 digit angka KTP" maxlength="16"
-                   [ngModel]="customerFormNik()" (ngModelChange)="customerFormNik.set($event)">
-            <small class="text-muted" style="font-size: 0.68rem;">Format: 16 digit angka sesuai KTP (SRS-F-01, SRS-F-02)</small>
+            <input type="text" class="form-control form-control-sm v3-mono" placeholder="16 digit angka KTP"
+              maxlength="16" [ngModel]="customerFormNik()" (ngModelChange)="customerFormNik.set($event)">
+            <small class="text-muted" style="font-size: 0.68rem;">Format: 16 digit angka sesuai KTP</small>
           </div>
 
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Nomor Pokok Wajib Pajak (NPWP Perpajakan) *</label>
             <input type="text" class="form-control form-control-sm v3-mono" placeholder="Contoh: 01.345.678.9-012.000"
-                   [ngModel]="customerFormNpwp()" (ngModelChange)="customerFormNpwp.set($event)">
+              [ngModel]="customerFormNpwp()" (ngModelChange)="customerFormNpwp.set($event)">
             <small class="text-muted" style="font-size: 0.68rem;">Identitas perpajakan badan usaha / pribadi</small>
           </div>
 
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Nama Kontak (Contact Person)</label>
-            <input type="text" class="form-control form-control-sm"
-                   [ngModel]="customerFormContact()" (ngModelChange)="customerFormContact.set($event)">
+            <input type="text" class="form-control form-control-sm" [ngModel]="customerFormContact()"
+              (ngModelChange)="customerFormContact.set($event)">
           </div>
 
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Nomor Telepon / WhatsApp</label>
-            <input type="text" class="form-control form-control-sm"
-                   [ngModel]="customerFormPhone()" (ngModelChange)="customerFormPhone.set($event)">
+            <input type="text" class="form-control form-control-sm" [ngModel]="customerFormPhone()"
+              (ngModelChange)="customerFormPhone.set($event)">
           </div>
 
           <div class="col-12 col-md-6">
             <label class="form-label small fw-semibold">Email Penagihan</label>
-            <input type="email" class="form-control form-control-sm"
-                   [ngModel]="customerFormEmail()" (ngModelChange)="customerFormEmail.set($event)">
+            <input type="email" class="form-control form-control-sm" [ngModel]="customerFormEmail()"
+              (ngModelChange)="customerFormEmail.set($event)">
           </div>
 
           <div class="col-6 col-md-3">
             <label class="form-label small fw-semibold">Termin Tagihan (Hari)</label>
-            <input type="number" min="0" class="form-control form-control-sm v3-mono"
-                   [ngModel]="customerFormDueDays()" (ngModelChange)="customerFormDueDays.set($event)">
+            <input type="number" min="0" class="form-control form-control-sm v3-mono" [ngModel]="customerFormDueDays()"
+              (ngModelChange)="customerFormDueDays.set($event)">
           </div>
 
           <div class="col-6 col-md-3">
             <label class="form-label small fw-semibold">Plafon Batas Kredit (Rp)</label>
             <input type="number" step="10000000" class="form-control form-control-sm v3-mono"
-                   [ngModel]="customerFormCreditLimit()" (ngModelChange)="customerFormCreditLimit.set($event)">
+              [ngModel]="customerFormCreditLimit()" (ngModelChange)="customerFormCreditLimit.set($event)">
           </div>
 
           <div class="col-12">
             <label class="form-label small fw-semibold">Alamat Lengkap Kantor / Domisili</label>
-            <textarea class="form-control form-control-sm" rows="2"
-                      [ngModel]="customerFormAddress()" (ngModelChange)="customerFormAddress.set($event)"></textarea>
+            <textarea class="form-control form-control-sm" rows="2" [ngModel]="customerFormAddress()"
+              (ngModelChange)="customerFormAddress.set($event)"></textarea>
           </div>
 
           <div class="col-12">
             <label class="form-label small fw-semibold">Catatan Khusus Pelanggan</label>
-            <input type="text" class="form-control form-control-sm" placeholder="Contoh: Klien City Ledger, perjanjian diskon korporat..."
-                   [ngModel]="customerFormNotes()" (ngModelChange)="customerFormNotes.set($event)">
+            <input type="text" class="form-control form-control-sm"
+              placeholder="Contoh: Klien City Ledger, perjanjian diskon korporat..." [ngModel]="customerFormNotes()"
+              (ngModelChange)="customerFormNotes.set($event)">
           </div>
         </div>
       </div>
       <div class="v3-modal-footer">
         <button type="button" class="v3-btn-secondary" (click)="showCustomerModal.set(false)">Batal</button>
-        <button type="button" class="v3-btn-primary" [disabled]="!customerFormName().trim()" (click)="submitCustomerForm()">
-          {{ isEditingCustomer() ? 'Simpan Perubahan' : 'Simpan Pelanggan (UC-01)' }}
+        <button type="button" class="v3-btn-primary" [disabled]="!customerFormName().trim()"
+          (click)="submitCustomerForm()">
+          {{ isEditingCustomer() ? 'Simpan Perubahan' : 'Simpan Pelanggan' }}
         </button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================
-       MODAL 5: BANK ACCOUNT CREATE / EDIT (UC-07, SRS-F-32)
+       MODAL 5: BANK ACCOUNT CREATE / EDIT
        ========================================================= -->
   <div class="v3-modal-backdrop" *ngIf="showBankAccountModal()">
     <div class="v3-modal">
       <div class="v3-modal-header">
         <h4 class="fw-bold mb-0 fs-5">
-          {{ isEditingBankAccount() ? 'Ubah Data Rekening Bank' : 'Tambah Rekening Bank Hotel (UC-07)' }}
+          {{ isEditingBankAccount() ? 'Ubah Data Rekening Bank' : 'Tambah Rekening Bank Hotel' }}
         </h4>
         <button type="button" class="btn-close" (click)="showBankAccountModal.set(false)"></button>
       </div>
@@ -1905,22 +1994,22 @@
           <div class="col-12">
             <label class="form-label small fw-semibold">Nama Bank Penerima *</label>
             <input type="text" class="form-control form-control-sm" placeholder="Contoh: Bank Central Asia (BCA)"
-                   [ngModel]="bankAccountFormBankName()" (ngModelChange)="bankAccountFormBankName.set($event)">
+              [ngModel]="bankAccountFormBankName()" (ngModelChange)="bankAccountFormBankName.set($event)">
           </div>
           <div class="col-12">
             <label class="form-label small fw-semibold">Nomor Rekening Bank *</label>
             <input type="text" class="form-control form-control-sm v3-mono" placeholder="Contoh: 802-099-1234"
-                   [ngModel]="bankAccountFormAccountNumber()" (ngModelChange)="bankAccountFormAccountNumber.set($event)">
+              [ngModel]="bankAccountFormAccountNumber()" (ngModelChange)="bankAccountFormAccountNumber.set($event)">
           </div>
           <div class="col-12">
             <label class="form-label small fw-semibold">Nama Pemilik Rekening *</label>
             <input type="text" class="form-control form-control-sm" placeholder="Contoh: PT Galesong Pratama"
-                   [ngModel]="bankAccountFormAccountHolder()" (ngModelChange)="bankAccountFormAccountHolder.set($event)">
+              [ngModel]="bankAccountFormAccountHolder()" (ngModelChange)="bankAccountFormAccountHolder.set($event)">
           </div>
           <div class="col-12">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="defaultBankCheck"
-                     [ngModel]="bankAccountFormIsDefault()" (ngModelChange)="bankAccountFormIsDefault.set($event)">
+                [ngModel]="bankAccountFormIsDefault()" (ngModelChange)="bankAccountFormIsDefault.set($event)">
               <label class="form-check-label small" for="defaultBankCheck">
                 Jadikan sebagai rekening utama (default) penagihan
               </label>
@@ -1951,7 +2040,8 @@
         <div class="bg-white p-4 rounded shadow-sm border position-relative overflow-hidden">
 
           <!-- Watermark Stamp for Draft / Cancelled / Paid (SRS UC-08) -->
-          <div class="v3-pdf-watermark" *ngIf="inv.status === 'Draft' || inv.status === 'Cancelled' || inv.status === 'Paid'">
+          <div class="v3-pdf-watermark"
+            *ngIf="inv.status === 'Draft' || inv.status === 'Cancelled' || inv.status === 'Paid'">
             <span *ngIf="inv.status === 'Draft'" class="watermark-draft">DRAFT</span>
             <span *ngIf="inv.status === 'Cancelled'" class="watermark-cancelled">DIBATALKAN</span>
             <span *ngIf="inv.status === 'Paid'" class="watermark-paid">LUNAS</span>
@@ -1968,7 +2058,8 @@
               </p>
             </div>
             <div class="text-end">
-              <span class="badge bg-dark text-white text-uppercase px-2 py-1 mb-1" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+              <span class="badge bg-dark text-white text-uppercase px-2 py-1 mb-1"
+                style="font-size: 0.75rem; letter-spacing: 0.05em;">
                 FAKTUR PENAGIHAN (INVOICE)
               </span>
               <h4 class="v3-mono fw-bold text-primary mb-0 fs-5">{{ inv.invoiceNumber }}</h4>
@@ -2000,7 +2091,8 @@
               <div>Tanggal Invoice: <strong class="v3-mono">{{ inv.issueDate }}</strong></div>
               <div>Tanggal Jatuh Tempo: <strong class="v3-mono">{{ inv.dueDate }}</strong></div>
               <div>Jenis Tagihan: <strong>{{ inv.invoiceType }}</strong></div>
-              <div>Sumber: <strong>{{ inv.sourceType === 'city_ledger' ? 'City Ledger' : 'Direct Corporate' }}</strong></div>
+              <div>Sumber: <strong>{{ inv.sourceType === 'city_ledger' ? 'City Ledger' : 'Direct Corporate' }}</strong>
+              </div>
             </div>
           </div>
 
@@ -2036,7 +2128,8 @@
                 <div>Bank: <strong>Bank Central Asia (BCA)</strong></div>
                 <div>No. Rekening: <strong class="v3-mono">802-099-1234</strong></div>
                 <div>Atas Nama: <strong>PT Galesong Pratama</strong></div>
-                <div class="text-muted mt-1" style="font-size: 0.72rem;">* Cantumkan nomor invoice {{ inv.invoiceNumber }} pada berita transfer</div>
+                <div class="text-muted mt-1" style="font-size: 0.72rem;">* Cantumkan nomor invoice {{ inv.invoiceNumber
+                  }} pada berita transfer</div>
               </div>
             </div>
 
@@ -2102,16 +2195,19 @@
   <!-- ==================== ACTION INBOX SLIDE-OVER DRAWER ==================== -->
   <div class="v3-drawer-backdrop" *ngIf="showActionInbox()" (click)="showActionInbox.set(false)">
     <div class="v3-drawer" (click)="$event.stopPropagation()">
-      
+
       <!-- Drawer Header -->
       <div class="v3-drawer-header">
         <div class="d-flex align-items-center gap-2">
-          <div class="rounded-2 p-1.5 bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+          <div
+            class="rounded-2 p-1.5 bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center"
+            style="width: 32px; height: 32px;">
             <i class="bi bi-bell-fill fs-6"></i>
           </div>
           <div>
             <div class="fw-bold text-dark" style="font-size: 0.95rem;">Agenda Tindak Lanjut Penagihan</div>
-            <div class="text-muted" style="font-size: 0.72rem;">Daftar tugas penagihan overdue dan draft yang perlu diproses hari ini</div>
+            <div class="text-muted" style="font-size: 0.72rem;">Daftar tugas penagihan overdue dan draft yang perlu
+              diproses hari ini</div>
           </div>
         </div>
         <button type="button" class="btn-close" (click)="showActionInbox.set(false)" title="Tutup Panel"></button>
@@ -2120,18 +2216,18 @@
       <!-- Quick Filter Tabs inside Drawer -->
       <div class="px-3 pt-2.5 pb-2 bg-white border-bottom d-flex align-items-center gap-1.5">
         <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
-                [ngClass]="actionInboxTab() === 'all' ? 'btn-dark' : 'btn-light border text-muted'"
-                style="font-size: 0.75rem;" (click)="actionInboxTab.set('all')">
+          [ngClass]="actionInboxTab() === 'all' ? 'btn-dark' : 'btn-light border text-muted'"
+          style="font-size: 0.75rem;" (click)="actionInboxTab.set('all')">
           Semua ({{ priorityOverdueInvoices().length + draftInvoices().length }})
         </button>
         <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
-                [ngClass]="actionInboxTab() === 'overdue' ? 'btn-danger' : 'btn-light border text-muted'"
-                style="font-size: 0.75rem;" (click)="actionInboxTab.set('overdue')">
+          [ngClass]="actionInboxTab() === 'overdue' ? 'btn-danger' : 'btn-light border text-muted'"
+          style="font-size: 0.75rem;" (click)="actionInboxTab.set('overdue')">
           Overdue Penagihan ({{ priorityOverdueInvoices().length }})
         </button>
         <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
-                [ngClass]="actionInboxTab() === 'draft' ? 'btn-secondary' : 'btn-light border text-muted'"
-                style="font-size: 0.75rem;" (click)="actionInboxTab.set('draft')">
+          [ngClass]="actionInboxTab() === 'draft' ? 'btn-secondary' : 'btn-light border text-muted'"
+          style="font-size: 0.75rem;" (click)="actionInboxTab.set('draft')">
           Draft Siap Terbit ({{ draftInvoices().length }})
         </button>
       </div>
@@ -2153,7 +2249,8 @@
               <div class="d-flex align-items-start justify-content-between gap-2">
                 <div>
                   <div class="d-flex align-items-center gap-1.5">
-                    <a href="javascript:void(0)" class="v3-mono fw-bold text-primary text-decoration-none" style="font-size: 0.85rem;" (click)="viewInvoice(inv)">
+                    <a href="javascript:void(0)" class="v3-mono fw-bold text-primary text-decoration-none"
+                      style="font-size: 0.85rem;" (click)="viewInvoice(inv)">
                       {{ inv.invoiceNumber }}
                     </a>
                     <span class="v3-badge v3-badge-overdue" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">
@@ -2161,9 +2258,10 @@
                     </span>
                   </div>
                   <div class="fw-bold text-dark mt-1" style="font-size: 0.85rem;">{{ inv.customerName }}</div>
-                  
+
                   <!-- Contact info for instant dialing -->
-                  <div class="text-muted small mt-1 d-flex flex-wrap align-items-center gap-2" *ngIf="getCustomer(inv.customerId) as cust">
+                  <div class="text-muted small mt-1 d-flex flex-wrap align-items-center gap-2"
+                    *ngIf="getCustomer(inv.customerId) as cust">
                     <span><i class="bi bi-person me-1"></i>{{ cust.contactPerson }}</span>
                     <span>&bull;</span>
                     <a [href]="'tel:' + cust.phone" class="text-primary text-decoration-none v3-mono fw-medium">
@@ -2185,18 +2283,20 @@
                   Jatuh tempo: <strong class="v3-mono text-dark">{{ inv.dueDate }}</strong>
                 </span>
                 <div class="d-flex gap-1.5">
-                  <button type="button" class="btn btn-sm btn-light border py-1 px-2.5" style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
+                  <button type="button" class="btn btn-sm btn-light border py-1 px-2.5" style="font-size: 0.72rem;"
+                    (click)="viewInvoice(inv)">
                     Rincian
                   </button>
                   <button type="button" class="v3-btn-primary py-1 px-3" style="font-size: 0.72rem;"
-                          [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
+                    [disabled]="isViewer()" (click)="openPaymentModal(inv.customerId, inv.id)">
                     Catat Bayar
                   </button>
                 </div>
               </div>
             </div>
 
-            <div *ngIf="priorityOverdueInvoices().length === 0" class="text-center py-4 bg-white rounded border text-muted">
+            <div *ngIf="priorityOverdueInvoices().length === 0"
+              class="text-center py-4 bg-white rounded border text-muted">
               <i class="bi bi-check-circle-fill text-success fs-3 d-block mb-1"></i>
               <div class="fw-medium text-dark" style="font-size: 0.85rem;">Semua tagihan lancar!</div>
               <small style="font-size: 0.72rem;">Tidak ada invoice yang lewat jatuh tempo.</small>
@@ -2218,7 +2318,8 @@
               <div class="d-flex align-items-center justify-content-between gap-2">
                 <div>
                   <div class="d-flex align-items-center gap-1.5">
-                    <span class="v3-mono fw-bold text-secondary" style="font-size: 0.85rem;">{{ inv.invoiceNumber }}</span>
+                    <span class="v3-mono fw-bold text-secondary" style="font-size: 0.85rem;">{{ inv.invoiceNumber
+                      }}</span>
                     <span class="v3-badge v3-badge-draft" style="font-size: 0.65rem;">Draft</span>
                   </div>
                   <div class="fw-semibold text-dark mt-0.5 text-truncate" style="max-width: 250px; font-size: 0.82rem;">
@@ -2229,8 +2330,8 @@
 
                 <div class="text-end">
                   <div class="v3-mono fw-bold text-dark fs-6">{{ formatMoney(inv.total) }}</div>
-                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 mt-1.5" style="font-size: 0.72rem;"
-                          (click)="viewInvoice(inv)">
+                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 mt-1.5"
+                    style="font-size: 0.72rem;" (click)="viewInvoice(inv)">
                     Buka & Terbitkan &rarr;
                   </button>
                 </div>
@@ -2252,7 +2353,8 @@
         <div class="text-muted" style="font-size: 0.75rem;">
           Total tertunggak: <strong class="v3-mono text-danger">{{ formatMoney(overdueTotalBalance()) }}</strong>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showActionInbox.set(false)" style="font-size: 0.75rem;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="showActionInbox.set(false)"
+          style="font-size: 0.75rem;">
           Tutup
         </button>
       </div>

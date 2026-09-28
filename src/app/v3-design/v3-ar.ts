@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, output } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ArDataService } from '../services/ar-data.service';
@@ -44,7 +44,6 @@ export interface DeleteModalState {
 })
 export class V3ArComponent {
   readonly arService = inject(ArDataService);
-  readonly switchMode = output<'classic' | 'minimal' | 'v3' | 'v4'>();
 
   // Navigation State (Default to 'invoices' as the primary workspace)
   activeView = signal<V3ActiveView>('invoices');
@@ -663,7 +662,7 @@ export class V3ArComponent {
     }
 
     if (inv.status !== 'Draft') {
-      this.showToast('Sesuai SRS-F-15, hanya invoice berstatus Draft yang dapat diubah isinya.', 'warning');
+      this.showToast('Hanya invoice berstatus Draft yang dapat diubah isinya.', 'warning');
       return;
     }
 
@@ -698,6 +697,34 @@ export class V3ArComponent {
     }
   }
 
+  // Standard Master Service Catalog for Fast Invoicing & Preset Prices
+  readonly standardCatalogItems = [
+    { name: 'Sewa Ruang Meeting Full-Day (Grand Ballroom)', itemType: 'Banquet' as const, defaultPrice: 15000000 },
+    { name: 'Sewa Ruang Meeting Half-Day (VIP Room)', itemType: 'Banquet' as const, defaultPrice: 7500000 },
+    { name: 'Paket Menginap Deluxe Room (per Malam)', itemType: 'Room' as const, defaultPrice: 1200000 },
+    { name: 'Paket Menginap Executive Suite (per Malam)', itemType: 'Room' as const, defaultPrice: 2800000 },
+    { name: 'Buffet Lunch / Dinner Korporat (per Pax)', itemType: 'F&B' as const, defaultPrice: 275000 },
+    { name: 'Coffee Break & Refreshments (per Pax)', itemType: 'F&B' as const, defaultPrice: 95000 },
+    { name: 'Sewa Fasilitas Videotron & Sound System', itemType: 'Facility' as const, defaultPrice: 5000000 },
+    { name: 'Layanan Airport Shuttle & Valet', itemType: 'Service' as const, defaultPrice: 850000 }
+  ];
+
+  onCatalogItemSelect(index: number, selectedName: string) {
+    if (!selectedName) return;
+    const found = this.standardCatalogItems.find(c => c.name === selectedName);
+    if (found) {
+      const items = [...this.invoiceFormLineItems()];
+      items[index] = {
+        ...items[index],
+        description: found.name,
+        itemType: found.itemType,
+        unitPrice: found.defaultPrice
+      };
+      this.invoiceFormLineItems.set(items);
+      this.showToast(`Memilih katalog: ${found.name} (Harga standar diterapkan)`, 'info');
+    }
+  }
+
   addLineItem() {
     this.invoiceFormLineItems.update(items => [
       ...items,
@@ -726,7 +753,7 @@ export class V3ArComponent {
     }
 
     if (this.invoiceFormDueDate() < this.invoiceFormIssueDate()) {
-      this.showToast('Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice (SRS-F-14).', 'danger');
+      this.showToast('Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice.', 'danger');
       return;
     }
 
@@ -796,12 +823,12 @@ export class V3ArComponent {
   // Cancel Invoice Dialog (UC-04, SRS-F-18)
   openCancelInvoiceModal(inv: Invoice) {
     if (!this.isManagerOrAdmin()) {
-      this.showToast('Akses Ditolak: Pembatalan invoice memerlukan hak akses role Manager atau Admin (SRS-F-17 & UC-04).', 'danger');
+      this.showToast('Akses Ditolak: Pembatalan invoice memerlukan hak akses role Manager atau Admin.', 'danger');
       return;
     }
 
     if (inv.amountPaid > 0) {
-      this.showToast('Invoice Memiliki Pembayaran: Invoice yang telah memiliki pembayaran teralokasi tidak dapat dibatalkan (SRS-F-18).', 'danger');
+      this.showToast('Invoice Memiliki Pembayaran: Invoice yang telah memiliki pembayaran teralokasi tidak dapat dibatalkan.', 'danger');
       return;
     }
 
@@ -816,7 +843,7 @@ export class V3ArComponent {
 
     const reason = this.cancelReason().trim();
     if (!reason) {
-      this.showToast('Harap isi alasan pembatalan invoice (wajib diisi per SRS-F-18).', 'warning');
+      this.showToast('Harap isi alasan pembatalan invoice (wajib diisi).', 'warning');
       return;
     }
 
@@ -961,7 +988,7 @@ export class V3ArComponent {
 
     const totalAlloc = allocs.reduce((sum, a) => sum + a.allocatedAmount, 0);
     if (!isDP && totalAlloc > amount) {
-      this.showToast(`Total alokasi (${this.formatMoney(totalAlloc)}) melebihi nominal pembayaran (${this.formatMoney(amount)}). Sesuaikan angka alokasi (SRS-F-26).`, 'danger');
+      this.showToast(`Total alokasi (${this.formatMoney(totalAlloc)}) melebihi nominal pembayaran (${this.formatMoney(amount)}). Sesuaikan angka alokasi.`, 'danger');
       return;
     }
 
@@ -1043,7 +1070,7 @@ export class V3ArComponent {
   submitCustomerForm() {
     const name = this.customerFormName().trim();
     if (!name) {
-      this.showToast('Nama pelanggan atau badan usaha wajib diisi (SRS-F-01).', 'warning');
+      this.showToast('Nama pelanggan atau badan usaha wajib diisi.', 'warning');
       return;
     }
 
@@ -1113,11 +1140,11 @@ export class V3ArComponent {
       title: 'Hapus Data Pelanggan',
       name: `${cust.name} (${cust.code})`,
       message: hasInvoices
-        ? `Sesuai aturan SRS-F-03, pelanggan "${cust.name}" TIDAK DAPAT DIHAPUS karena telah memiliki ${invoiceCount} invoice terdaftar di dalam sistem.`
+        ? `Pelanggan "${cust.name}" TIDAK DAPAT DIHAPUS karena telah memiliki ${invoiceCount} invoice terdaftar di dalam sistem.`
         : `Apakah Anda yakin ingin menghapus data pelanggan "${cust.name}"? Tindakan ini tidak dapat dibatalkan.`,
       canDelete: !hasInvoices,
       blockedReason: hasInvoices
-        ? `Pelanggan memiliki ${invoiceCount} riwayat invoice. Data transaksi keuangan harus tetap tersimpan untuk integritas audit (SRS-NF-08).`
+        ? `Pelanggan memiliki ${invoiceCount} riwayat invoice. Data transaksi keuangan harus tetap tersimpan untuk integritas audit trail.`
         : undefined
     });
     this.showDeleteModal.set(true);
@@ -1137,10 +1164,10 @@ export class V3ArComponent {
       name: `${inv.invoiceNumber} (${inv.customerName})`,
       message: canDelete
         ? `Apakah Anda yakin ingin menghapus invoice Draft "${inv.invoiceNumber}"? Seluruh rincian item akan dihapus permanen.`
-        : `Sesuai aturan SRS-F-15 & SRS-NF-08, invoice berstatus "${inv.status}" TIDAK DAPAT DIHAPUS. Hanya invoice berstatus Draft yang dapat dihapus. Untuk membatalkan tagihan resmi, gunakan fungsi "Batalkan Invoice".`,
+        : `Invoice berstatus "${inv.status}" TIDAK DAPAT DIHAPUS. Hanya invoice berstatus Draft yang dapat dihapus. Untuk membatalkan tagihan resmi, gunakan fungsi "Batalkan Invoice".`,
       canDelete,
       blockedReason: !canDelete
-        ? `Invoice telah diterbitkan (Status: ${inv.status}). Data faktur resmi tidak boleh dihapus secara fisik demi kepatuhan audit keuangan (SRS-NF-16).`
+        ? `Invoice telah diterbitkan (Status: ${inv.status}). Data faktur resmi tidak boleh dihapus secara fisik demi kepatuhan audit keuangan.`
         : undefined
     });
     this.showDeleteModal.set(true);
@@ -1165,7 +1192,7 @@ export class V3ArComponent {
 
   requestDeleteBankAccount(bank: BankAccount) {
     if (!this.isAdmin()) {
-      this.showToast('Akses Ditolak: Pengelolaan rekening bank hanya dapat dilakukan oleh role Admin (UC-07).', 'danger');
+      this.showToast('Akses Ditolak: Pengelolaan rekening bank hanya dapat dilakukan oleh role Admin.', 'danger');
       return;
     }
 
@@ -1176,7 +1203,7 @@ export class V3ArComponent {
       title: 'Hapus Rekening Bank',
       name: `${bank.bankName} - ${bank.accountNumber}`,
       message: isUsed
-        ? `Rekening ${bank.bankName} (${bank.accountNumber}) telah digunakan pada transaksi pembayaran dan tidak dapat dihapus sesuai SRS-F-32.`
+        ? `Rekening ${bank.bankName} (${bank.accountNumber}) telah digunakan pada transaksi pembayaran dan tidak dapat dihapus.`
         : `Apakah Anda yakin ingin menghapus rekening bank ${bank.bankName} (${bank.accountNumber})?`,
       canDelete: !isUsed,
       blockedReason: isUsed ? 'Rekening bank telah memiliki riwayat penerimaan pembayaran.' : undefined
@@ -1235,7 +1262,7 @@ export class V3ArComponent {
 
   openNewBankAccountModal() {
     if (!this.isAdmin()) {
-      this.showToast('Akses Ditolak: Hanya Admin yang dapat mengelola rekening bank (UC-07).', 'danger');
+      this.showToast('Akses Ditolak: Hanya Admin yang dapat mengelola rekening bank.', 'danger');
       return;
     }
 
@@ -1250,7 +1277,7 @@ export class V3ArComponent {
 
   openEditBankAccountModal(b: BankAccount) {
     if (!this.isAdmin()) {
-      this.showToast('Akses Ditolak: Hanya Admin yang dapat mengelola rekening bank (UC-07).', 'danger');
+      this.showToast('Akses Ditolak: Hanya Admin yang dapat mengelola rekening bank.', 'danger');
       return;
     }
 

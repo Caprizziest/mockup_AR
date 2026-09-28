@@ -732,7 +732,7 @@ export class ArDataService {
       const invCount = this.getCustomerInvoiceCount(id);
       return {
         success: false,
-        message: `Pelanggan "${customer.name}" tidak dapat dihapus karena telah memiliki ${invCount} invoice terdaftar sesuai SRS-F-03.`
+        message: `Pelanggan "${customer.name}" tidak dapat dihapus karena telah memiliki ${invCount} invoice terdaftar.`
       };
     }
 
@@ -852,11 +852,11 @@ export class ArDataService {
     if (!inv) return { success: false, message: 'Invoice tidak ditemukan.' };
 
     if (inv.status !== 'Draft') {
-      return { success: false, message: 'Sesuai SRS-F-15, perubahan isi invoice hanya diperkenankan pada invoice berstatus Draft.' };
+      return { success: false, message: 'Perubahan isi invoice hanya diperkenankan pada invoice berstatus Draft.' };
     }
 
     if (payload.dueDate < payload.issueDate) {
-      return { success: false, message: 'Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice (SRS-F-14).' };
+      return { success: false, message: 'Tanggal jatuh tempo tidak boleh lebih awal dari tanggal invoice.' };
     }
 
     const customer = this.customers().find(c => c.id === payload.customerId);
@@ -924,7 +924,7 @@ export class ArDataService {
     if (!inv) return { success: false, message: 'Invoice tidak ditemukan.' };
 
     if (inv.status !== 'Draft') {
-      return { success: false, message: 'Hanya invoice berstatus Draft yang dapat dihapus secara permanen (SRS-NF-08 & SRS-NF-16).' };
+      return { success: false, message: 'Hanya invoice berstatus Draft yang dapat dihapus secara permanen.' };
     }
 
     this.invoices.update(list => list.filter(i => i.id !== invoiceId));
@@ -949,7 +949,7 @@ export class ArDataService {
     }
 
     if (inv.subtotal <= 0) {
-      return { success: false, message: 'Validasi gagal: Subtotal invoice tidak boleh bernilai nol untuk diterbitkan (UC-03).' };
+      return { success: false, message: 'Validasi gagal: Subtotal invoice tidak boleh bernilai nol untuk diterbitkan.' };
     }
 
     this.invoices.update(list =>
@@ -987,12 +987,12 @@ export class ArDataService {
     if (inv.amountPaid > 0) {
       return {
         success: false,
-        message: 'Invoice Memiliki Pembayaran: Invoice yang telah memiliki pembayaran teralokasi tidak dapat dibatalkan (SRS-F-18).'
+        message: 'Invoice Memiliki Pembayaran: Invoice yang telah memiliki pembayaran teralokasi tidak dapat dibatalkan.'
       };
     }
 
     if (!reason || !reason.trim()) {
-      return { success: false, message: 'Pengisian alasan pembatalan bersifat wajib (SRS-F-18).' };
+      return { success: false, message: 'Pengisian alasan pembatalan bersifat wajib.' };
     }
 
     this.invoices.update(list =>
@@ -1157,7 +1157,7 @@ export class ArDataService {
   createBankAccount(payload: Omit<BankAccount, 'id'>): { success: boolean; message: string; bankAccount?: BankAccount } {
     // Check duplicate account number
     if (this.bankAccounts().some(b => b.accountNumber.trim() === payload.accountNumber.trim() && b.bankName.trim() === payload.bankName.trim())) {
-      return { success: false, message: 'Nomor rekening pada bank yang sama telah terdaftar (UC-07).' };
+      return { success: false, message: 'Nomor rekening pada bank yang sama telah terdaftar.' };
     }
 
     const newAcc: BankAccount = {
@@ -1195,7 +1195,7 @@ export class ArDataService {
     // SRS-F-32 rule: "Rekening bank yang telah digunakan pada pembayaran tidak dapat dihapus; data hanya dapat diperbarui"
     const usedInPayment = this.payments().some(p => p.bankAccountId === id);
     if (usedInPayment) {
-      return { success: false, message: `Rekening ${exists.bankName} telah digunakan pada pencatatan pembayaran dan tidak dapat dihapus (SRS-F-32).` };
+      return { success: false, message: `Rekening ${exists.bankName} telah digunakan pada pencatatan pembayaran dan tidak dapat dihapus.` };
     }
 
     this.bankAccounts.update(list => list.filter(b => b.id !== id));

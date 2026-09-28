@@ -61,6 +61,14 @@
   color: #ffffff;
   font-size: 0.95rem;
   letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.v3-sidebar-logo {
+  height: 36px;
+  max-width: 145px;
+  object-fit: contain;
+  display: block;
 }
 
 .v3-brand-monogram {
