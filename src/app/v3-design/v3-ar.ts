@@ -19,6 +19,7 @@ export type V3ActiveView =
   | 'invoice-create'
   | 'invoice-edit'
   | 'invoice-detail'
+  | 'payments'
   | 'customers'
   | 'customer-detail'
   | 'aging-report'
@@ -45,8 +46,8 @@ export interface DeleteModalState {
 export class V3ArComponent {
   readonly arService = inject(ArDataService);
 
-  // Navigation State (Default to 'invoices' as the primary workspace)
-  activeView = signal<V3ActiveView>('invoices');
+  // Navigation State (Default to 'dashboard' as the executive overview)
+  activeView = signal<V3ActiveView>('dashboard');
   sidebarMobileOpen = signal<boolean>(false);
 
   // Selection state
@@ -256,6 +257,223 @@ export class V3ArComponent {
   bankAccountFormAccountNumber = signal<string>('');
   bankAccountFormAccountHolder = signal<string>('');
   bankAccountFormIsDefault = signal<boolean>(false);
+
+  // --- Payment Journal Filter & Sorting State ---
+  paymentSearchQuery = signal<string>('');
+  paymentMethodFilter = signal<string>('ALL');
+  paymentStartDate = signal<string>('');
+  paymentEndDate = signal<string>('');
+  paymentSortBy = signal<'paymentDate_desc' | 'paymentDate_asc' | 'amount_desc'>('paymentDate_desc');
+
+  filteredPayments = computed(() => {
+    const q = this.paymentSearchQuery().toLowerCase().trim();
+    const method = this.paymentMethodFilter();
+    const start = this.paymentStartDate();
+    const end = this.paymentEndDate();
+    const sort = this.paymentSortBy();
+
+    let list = this.arService.payments().filter(p => {
+      const matchesQ = !q ||
+        p.paymentNumber.toLowerCase().includes(q) ||
+        p.customerName.toLowerCase().includes(q) ||
+        (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)) ||
+        (p.paymentChannel && p.paymentChannel.toLowerCase().includes(q));
+
+      if (!matchesQ) return false;
+      if (method !== 'ALL' && p.method !== method) return false;
+      if (start && p.paymentDate < start) return false;
+      if (end && p.paymentDate > end) return false;
+      return true;
+    });
+
+    return list.sort((a, b) => {
+      if (sort === 'paymentDate_desc') return new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime();
+      if (sort === 'paymentDate_asc') return new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime();
+      if (sort === 'amount_desc') return b.amount - a.amount;
+      return 0;
+    });
+  });
+
+  paymentsSummary = computed(() => {
+    const list = this.filteredPayments();
+    const totalCount = list.length;
+    const count = list.length;
+    const totalAmount = list.reduce((sum, p) => sum + p.amount, 0);
+    const totalAdminFee = list.reduce((sum, p) => sum + (p.adminFee || 0), 0);
+    return { totalCount, count, totalAmount, totalAdminFee };
+  });
+
+  hasActivePaymentFilters = computed(() => {
+    return !!(
+      this.paymentSearchQuery().trim() ||
+      this.paymentMethodFilter() !== 'ALL' ||
+      this.paymentStartDate() ||
+      this.paymentEndDate() ||
+      this.paymentSortBy() !== 'paymentDate_desc'
+    );
+  });
+
+  resetPaymentFilters() {
+    this.paymentSearchQuery.set('');
+    this.paymentMethodFilter.set('ALL');
+    this.paymentStartDate.set('');
+    this.paymentEndDate.set('');
+    this.paymentSortBy.set('paymentDate_desc');
+  }
+
+  // --- Executive Dashboard Helper Computations ---
+  topDebtorCustomers = computed(() => {
+    const invoices = this.arService.invoices();
+    return this.arService.customers()
+      .map(c => {
+        const balance = this.arService.getCustomerBalance(c.id);
+        const overdueInvs = invoices.filter(i => i.customerId === c.id && i.status === 'Overdue');
+        const overdueTotal = overdueInvs.reduce((sum, i) => sum + i.balanceDue, 0);
+        const limitUsage = this.getCustomerCreditUtilization(c);
+        return {
+          customer: c,
+          balance,
+          invoiceCount: this.arService.getCustomerInvoiceCount(c.id),
+          utilization: limitUsage,
+          limitUsage,
+          overdueCount: overdueInvs.length,
+          overdueTotal
+        };
+      })
+      .filter(item => item.balance > 0)
+      .sort((a, b) => b.balance - a.balance)
+      .slice(0, 5);
+  });
+
+  recentPayments = computed(() => {
+    return [...this.arService.payments()]
+      .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())
+      .slice(0, 6);
+  });
+
+  computedDSO = computed(() => {
+    const metrics = this.arService.dashboardMetrics();
+    const totalCreditSales = this.arService.invoices()
+      .filter(i => i.status !== 'Draft' && i.status !== 'Cancelled')
+      .reduce((sum, i) => sum + i.total, 0);
+
+    const days = totalCreditSales > 0 ? Math.max(1, Math.round((metrics.totalOutstanding / totalCreditSales) * 30)) : 0;
+    let statusText = 'Optimal (< 30 hari)';
+    let badgeClass = 'text-success bg-success-subtle border-success-subtle';
+    let statusDesc = 'Perputaran kas lancar dan penagihan efektif sesuai tempo standar Net 30.';
+
+    if (days > 45) {
+      statusText = 'Kritis (> 45 hari)';
+      badgeClass = 'text-danger bg-danger-subtle border-danger-subtle';
+      statusDesc = 'Tertahan cukup lama, perlu tindakan penagihan intensif.';
+    } else if (days > 30) {
+      statusText = 'Perhatian (30-45 hari)';
+      badgeClass = 'text-warning bg-warning-subtle border-warning-subtle';
+      statusDesc = 'Siklus penagihan sedikit melambat di atas batas standar Net 30.';
+    }
+
+    return { days, statusText, badgeClass, statusDesc };
+  });
+
+  agingDistribution = computed(() => {
+    const grand = this.agingData().grandTotal;
+    const total = grand.totalOutstanding;
+    const calcPct = (val: number) => (total > 0 ? Math.round((val / total) * 100) : 0);
+
+    return {
+      current: grand.current,
+      currentPct: calcPct(grand.current),
+      days1_30: grand.days1_30,
+      days1_30Pct: calcPct(grand.days1_30),
+      days31_60: grand.days31_60,
+      days31_60Pct: calcPct(grand.days31_60),
+      days61_90: grand.days61_90,
+      days61_90Pct: calcPct(grand.days61_90),
+      days90Plus: grand.days90Plus,
+      days90PlusPct: calcPct(grand.days90Plus),
+      total
+    };
+  });
+
+  agingDistributionPercent = computed(() => {
+    const d = this.agingDistribution();
+    return {
+      current: d.currentPct,
+      days1_30: d.days1_30Pct,
+      days31_60: d.days31_60Pct,
+      days61_90: d.days61_90Pct,
+      days90Plus: d.days90PlusPct
+    };
+  });
+
+  // Dashboard Toggle Tab: 'overdue' (Action Queue) or 'debtors' (Top Balances)
+  dashboardDebtorTab = signal<'overdue' | 'debtors'>('overdue');
+
+  // Executive Aging Bar Chart Data
+  agingChartData = computed(() => {
+    const dist = this.agingDistribution();
+    const buckets = [
+      {
+        id: 'current',
+        label: 'Belum Tempo',
+        sublabel: 'Lancar / On-Schedule',
+        amount: dist.current,
+        pct: dist.currentPct,
+        barClass: 'v3-bar-current',
+        dotClass: 'dot-green',
+        badgeClass: 'bg-success-subtle text-success border border-success-subtle'
+      },
+      {
+        id: '1-30',
+        label: '1 - 30 Hari',
+        sublabel: 'Keterlambatan Awal',
+        amount: dist.days1_30,
+        pct: dist.days1_30Pct,
+        barClass: 'v3-bar-130',
+        dotClass: 'dot-blue',
+        badgeClass: 'bg-primary-subtle text-primary border border-primary-subtle'
+      },
+      {
+        id: '31-60',
+        label: '31 - 60 Hari',
+        sublabel: 'Perhatian Khusus',
+        amount: dist.days31_60,
+        pct: dist.days31_60Pct,
+        barClass: 'v3-bar-3160',
+        dotClass: 'dot-yellow',
+        badgeClass: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle'
+      },
+      {
+        id: '61-90',
+        label: '61 - 90 Hari',
+        sublabel: 'Waspada Tinggi',
+        amount: dist.days61_90,
+        pct: dist.days61_90Pct,
+        barClass: 'v3-bar-6190',
+        dotClass: 'dot-orange',
+        badgeClass: 'bg-warning-subtle text-dark border border-warning-subtle'
+      },
+      {
+        id: '90plus',
+        label: '> 90 Hari',
+        sublabel: 'Kritis / Bad Debt Risk',
+        amount: dist.days90Plus,
+        pct: dist.days90PlusPct,
+        barClass: 'v3-bar-90plus',
+        dotClass: 'dot-red',
+        badgeClass: 'bg-danger-subtle text-danger border border-danger-subtle'
+      }
+    ];
+
+    const maxAmount = Math.max(...buckets.map(b => b.amount), 1);
+    return {
+      buckets: buckets.map(b => ({
+        ...b,
+        heightPct: Math.max(12, Math.round((b.amount / maxAmount) * 100))
+      })),
+      totalOutstanding: dist.total
+    };
+  });
 
   // RBAC Permission Computations
   currentUser = computed(() => this.arService.currentUser());

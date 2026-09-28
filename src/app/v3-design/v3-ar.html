@@ -3,7 +3,7 @@
   <!-- ==================== V3 SIDEBAR ==================== -->
   <aside class="v3-sidebar" [class.mobile-open]="sidebarMobileOpen()">
     <div class="v3-sidebar-header">
-      <div class="v3-brand" (click)="navigateTo('invoices')" role="button" tabindex="0"
+      <div class="v3-brand" (click)="navigateTo('dashboard')" role="button" tabindex="0"
         title="PT Galesong Pratama - Sistem Piutang">
         <img src="asset/image3.png" alt="PT Galesong Pratama" class="v3-sidebar-logo" />
       </div>
@@ -11,40 +11,72 @@
     </div>
 
     <nav class="v3-sidebar-nav">
-      <div class="v3-nav-group-label">Operasional AR</div>
+      <div class="v3-nav-group-label">Ringkasan Eksekutif</div>
+      <button type="button" class="v3-nav-item"
+        [class.active]="activeView() === 'dashboard'"
+        (click)="navigateTo('dashboard')">
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </span>
+      </button>
+
+      <div class="v3-nav-group-label mt-3">Operasional AR</div>
       <button type="button" class="v3-nav-item"
         [class.active]="activeView() === 'invoices' || activeView() === 'invoice-detail' || activeView() === 'invoice-create' || activeView() === 'invoice-edit'"
         (click)="navigateTo('invoices')">
-        <span>Daftar Invoice</span>
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-receipt"></i>
+          <span>Daftar Invoice</span>
+        </span>
         <span class="v3-nav-pill-danger" *ngIf="arService.dashboardMetrics().overdueInvoicesCount > 0">
           {{ arService.dashboardMetrics().overdueInvoicesCount }}
         </span>
       </button>
 
       <button type="button" class="v3-nav-item"
+        [class.active]="activeView() === 'payments'"
+        (click)="navigateTo('payments')">
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-wallet2"></i>
+          <span>Riwayat Pembayaran</span>
+        </span>
+        <span class="v3-nav-pill-muted">{{ arService.payments().length }}</span>
+      </button>
+
+      <button type="button" class="v3-nav-item"
         [class.active]="activeView() === 'customers' || activeView() === 'customer-detail'"
         (click)="navigateTo('customers')">
-        <span>Data Pelanggan</span>
-        <!-- <span class="v3-nav-pill-muted">{{ arService.customers().length }}</span> -->
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-people"></i>
+          <span>Data Pelanggan</span>
+        </span>
       </button>
 
       <div class="v3-nav-group-label mt-3">Laporan & Audit</div>
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'aging-report'"
         (click)="navigateTo('aging-report')">
-        <span>Laporan Aging</span>
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-bar-chart-steps"></i>
+          <span>Laporan Aging</span>
+        </span>
       </button>
 
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'activity-logs'"
         (click)="navigateTo('activity-logs')">
-        <span>Log Aktivitas (Audit)</span>
-        <!-- <span class="v3-nav-pill-muted">{{ arService.activityLogs().length }}</span> -->
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-clock-history"></i>
+          <span>Log Aktivitas (Audit)</span>
+        </span>
       </button>
 
       <div class="v3-nav-group-label mt-3">Master Data & Pengaturan</div>
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'bank-accounts'"
         (click)="navigateTo('bank-accounts')">
-        <span>Rekening Bank Hotel</span>
-        <!-- <span class="v3-nav-pill-muted">{{ arService.bankAccounts().length }}</span> -->
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-bank"></i>
+          <span>Rekening Bank Hotel</span>
+        </span>
       </button>
     </nav>
 
@@ -91,11 +123,13 @@
           <span class="text-muted">/</span>
           <span class="v3-breadcrumb-current">
             <ng-container [ngSwitch]="activeView()">
+              <span *ngSwitchCase="'dashboard'">Ikhtisar Finansial AR</span>
               <span *ngSwitchCase="'invoices'">Daftar Invoice</span>
               <span *ngSwitchCase="'invoice-create'">{{ editingInvoiceId() ? 'Ubah Invoice Draft' : 'Buat Invoice Baru'
                 }}</span>
               <span *ngSwitchCase="'invoice-edit'">Ubah Invoice Draft</span>
               <span *ngSwitchCase="'invoice-detail'">Faktur {{ selectedInvoice()?.invoiceNumber }}</span>
+              <span *ngSwitchCase="'payments'">Riwayat Pembayaran Masuk</span>
               <span *ngSwitchCase="'customers'">Data Pelanggan</span>
               <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
               <span *ngSwitchCase="'aging-report'">Laporan Umur Piutang (Aging Matrix)</span>
@@ -132,6 +166,368 @@
 
     <!-- Main Content Area -->
     <main class="v3-content">
+
+      <!-- =========================================================
+           1. EXECUTIVE DASHBOARD / IKHTISAR FINANSIAL AR
+           ========================================================= -->
+      <div *ngIf="activeView() === 'dashboard'" class="d-flex flex-column gap-4">
+
+        <!-- 4 Top Executive KPI Cards -->
+        <div class="row g-3">
+          <!-- KPI 1: Total Outstanding AR -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="v3-kpi-card h-100 cursor-pointer" (click)="navigateTo('invoices'); invoiceCategoryFilter.set('Issued')">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Total Piutang Berjalan</span>
+                <!-- <span class="badge bg-primary-subtle text-primary p-2 rounded-2">
+                  <i class="bi bi-cash-stack fs-6"></i>
+                </span> -->
+              </div>
+              <div class="v3-kpi-value v3-mono text-dark">
+                {{ formatMoney(arService.dashboardMetrics().totalOutstanding) }}
+              </div>
+              <div class="v3-kpi-meta text-secondary">
+                <span class="badge bg-light text-dark border">{{ arService.dashboardMetrics().openInvoicesCount }} Invoice Aktif</span>
+                <span class="ms-auto text-primary small fw-semibold">Lihat Semua &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 2: Overdue AR Risk -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="v3-kpi-card h-100 cursor-pointer border-danger-subtle" (click)="navigateTo('invoices'); invoiceCategoryFilter.set('Overdue')">
+              <div class="v3-kpi-header">
+                <span class="text-danger fw-semibold" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Piutang Jatuh Tempo</span>
+                <!-- <span class="badge bg-danger-subtle text-danger p-2 rounded-2">
+                  <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+                </span> -->
+              </div>
+              <div class="v3-kpi-value v3-mono text-danger">
+                {{ formatMoney(arService.dashboardMetrics().totalOverdue) }}
+              </div>
+              <div class="v3-kpi-meta text-secondary">
+                <span class="badge bg-danger text-white">{{ arService.dashboardMetrics().overdueInvoicesCount }} Invoice Overdue</span>
+                <span class="ms-auto text-danger small fw-semibold">Prioritas Tagih &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 3: Cash Collected This Month -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="v3-kpi-card h-100 cursor-pointer" (click)="navigateTo('payments')">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Penerimaan Kas (Bulan Ini)</span>
+                <!-- <span class="badge bg-success-subtle text-success p-2 rounded-2">
+                  <i class="bi bi-wallet-fill fs-6"></i>
+                </span> -->
+              </div>
+              <div class="v3-kpi-value v3-mono text-success">
+                {{ formatMoney(arService.dashboardMetrics().collectedThisMonth) }}
+              </div>
+              <div class="v3-kpi-meta text-secondary">
+                <span class="badge bg-success-subtle text-success border border-success-subtle">{{ arService.dashboardMetrics().paidThisMonthCount }} Transaksi Masuk</span>
+                <span class="ms-auto text-success small fw-semibold">Jurnal Kas &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 4: DSO (Days Sales Outstanding) -->
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="v3-kpi-card h-100">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">Days Sales Outstanding (DSO)</span>
+                <!-- <span class="badge bg-info-subtle text-info p-2 rounded-2">
+                  <i class="bi bi-speedometer2 fs-6"></i>
+                </span> -->
+              </div>
+              <div class="d-flex align-items-baseline gap-2 mb-1">
+                <div class="v3-kpi-value v3-mono text-dark mb-0">
+                  {{ computedDSO().days }} <span class="fs-6 fw-normal text-secondary">Hari</span>
+                </div>
+                <span class="badge px-2 py-1 rounded-pill small" [ngClass]="computedDSO().badgeClass">
+                  {{ computedDSO().statusText }}
+                </span>
+              </div>
+              <div class="v3-kpi-meta text-secondary" style="font-size: 0.7rem; line-height: 1.3;">
+                {{ computedDSO().statusDesc }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grafik Distribusi Umur Piutang (Executive Aging Column Bar Chart) -->
+        <div class="v3-aging-chart-card">
+          <div class="v3-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+              <h3 class="v3-card-title">
+                <i class="bi bi-bar-chart-line-fill text-primary"></i>
+                <span>Grafik Komposisi Umur Piutang (Aging Breakdown)</span>
+              </h3>
+              <p class="v3-card-subtitle">Distribusi saldo tagihan hotel berdasarkan lamanya keterlambatan pembayaran</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+                (click)="navigateTo('aging-report')">
+                <span>Buka Matriks Aging Lengkap</span>
+                <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="v3-chart-stage">
+            <!-- 5 Column Bars Grid -->
+            <div class="v3-chart-columns-grid">
+              <div *ngFor="let col of agingChartData().buckets" class="v3-chart-col"
+                (click)="navigateTo('aging-report')" [title]="col.label + ' (' + col.sublabel + '): ' + formatMoney(col.amount)">
+                
+                <!-- Nominal on top of column -->
+                <div class="v3-col-val v3-mono">
+                  {{ formatMoney(col.amount) }}
+                </div>
+
+                <!-- Bar Column Track -->
+                <div class="v3-col-bar-track">
+                  <div class="v3-col-bar-fill" [ngClass]="col.barClass" [style.height.%]="col.heightPct">
+                    <span class="v3-col-pct-tag" *ngIf="col.pct > 0">{{ col.pct }}%</span>
+                  </div>
+                </div>
+
+                <!-- Label Footer -->
+                <div class="v3-col-footer">
+                  <div class="v3-col-name">
+                    <span class="v3-log-dot" [ngClass]="col.dotClass"></span>
+                    <span>{{ col.label }}</span>
+                  </div>
+                  <div class="v3-col-desc">{{ col.sublabel }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chart Legend Bar -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3 mt-1">
+              <div class="d-flex align-items-center gap-3 flex-wrap small text-secondary">
+                <span class="d-flex align-items-center gap-1">
+                  <span class="v3-log-dot dot-green"></span>
+                  <span>Belum Tempo: <strong>{{ agingDistribution().currentPct }}%</strong></span>
+                </span>
+                <span class="d-flex align-items-center gap-1">
+                  <span class="v3-log-dot dot-blue"></span>
+                  <span>1-30 Hari: <strong>{{ agingDistribution().days1_30Pct }}%</strong></span>
+                </span>
+                <span class="d-flex align-items-center gap-1">
+                  <span class="v3-log-dot dot-yellow"></span>
+                  <span>31-60 Hari: <strong>{{ agingDistribution().days31_60Pct }}%</strong></span>
+                </span>
+                <span class="d-flex align-items-center gap-1">
+                  <span class="v3-log-dot dot-orange"></span>
+                  <span>61-90 Hari: <strong>{{ agingDistribution().days61_90Pct }}%</strong></span>
+                </span>
+                <span class="d-flex align-items-center gap-1 text-danger">
+                  <span class="v3-log-dot dot-red"></span>
+                  <span>&gt;90 Hari (Kritis): <strong>{{ agingDistribution().days90PlusPct }}%</strong></span>
+                </span>
+              </div>
+              <div class="text-muted small" style="font-size: 0.72rem;">
+                *Klik pada kolom grafik untuk langsung memeriksa daftar faktur terkait
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Split: Actionable Overdue Invoices / Top Debtors vs Recent Cash Receipts -->
+        <div class="row g-4">
+          <!-- Left Column: Dual-Tab Table (Prioritas Penagihan vs Top Debitur) -->
+          <div class="col-12 col-xl-7">
+            <div class="v3-card h-100 d-flex flex-column">
+              <div class="v3-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <!-- Dual Tab Switcher -->
+                <div class="d-flex align-items-center gap-2">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn"
+                      [class.btn-danger]="dashboardDebtorTab() === 'overdue'"
+                      [class.btn-outline-secondary]="dashboardDebtorTab() !== 'overdue'"
+                      (click)="dashboardDebtorTab.set('overdue')">
+                      <i class="bi bi-exclamation-circle-fill me-1"></i>
+                      <span>Prioritas Penagihan Overdue ({{ priorityOverdueInvoices().length }})</span>
+                    </button>
+                    <button type="button" class="btn"
+                      [class.btn-primary]="dashboardDebtorTab() === 'debtors'"
+                      [class.btn-outline-secondary]="dashboardDebtorTab() !== 'debtors'"
+                      (click)="dashboardDebtorTab.set('debtors')">
+                      <i class="bi bi-people-fill me-1"></i>
+                      <span>Top Saldo Debitur</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <button *ngIf="dashboardDebtorTab() === 'overdue'" type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-danger"
+                    (click)="showActionInbox.set(true)">
+                    Buka Drawer Tindak Lanjut &rarr;
+                  </button>
+                  <button *ngIf="dashboardDebtorTab() === 'debtors'" type="button" class="btn btn-sm btn-link text-decoration-none p-0"
+                    (click)="navigateTo('customers')">
+                    Kelola Semua Pelanggan &rarr;
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content for Tab 1: Prioritas Penagihan Overdue (Actionable!) -->
+              <div *ngIf="dashboardDebtorTab() === 'overdue'" class="v3-table-container flex-grow-1">
+                <table class="v3-table v3-table-fit">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">No. Invoice & Tempo</th>
+                      <th style="width: 33%;">Pelanggan & Kontak PIC</th>
+                      <th style="width: 18%;">Keterlambatan</th>
+                      <th style="width: 24%; text-align: right;">Sisa Tagihan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let inv of priorityOverdueInvoices().slice(0, 5)" class="align-middle">
+                      <td>
+                        <div class="v3-mono fw-bold text-dark cursor-pointer text-primary-hover" (click)="viewInvoice(inv)">
+                          {{ inv.invoiceNumber }}
+                        </div>
+                        <div class="text-secondary small" style="font-size: 0.7rem;">Tempo: {{ inv.dueDate }}</div>
+                      </td>
+                      <td>
+                        <div class="fw-semibold text-dark">{{ inv.customerName }}</div>
+                        <div class="text-muted small" *ngIf="getCustomer(inv.customerId) as cust" style="font-size: 0.7rem;">
+                          {{ cust.contactPerson }} &bull; {{ cust.phone }}
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-danger text-white py-1 px-2" style="font-size: 0.7rem;">
+                          {{ getDaysPastDue(inv.dueDate) }} Hari Lewat
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="v3-mono fw-bold text-danger">{{ formatMoney(inv.balanceDue) }}</div>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 mt-1" style="font-size: 0.7rem;"
+                          (click)="viewInvoice(inv)">
+                          Detail &rarr;
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="priorityOverdueInvoices().length === 0">
+                      <td colspan="4" class="text-center text-success py-5">
+                        <i class="bi bi-check-circle-fill fs-3 d-block mb-1"></i>
+                        <div class="fw-bold">Semua Faktur Lancar</div>
+                        <div class="small text-muted">Tidak ada invoice yang melewati jatuh tempo saat ini.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Content for Tab 2: Top Pelanggan dengan Saldo Tertinggi -->
+              <div *ngIf="dashboardDebtorTab() === 'debtors'" class="v3-table-container flex-grow-1">
+                <table class="v3-table v3-table-fit">
+                  <thead>
+                    <tr>
+                      <th style="width: 32%;">Pelanggan</th>
+                      <th style="width: 24%;">Total Saldo</th>
+                      <th style="width: 28%;">Utilisasi Limit</th>
+                      <th style="width: 16%; text-align: right;">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of topDebtorCustomers()" class="align-middle">
+                      <td>
+                        <div class="fw-bold text-dark cursor-pointer text-primary-hover" (click)="viewCustomer(item.customer)">
+                          {{ item.customer.name }}
+                        </div>
+                        <div class="text-secondary small font-monospace" style="font-size: 0.7rem;">{{ item.customer.code }}</div>
+                      </td>
+                      <td>
+                        <div class="v3-mono fw-bold text-dark">{{ formatMoney(item.balance) }}</div>
+                        <span *ngIf="item.overdueCount > 0" class="badge bg-danger-subtle text-danger border border-danger-subtle py-0" style="font-size: 0.65rem;">
+                          {{ item.overdueCount }} Overdue
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex align-items-center justify-content-between small mb-1">
+                          <span class="text-secondary" style="font-size: 0.7rem;">{{ item.limitUsage }}%</span>
+                          <span class="text-muted" style="font-size: 0.68rem;">Maks: {{ formatMoney(item.customer.creditLimit) }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                          <div class="progress-bar"
+                            [class.bg-danger]="item.limitUsage >= 90"
+                            [class.bg-warning]="item.limitUsage >= 70 && item.limitUsage < 90"
+                            [class.bg-primary]="item.limitUsage < 70"
+                            [style.width.%]="item.limitUsage">
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2"
+                          (click)="viewCustomer(item.customer)" title="Buka Buku Pembantu Pelanggan">
+                          Buku Pembantu
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="topDebtorCustomers().length === 0">
+                      <td colspan="4" class="text-center text-muted py-4">
+                        Tidak ada pelanggan dengan saldo piutang berjalan saat ini.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Recent Payments Feed -->
+          <div class="col-12 col-xl-5">
+            <div class="v3-card h-100 d-flex flex-column">
+              <div class="v3-card-header d-flex align-items-center justify-content-between">
+                <div>
+                  <h3 class="v3-card-title">
+                    <i class="bi bi-wallet2 text-success"></i>
+                    <span>Penerimaan Kas Terkini</span>
+                  </h3>
+                  <p class="v3-card-subtitle">Transaksi kas masuk yang berhasil terverifikasi di sistem</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" (click)="navigateTo('payments')">
+                  Lihat Semua &rarr;
+                </button>
+              </div>
+
+              <div class="p-3 flex-grow-1">
+                <div class="d-flex flex-column gap-2">
+                  <div *ngFor="let p of recentPayments()" class="p-2 rounded-2 border bg-light d-flex align-items-center justify-content-between">
+                    <div>
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="v3-mono fw-bold text-dark small">{{ p.paymentNumber }}</span>
+                        <span *ngIf="p.isDownPayment" class="badge bg-warning text-dark py-0" style="font-size: 0.65rem;">DP</span>
+                        <span *ngIf="!p.isDownPayment" class="badge bg-primary text-white py-0" style="font-size: 0.65rem;">Pelunasan</span>
+                      </div>
+                      <div class="text-secondary small fw-medium text-truncate" style="max-width: 180px;">
+                        {{ p.customerName }}
+                      </div>
+                      <div class="text-muted" style="font-size: 0.68rem;">
+                        {{ p.paymentChannel }} &bull; {{ p.paymentDate }}
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <div class="v3-mono fw-bold text-success">{{ formatMoney(p.amount) }}</div>
+                      <div class="text-muted" style="font-size: 0.68rem;" *ngIf="p.referenceNumber">
+                        Ref: {{ p.referenceNumber }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="recentPayments().length === 0" class="text-center text-muted py-4 small">
+                    Belum ada riwayat pembayaran yang tercatat.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
 
       <!-- =========================================================
            2. INVOICES LEDGER VIEW (Strict SRS Status Codes & Colors)
@@ -899,6 +1295,204 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- =========================================================
+           3. PAYMENT RECEIPTS JOURNAL VIEW (Riwayat Pembayaran Masuk)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'payments'" class="d-flex flex-column gap-3">
+
+        <!-- Header & Action Ribbon -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <h2 class="h5 fw-bold text-dark mb-1">Riwayat Pembayaran Masuk</h2>
+            <p class="text-secondary small mb-0">
+              Jurnal transaksi penerimaan kas, bukti setor/transfer bank, alokasi faktur, dan mutasi uang muka (DP).
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="v3-btn-primary" [disabled]="isViewer()" (click)="openPaymentModal()">
+              <i class="bi bi-plus-lg me-1"></i>
+              <span>Catat Pembayaran Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="v3-card p-3">
+          <div class="row g-2 align-items-center">
+            <!-- Search Query -->
+            <div class="col-12 col-lg-4">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white text-muted border-end-0">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-0"
+                  placeholder="Cari no. kwitansi, pelanggan, referensi transfer..."
+                  [ngModel]="paymentSearchQuery()"
+                  (ngModelChange)="paymentSearchQuery.set($event)" />
+              </div>
+            </div>
+
+            <!-- Filter Method -->
+            <div class="col-6 col-lg-2">
+              <select class="form-select form-select-sm"
+                [ngModel]="paymentMethodFilter()"
+                (ngModelChange)="paymentMethodFilter.set($event)">
+                <option value="ALL">Semua Metode</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="virtual_account">Virtual Account</option>
+                <option value="e_wallet">E-Wallet</option>
+                <option value="qris">QRIS</option>
+                <option value="credit_card">Kartu Kredit</option>
+                <option value="cash">Tunai</option>
+              </select>
+            </div>
+
+            <!-- Date Range -->
+            <div class="col-6 col-lg-2">
+              <input type="date" class="form-control form-select-sm"
+                [ngModel]="paymentStartDate()"
+                (ngModelChange)="paymentStartDate.set($event)"
+                placeholder="Dari tgl" title="Tanggal Mulai" />
+            </div>
+            <div class="col-6 col-lg-2">
+              <input type="date" class="form-control form-select-sm"
+                [ngModel]="paymentEndDate()"
+                (ngModelChange)="paymentEndDate.set($event)"
+                placeholder="Sampai tgl" title="Tanggal Akhir" />
+            </div>
+
+            <!-- Sort -->
+            <div class="col-6 col-lg-2 d-flex gap-2">
+              <select class="form-select form-select-sm"
+                [ngModel]="paymentSortBy()"
+                (ngModelChange)="paymentSortBy.set($event)">
+                <option value="paymentDate_desc">Terbaru</option>
+                <option value="paymentDate_asc">Terlama</option>
+                <option value="amount_desc">Nominal Terbesar</option>
+              </select>
+
+              <button *ngIf="hasActivePaymentFilters()" type="button" class="btn btn-sm btn-outline-danger"
+                (click)="resetPaymentFilters()" title="Reset Filter">
+                <i class="bi bi-x-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments Journal Table (100% Fit with zero horizontal scroll) -->
+        <div class="v3-card">
+          <div class="v3-table-container">
+            <table class="v3-table v3-table-fit">
+              <thead>
+                <tr>
+                  <th style="width: 17%;">No. Bukti & Tanggal</th>
+                  <th style="width: 25%;">Pelanggan</th>
+                  <th style="width: 25%;">Saluran & Rekening Hotel</th>
+                  <th style="width: 13%;">Alokasi Faktur</th>
+                  <th style="width: 12%; text-align: right;">Nominal Diterima</th>
+                  <th style="width: 8%; text-align: right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of filteredPayments()" class="align-middle">
+                  <!-- Col 1: Kwitansi & Tanggal -->
+                  <td>
+                    <div class="v3-mono fw-bold text-dark">{{ p.paymentNumber }}</div>
+                    <div class="text-secondary small mt-0" style="font-size: 0.72rem;">
+                      <i class="bi bi-calendar3 me-1"></i>{{ p.paymentDate }}
+                    </div>
+                  </td>
+
+                  <!-- Col 2: Pelanggan & Kontak -->
+                  <td>
+                    <div class="fw-bold text-dark cursor-pointer text-primary-hover"
+                      *ngIf="getCustomer(p.customerId) as cust" (click)="viewCustomer(cust)">
+                      {{ p.customerName }}
+                    </div>
+                    <div *ngIf="!getCustomer(p.customerId)" class="fw-bold text-dark">
+                      {{ p.customerName }}
+                    </div>
+                    <div class="text-muted small" *ngIf="getCustomer(p.customerId) as cust" style="font-size: 0.7rem;">
+                      {{ cust.contactPerson }}
+                    </div>
+                  </td>
+
+                  <!-- Col 3: Saluran, Bank & No Ref -->
+                  <td>
+                    <div class="d-flex align-items-center gap-1 mb-1 flex-wrap">
+                      <span class="badge bg-secondary-subtle text-dark border py-0 px-2" style="font-size: 0.68rem;">
+                        {{ p.paymentChannel }}
+                      </span>
+                    </div>
+                    <div *ngIf="getBankAccount(p.bankAccountId) as bank" class="small text-secondary" style="font-size: 0.72rem;">
+                      {{ bank.bankName }} &bull; <span class="font-monospace text-dark">{{ bank.accountNumber }}</span>
+                    </div>
+                    <div class="text-muted font-monospace" style="font-size: 0.68rem;" *ngIf="p.referenceNumber">
+                      Ref: {{ p.referenceNumber }}
+                    </div>
+                  </td>
+
+                  <!-- Col 4: Alokasi / DP -->
+                  <td>
+                    <div *ngIf="p.isDownPayment">
+                      <span class="badge bg-warning text-dark border border-warning-subtle py-1">
+                        <i class="bi bi-coin me-1"></i>Uang Muka (DP)
+                      </span>
+                    </div>
+                    <div *ngIf="!p.isDownPayment && p.allocations && p.allocations.length > 0" class="d-flex flex-column gap-1">
+                      <div *ngFor="let alloc of p.allocations" class="d-flex align-items-center gap-1">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle v3-mono py-1" style="font-size: 0.7rem;">
+                          {{ alloc.invoiceNumber }}
+                        </span>
+                      </div>
+                    </div>
+                    <div *ngIf="!p.isDownPayment && (!p.allocations || p.allocations.length === 0)" class="text-muted small">
+                      (Belum Dialokasi)
+                    </div>
+                  </td>
+
+                  <!-- Col 5: Nominal Diterima -->
+                  <td class="text-end">
+                    <div class="v3-mono fw-bold text-success fs-6">{{ formatMoney(p.amount) }}</div>
+                    <div class="text-muted" style="font-size: 0.68rem;" *ngIf="p.adminFee && p.adminFee > 0">
+                      Fee: {{ formatMoney(p.adminFee) }}
+                    </div>
+                  </td>
+
+                  <!-- Col 6: Aksi -->
+                  <td class="text-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2"
+                      *ngIf="isManagerOrAdmin()"
+                      (click)="requestDeletePayment(p)"
+                      title="Batalkan pembayaran dan pulihkan saldo tagihan invoice">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i>Rollback
+                    </button>
+                    <span *ngIf="!isManagerOrAdmin()" class="text-muted small">-</span>
+                  </td>
+                </tr>
+
+                <tr *ngIf="filteredPayments().length === 0">
+                  <td colspan="6" class="text-center py-5">
+                    <div class="d-flex flex-column align-items-center gap-2">
+                      <i class="bi bi-wallet2 fs-2 text-muted"></i>
+                      <div class="fw-semibold text-secondary">Tidak ada data pembayaran yang sesuai filter</div>
+                      <div class="text-muted small" *ngIf="hasActivePaymentFilters()">
+                        Cobalah mengubah kata kunci pencarian atau rentang tanggal filter.
+                      </div>
+                      <button *ngIf="hasActivePaymentFilters()" type="button" class="btn btn-sm btn-outline-secondary mt-2"
+                        (click)="resetPaymentFilters()">
+                        Reset Semua Filter
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <!-- =========================================================
