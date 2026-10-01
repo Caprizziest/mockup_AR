@@ -11,7 +11,12 @@ import {
   BankAccount,
   UserRole,
   AppUser,
-  LineItem
+  LineItem,
+  InstallmentItem,
+  CustomerDpTransaction,
+  MutasiCustomerSummary,
+  MutasiTransactionDetail,
+  KartuPiutangRow
 } from '../models/ar.models';
 
 @Injectable({
@@ -166,7 +171,110 @@ export class ArDataService {
       dueDays: 14,
       status: 'active',
       notes: 'Individual VIP Customer (No active invoices - test deletion candidate)',
-      createdAt: '2026-09-01'
+      createdAt: '2026-09-01',
+      dpBalance: 0
+    },
+    {
+      id: 'cust-sgm',
+      code: 'CUST-008',
+      name: 'PT. SINAR GALESONG MANDIRI',
+      contactPerson: 'Drs. H. Syarifuddin',
+      email: 'finance@galesong-mandiri.co.id',
+      phone: '+62 411 361 8899',
+      address: 'Jl. A.P. Pettarani No. 55, Makassar, Sulawesi Selatan',
+      nik: '7371052204800008',
+      npwp: '01.889.345.2-801.000',
+      creditLimit: 500000000,
+      dueDays: 14,
+      status: 'active',
+      notes: 'Afiliasi Galesong Group - Fleet & Logistics Services',
+      createdAt: '2026-01-01',
+      dpBalance: 10000000
+    },
+    {
+      id: 'cust-ainun',
+      code: 'CUST-009',
+      name: 'AINUN',
+      contactPerson: 'Ibu Ainun',
+      email: 'ainun.lifestyle@gmail.com',
+      phone: '+62 812 4290 8812',
+      address: 'Jl. Somba Opu No. 88, Makassar',
+      nik: '7371014502900009',
+      npwp: '08.123.456.7-802.000',
+      creditLimit: 25000000,
+      dueDays: 30,
+      status: 'active',
+      notes: 'Langganan F&B dan Catering Event Galesong',
+      createdAt: '2026-01-01',
+      dpBalance: 2500000
+    },
+    {
+      id: 'cust-abdkadir',
+      code: 'CUST-010',
+      name: 'Abd Kadir MN',
+      contactPerson: 'Abd Kadir MN',
+      email: 'abdkadir.mn@gmail.com',
+      phone: '+62 813 5521 9081',
+      address: 'Jl. Pengayoman No. 12, Makassar',
+      nik: '7371021408850010',
+      npwp: '09.234.567.8-803.000',
+      creditLimit: 30000000,
+      dueDays: 14,
+      status: 'active',
+      notes: 'Pelanggan Retail & Service Berkala',
+      createdAt: '2026-01-05',
+      dpBalance: 0
+    }
+  ]);
+
+  // Reactive Saldo Uang Muka (DP Ledger) per Customer
+  readonly dpTransactions = signal<CustomerDpTransaction[]>([
+    {
+      id: 'dp-01',
+      customerId: 'cust-1',
+      customerName: 'PT Telekomunikasi Nusantara Tbk',
+      date: '2026-08-15',
+      type: 'deposit',
+      amount: 15000000,
+      balanceAfter: 15000000,
+      paymentNumber: 'PAY-DP-001',
+      referenceNumber: 'TRF-BCA-DP-110',
+      notes: 'Setoran uang muka reservasi ballroom & banquet Q4'
+    },
+    {
+      id: 'dp-02',
+      customerId: 'cust-1',
+      customerName: 'PT Telekomunikasi Nusantara Tbk',
+      date: '2026-09-01',
+      type: 'applied',
+      amount: 5000000,
+      balanceAfter: 10000000,
+      invoiceNumber: 'INV-2026-0002',
+      notes: 'Pemotongan DP pada Invoice INV-2026-0002 (Deluxe Suite)'
+    },
+    {
+      id: 'dp-03',
+      customerId: 'cust-sgm',
+      customerName: 'PT. SINAR GALESONG MANDIRI',
+      date: '2026-08-01',
+      type: 'deposit',
+      amount: 10000000,
+      balanceAfter: 10000000,
+      paymentNumber: 'PAY-DP-002',
+      referenceNumber: 'TRF-MND-DP-55',
+      notes: 'Deposit awal kontrak armada operasional & event support'
+    },
+    {
+      id: 'dp-04',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      date: '2026-01-02',
+      type: 'deposit',
+      amount: 2500000,
+      balanceAfter: 2500000,
+      paymentNumber: 'PAY-DP-003',
+      referenceNumber: 'TRF-BCA-AINUN-01',
+      notes: 'Setoran Uang Muka paket katering rutin semester 1'
     }
   ]);
 
@@ -441,6 +549,333 @@ export class ArDataService {
       cancellationReason: 'Replaced by INV-2026-0003 - incorrect PO details and duplicate room package',
       cancelledAt: '2026-07-05',
       cancelledBy: 'Manager Keuangan'
+    },
+    // Data Riil PT Sinar Galesong Mandiri (Sesuai Lampiran Kartu Piutang Galesong Group)
+    {
+      id: 'inv-sgm-01',
+      invoiceNumber: '008/INV/SGP-FNC/08-2026',
+      journalNumber: 'FN00260803008',
+      customerId: 'cust-sgm',
+      customerName: 'PT. SINAR GALESONG MANDIRI',
+      customerNik: '7371052204800008',
+      customerNpwp: '01.889.345.2-801.000',
+      issueDate: '2026-08-03',
+      dueDate: '2026-08-17',
+      status: 'Paid',
+      invoiceType: 'Invoice 008/INV/SGP-FNC/08-2026',
+      lineItems: [
+        { id: 'li-sgm-1', description: 'Pengadaan Armada Operasional & Pemeliharaan Berkala', itemType: 'Service', quantity: 1, unitPrice: 4797500, lineTotal: 4797500 }
+      ],
+      subtotal: 4797500,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 4797500,
+      amountPaid: 4797500,
+      balanceDue: 0,
+      notes: 'Invoice 008/INV/SGP-FNC/08-2026 (Lunas via Bank Mandiri)',
+      sourceType: 'generic',
+      createdById: 'user-01',
+      createdByName: 'Staf Penagihan AR',
+      createdAt: '2026-08-03'
+    },
+    {
+      id: 'inv-sgm-02',
+      invoiceNumber: '008/INV/SGP-FNC/09-2026',
+      journalNumber: 'FN00260901008',
+      customerId: 'cust-sgm',
+      customerName: 'PT. SINAR GALESONG MANDIRI',
+      customerNik: '7371052204800008',
+      customerNpwp: '01.889.345.2-801.000',
+      issueDate: '2026-09-01',
+      dueDate: '2026-09-15',
+      status: 'Overdue',
+      timesOverdue: 1,
+      invoiceType: 'Invoice 008/INV/SGP-FNC/09-2026',
+      lineItems: [
+        { id: 'li-sgm-2', description: 'Biaya Layanan Kendaraan Operasional September 2026', itemType: 'Service', quantity: 1, unitPrice: 4797500, lineTotal: 4797500 }
+      ],
+      subtotal: 4797500,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 4797500,
+      amountPaid: 0,
+      balanceDue: 4797500,
+      notes: 'No Payment for Invoice 008/INV/SGP-FNC/09-2026',
+      sourceType: 'generic',
+      createdById: 'user-01',
+      createdByName: 'Staf Penagihan AR',
+      createdAt: '2026-09-01'
+    },
+    // Data Riil AINUN (Sesuai Lampiran Laporan Mutasi Piutang Galesong Group)
+    {
+      id: 'inv-ain-01',
+      invoiceNumber: 'ARP260104063',
+      journalNumber: 'FN00260104063',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-04',
+      dueDate: '2026-01-18',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a1', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 22000, lineTotal: 22000 }],
+      subtotal: 22000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 22000,
+      amountPaid: 22000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-04'
+    },
+    {
+      id: 'inv-ain-02',
+      invoiceNumber: 'ARP260109061',
+      journalNumber: 'FN00260109061',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-09',
+      dueDate: '2026-01-23',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a2', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
+      subtotal: 20000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 20000,
+      amountPaid: 20000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-09'
+    },
+    {
+      id: 'inv-ain-03',
+      invoiceNumber: 'ARP260116009',
+      journalNumber: 'FN00260116009',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-16',
+      dueDate: '2026-01-30',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a3', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 21500, lineTotal: 21500 }],
+      subtotal: 21500,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 21500,
+      amountPaid: 21500,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-16'
+    },
+    {
+      id: 'inv-ain-04',
+      invoiceNumber: 'ARP260116066',
+      journalNumber: 'FN00260116066',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-16',
+      dueDate: '2026-01-30',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a4', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 65000, lineTotal: 65000 }],
+      subtotal: 65000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 65000,
+      amountPaid: 65000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-16'
+    },
+    {
+      id: 'inv-ain-05',
+      invoiceNumber: 'ARP260117083',
+      journalNumber: 'FN00260117083',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-17',
+      dueDate: '2026-01-31',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a5', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 18500, lineTotal: 18500 }],
+      subtotal: 18500,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 18500,
+      amountPaid: 18500,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-17'
+    },
+    {
+      id: 'inv-ain-06',
+      invoiceNumber: 'ARP260118047',
+      journalNumber: 'FN00260118047',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-18',
+      dueDate: '2026-02-01',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a6', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 15000, lineTotal: 15000 }],
+      subtotal: 15000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 15000,
+      amountPaid: 15000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-18'
+    },
+    {
+      id: 'inv-ain-07',
+      invoiceNumber: 'ARP260124011',
+      journalNumber: 'FN00260124011',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-24',
+      dueDate: '2026-02-07',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a7', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 9000, lineTotal: 9000 }],
+      subtotal: 9000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 9000,
+      amountPaid: 9000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-24'
+    },
+    {
+      id: 'inv-ain-08',
+      invoiceNumber: 'ARP260125181',
+      journalNumber: 'FN00260125181',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-25',
+      dueDate: '2026-02-08',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a8', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 14000, lineTotal: 14000 }],
+      subtotal: 14000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 14000,
+      amountPaid: 14000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-25'
+    },
+    {
+      id: 'inv-ain-09',
+      invoiceNumber: 'ARP260125142',
+      journalNumber: 'FN00260125142',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-25',
+      dueDate: '2026-02-08',
+      status: 'Paid',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a9', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 3000, lineTotal: 3000 }],
+      subtotal: 3000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 3000,
+      amountPaid: 3000,
+      balanceDue: 0,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-25'
+    },
+    {
+      id: 'inv-ain-10',
+      invoiceNumber: 'ARP260131015',
+      journalNumber: 'FN00260131015',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-01-31',
+      dueDate: '2026-02-14',
+      status: 'Issued',
+      invoiceType: 'PVC0001 AINUN, January 2026',
+      lineItems: [{ id: 'li-a10', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 12000, lineTotal: 12000 }],
+      subtotal: 12000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 12000,
+      amountPaid: 0,
+      balanceDue: 12000,
+      notes: 'PVC0001 AINUN, January 2026',
+      sourceType: 'generic',
+      createdAt: '2026-01-31'
+    },
+    {
+      id: 'inv-ain-11',
+      invoiceNumber: 'ARP260201043',
+      journalNumber: 'FN00260201043',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      issueDate: '2026-02-01',
+      dueDate: '2026-02-15',
+      status: 'Issued',
+      invoiceType: 'PVC0001 AINUN, February 2026',
+      lineItems: [{ id: 'li-a11', description: 'PVC0001 AINUN, February 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
+      subtotal: 20000,
+      taxRate: 0,
+      taxAmount: 0,
+      pphRate: 0,
+      pphAmount: 0,
+      dpDeduction: 0,
+      total: 20000,
+      amountPaid: 0,
+      balanceDue: 20000,
+      notes: 'PVC0001 AINUN, February 2026',
+      sourceType: 'generic',
+      createdAt: '2026-02-01'
     }
   ]);
 
@@ -449,6 +884,8 @@ export class ArDataService {
     {
       id: 'pay-201',
       paymentNumber: 'PAY-2026-0001',
+      journalNumber: 'BD00260825001',
+      kwitansiNumber: '501/KLBR-FNC/MKS/VIII/2026',
       customerId: 'cust-1',
       customerName: 'PT Telekomunikasi Nusantara Tbk',
       paymentDate: '2026-08-25',
@@ -462,11 +899,16 @@ export class ArDataService {
       allocations: [
         { invoiceId: 'inv-101', invoiceNumber: 'INV-2026-0001', allocatedAmount: 65400000, timesPaid: 1 }
       ],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Rina Hartati (Finance Audit)',
+      auditedAt: '2026-08-26 09:30',
       createdAt: '2026-08-25'
     },
     {
       id: 'pay-202',
       paymentNumber: 'PAY-2026-0002',
+      journalNumber: 'BD00260910002',
+      kwitansiNumber: '502/KLBR-FNC/MKS/IX/2026',
       customerId: 'cust-1',
       customerName: 'PT Telekomunikasi Nusantara Tbk',
       paymentDate: '2026-09-10',
@@ -480,11 +922,14 @@ export class ArDataService {
       allocations: [
         { invoiceId: 'inv-102', invoiceNumber: 'INV-2026-0002', allocatedAmount: 20000000, timesPaid: 1 }
       ],
+      auditStatus: 'pending_fa',
       createdAt: '2026-09-10'
     },
     {
       id: 'pay-203',
       paymentNumber: 'PAY-2026-0003',
+      journalNumber: 'BD00260715003',
+      kwitansiNumber: '503/KLBR-FNC/MKS/VII/2026',
       customerId: 'cust-3',
       customerName: 'CV Surya Perkasa Mandiri',
       paymentDate: '2026-07-15',
@@ -498,7 +943,184 @@ export class ArDataService {
       allocations: [
         { invoiceId: 'inv-104', invoiceNumber: 'INV-2026-0004', allocatedAmount: 10000000, timesPaid: 1 }
       ],
+      auditStatus: 'pending_fa',
       createdAt: '2026-07-15'
+    },
+    {
+      id: 'pay-sgm-01',
+      paymentNumber: 'PAY-2026-0004',
+      journalNumber: 'BD00260828001',
+      kwitansiNumber: '102/SGP-KWT/VIII/2026',
+      customerId: 'cust-sgm',
+      customerName: 'PT. SINAR GALESONG MANDIRI',
+      paymentDate: '2026-08-28',
+      amount: 4797500,
+      method: 'bank_transfer',
+      paymentChannel: 'Bank Mandiri',
+      referenceNumber: 'BD00260828001',
+      bankAccountId: 'bank-02',
+      adminFee: 0,
+      notes: 'Payment for Invoice 008/INV/SGP-FNC/08-2026',
+      allocations: [
+        { invoiceId: 'inv-sgm-01', invoiceNumber: '008/INV/SGP-FNC/08-2026', allocatedAmount: 4797500, timesPaid: 1 }
+      ],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Rina Hartati (Finance Audit)',
+      auditedAt: '2026-08-29 11:00',
+      createdAt: '2026-08-28'
+    },
+    // Payments for AINUN (from real screenshot)
+    {
+      id: 'pay-ain-01',
+      paymentNumber: 'PAY-AIN-01',
+      journalNumber: 'BD00260128001',
+      kwitansiNumber: '540/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 15000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '540/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251220015',
+      allocations: [{ invoiceId: 'inv-ain-01', invoiceNumber: 'ARP251220015', allocatedAmount: 15000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-02',
+      paymentNumber: 'PAY-AIN-02',
+      journalNumber: 'BD00260128002',
+      kwitansiNumber: '542/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 26000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '542/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251227021',
+      allocations: [{ invoiceId: 'inv-ain-02', invoiceNumber: 'ARP251227021', allocatedAmount: 26000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-03',
+      paymentNumber: 'PAY-AIN-03',
+      journalNumber: 'BD00260128003',
+      kwitansiNumber: '541/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 9000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '541/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251221062',
+      allocations: [{ invoiceId: 'inv-ain-03', invoiceNumber: 'ARP251221062', allocatedAmount: 9000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-04',
+      paymentNumber: 'PAY-AIN-04',
+      journalNumber: 'BD00260128004',
+      kwitansiNumber: '539/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 26000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '539/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251216016',
+      allocations: [{ invoiceId: 'inv-ain-04', invoiceNumber: 'ARP251216016', allocatedAmount: 26000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-05',
+      paymentNumber: 'PAY-AIN-05',
+      journalNumber: 'BD00260128005',
+      kwitansiNumber: '538/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 16000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '538/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251214050',
+      allocations: [{ invoiceId: 'inv-ain-05', invoiceNumber: 'ARP251214050', allocatedAmount: 16000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-06',
+      paymentNumber: 'PAY-AIN-06',
+      journalNumber: 'BD00260128006',
+      kwitansiNumber: '537/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 18500,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '537/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251213056',
+      allocations: [{ invoiceId: 'inv-ain-06', invoiceNumber: 'ARP251213056', allocatedAmount: 18500, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-07',
+      paymentNumber: 'PAY-AIN-07',
+      journalNumber: 'BD00260128007',
+      kwitansiNumber: '536/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 14000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '536/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251207028',
+      allocations: [{ invoiceId: 'inv-ain-07', invoiceNumber: 'ARP251207028', allocatedAmount: 14000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
+    },
+    {
+      id: 'pay-ain-08',
+      paymentNumber: 'PAY-AIN-08',
+      journalNumber: 'BD00260128008',
+      kwitansiNumber: '535/KLBR-FNC/MKS/I/2026',
+      customerId: 'cust-ainun',
+      customerName: 'AINUN',
+      paymentDate: '2026-01-28',
+      amount: 18000,
+      method: 'cash',
+      paymentChannel: 'Kasir Front Office',
+      referenceNumber: '535/KLBR-FNC/MKS/I/2026',
+      notes: 'Payment for invoice ARP251206035',
+      allocations: [{ invoiceId: 'inv-ain-08', invoiceNumber: 'ARP251206035', allocatedAmount: 18000, timesPaid: 1 }],
+      auditStatus: 'verified_fa',
+      auditedBy: 'Staf Income Audit FA',
+      auditedAt: '2026-01-29 08:30',
+      createdAt: '2026-01-28'
     }
   ]);
 
@@ -764,6 +1386,15 @@ export class ArDataService {
     notes?: string;
     sourceType?: 'generic' | 'city_ledger' | 'direct';
     saveAs: 'Draft' | 'Sent' | 'Issued';
+    isInstallment?: boolean;
+    installmentCount?: number;
+    installmentIntervalDays?: number;
+    installmentSchedule?: InstallmentItem[];
+    hasRollover?: boolean;
+    rolledOverAmount?: number;
+    rolledOverFrom?: string;
+    timesOverdue?: number;
+    journalNumber?: string;
   }): Invoice {
     const customer = this.customers().find(c => c.id === payload.customerId);
     const customerName = customer ? customer.name : 'Unknown Customer';
@@ -783,13 +1414,17 @@ export class ArDataService {
     const dpDeduction = Number(payload.dpDeduction) || 0;
 
     // Total tagihan = Subtotal + PPN - PPh - Potongan DP (SRS-F-12)
-    const total = Math.max(0, subtotal + taxAmount - pphAmount - dpDeduction);
+    const baseTotal = Math.max(0, subtotal + taxAmount - pphAmount - dpDeduction);
+    // Rollover addition if enabled
+    const rolledOverAmount = payload.hasRollover ? (Number(payload.rolledOverAmount) || 0) : 0;
+    const total = baseTotal + rolledOverAmount;
 
     const initialStatus: InvoiceStatus = payload.saveAs === 'Draft' ? 'Draft' : 'Issued';
 
     const newInvoice: Invoice = {
       id: `inv-${Date.now()}`,
       invoiceNumber: this.getNextInvoiceNumber(),
+      journalNumber: payload.journalNumber || `FN${payload.issueDate.replace(/-/g, '').substring(2)}${Math.floor(100 + Math.random() * 900)}`,
       customerId: payload.customerId,
       customerName,
       customerNik: customer?.nik,
@@ -812,7 +1447,15 @@ export class ArDataService {
       sourceType: payload.sourceType || 'generic',
       createdById: this.currentUser().id,
       createdByName: this.currentUser().fullName,
-      createdAt: this.today
+      createdAt: this.today,
+      isInstallment: payload.isInstallment || false,
+      installmentCount: payload.installmentCount,
+      installmentIntervalDays: payload.installmentIntervalDays,
+      installmentSchedule: payload.installmentSchedule,
+      hasRollover: payload.hasRollover || false,
+      rolledOverAmount,
+      rolledOverFrom: payload.rolledOverFrom,
+      timesOverdue: payload.timesOverdue || 0
     };
 
     if (newInvoice.status === 'Issued') {
@@ -823,7 +1466,7 @@ export class ArDataService {
 
     this.addActivityLog({
       type: newInvoice.status === 'Draft' ? 'invoice_created' : 'invoice_issued',
-      description: `Invoice ${newInvoice.invoiceNumber} (${newInvoice.status}) dibuat untuk ${customerName} (Total Rp ${newInvoice.total.toLocaleString('id-ID')})`,
+      description: `Invoice ${newInvoice.invoiceNumber} (${newInvoice.status}) dibuat untuk ${customerName} (Total Rp ${newInvoice.total.toLocaleString('id-ID')})${payload.isInstallment ? ` - Skema Cicilan ${payload.installmentCount}x` : ''}${payload.hasRollover ? ` (Termasuk tunggakan Rp ${rolledOverAmount.toLocaleString('id-ID')})` : ''}`,
       amount: newInvoice.total,
       referenceId: newInvoice.invoiceNumber,
       badgeType: newInvoice.status === 'Draft' ? 'secondary' : 'info'
@@ -846,6 +1489,14 @@ export class ArDataService {
       dpDeduction: number;
       notes?: string;
       sourceType?: 'generic' | 'city_ledger' | 'direct';
+      isInstallment?: boolean;
+      installmentCount?: number;
+      installmentIntervalDays?: number;
+      installmentSchedule?: InstallmentItem[];
+      hasRollover?: boolean;
+      rolledOverAmount?: number;
+      rolledOverFrom?: string;
+      timesOverdue?: number;
     }
   ): { success: boolean; message: string; invoice?: Invoice } {
     const inv = this.invoices().find(i => i.id === invoiceId);
@@ -873,7 +1524,9 @@ export class ArDataService {
     const taxAmount = Math.round((subtotal * (Number(payload.taxRate) || 0)) / 100);
     const pphAmount = Math.round((subtotal * (Number(payload.pphRate) || 0)) / 100);
     const dpDeduction = Number(payload.dpDeduction) || 0;
-    const total = Math.max(0, subtotal + taxAmount - pphAmount - dpDeduction);
+    const baseTotal = Math.max(0, subtotal + taxAmount - pphAmount - dpDeduction);
+    const rolledOverAmount = payload.hasRollover ? (Number(payload.rolledOverAmount) || 0) : 0;
+    const total = baseTotal + rolledOverAmount;
 
     let updatedInvoice: Invoice | undefined;
 
@@ -899,7 +1552,15 @@ export class ArDataService {
             total,
             balanceDue: total,
             notes: payload.notes || '',
-            sourceType: payload.sourceType || i.sourceType
+            sourceType: payload.sourceType || i.sourceType,
+            isInstallment: payload.isInstallment ?? i.isInstallment,
+            installmentCount: payload.installmentCount ?? i.installmentCount,
+            installmentIntervalDays: payload.installmentIntervalDays ?? i.installmentIntervalDays,
+            installmentSchedule: payload.installmentSchedule ?? i.installmentSchedule,
+            hasRollover: payload.hasRollover ?? i.hasRollover,
+            rolledOverAmount: rolledOverAmount,
+            rolledOverFrom: payload.rolledOverFrom ?? i.rolledOverFrom,
+            timesOverdue: payload.timesOverdue ?? i.timesOverdue
           };
           return updatedInvoice;
         }
@@ -1294,6 +1955,405 @@ export class ArDataService {
   }
 
   // ==========================================
+  // INCOME AUDIT (VERIFIKASI FISIK & BANK DEPT FA)
+  // ==========================================
+
+  verifyIncomeAudit(paymentId: string, auditorName: string, notes?: string): { success: boolean; message: string } {
+    const pay = this.payments().find(p => p.id === paymentId);
+    if (!pay) return { success: false, message: 'Pembayaran tidak ditemukan.' };
+
+    this.payments.update(list =>
+      list.map(p => {
+        if (p.id === paymentId) {
+          return {
+            ...p,
+            auditStatus: 'verified_fa',
+            auditedBy: auditorName,
+            auditedAt: `${this.today} ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
+            auditNotes: notes || 'Telah diverifikasi fisik dan rekonsiliasi kas bank oleh Dept FA'
+          };
+        }
+        return p;
+      })
+    );
+
+    this.addActivityLog({
+      type: 'status_changed',
+      description: `Income Audit: Pembayaran ${pay.paymentNumber} (${pay.customerName}, Rp ${pay.amount.toLocaleString('id-ID')}) diverifikasi fisik oleh ${auditorName}`,
+      amount: pay.amount,
+      referenceId: pay.paymentNumber,
+      badgeType: 'success'
+    });
+
+    return { success: true, message: `Pembayaran ${pay.paymentNumber} berhasil diverifikasi oleh Income Audit FA!` };
+  }
+
+  // ==========================================
+  // PENGELOLAAN SALDO UANG MUKA (DP LEDGER)
+  // ==========================================
+
+  recordCustomerDp(payload: {
+    customerId: string;
+    amount: number;
+    method: PaymentMethod;
+    paymentChannel: string;
+    referenceNumber: string;
+    notes: string;
+  }): { success: boolean; message: string; transaction?: CustomerDpTransaction } {
+    const customer = this.customers().find(c => c.id === payload.customerId);
+    if (!customer) return { success: false, message: 'Customer tidak ditemukan.' };
+
+    const currentBalance = customer.dpBalance || 0;
+    const newBalance = currentBalance + payload.amount;
+
+    // Update customer DP balance
+    this.customers.update(list =>
+      list.map(c => (c.id === payload.customerId ? { ...c, dpBalance: newBalance } : c))
+    );
+
+    const paymentNumber = this.getNextPaymentNumber();
+    const transId = `dp-${Date.now()}`;
+    const newTrans: CustomerDpTransaction = {
+      id: transId,
+      customerId: payload.customerId,
+      customerName: customer.name,
+      date: this.today,
+      type: 'deposit',
+      amount: payload.amount,
+      balanceAfter: newBalance,
+      paymentNumber,
+      referenceNumber: payload.referenceNumber,
+      notes: payload.notes
+    };
+
+    this.dpTransactions.update(list => [newTrans, ...list]);
+
+    // Also record in payment history as DP
+    const newPayment: Payment = {
+      id: `pay-${Date.now()}`,
+      paymentNumber,
+      journalNumber: `BD${this.today.replace(/-/g, '').substring(2)}009`,
+      kwitansiNumber: `${Math.floor(500 + Math.random() * 500)}/KLBR-FNC/MKS/DP/2026`,
+      customerId: payload.customerId,
+      customerName: customer.name,
+      paymentDate: this.today,
+      amount: payload.amount,
+      method: payload.method,
+      paymentChannel: payload.paymentChannel,
+      referenceNumber: payload.referenceNumber,
+      notes: `Setoran Uang Muka (DP): ${payload.notes}`,
+      allocations: [],
+      isDownPayment: true,
+      auditStatus: 'pending_fa',
+      createdAt: this.today
+    };
+    this.payments.update(list => [newPayment, ...list]);
+
+    this.addActivityLog({
+      type: 'payment_recorded',
+      description: `Uang Muka (DP) sebesar Rp ${payload.amount.toLocaleString('id-ID')} diterima dari ${customer.name}. Saldo DP kini: Rp ${newBalance.toLocaleString('id-ID')}`,
+      amount: payload.amount,
+      referenceId: paymentNumber,
+      badgeType: 'success'
+    });
+
+    return { success: true, message: `Setoran Uang Muka Rp ${payload.amount.toLocaleString('id-ID')} berhasil dicatat!`, transaction: newTrans };
+  }
+
+  applyCustomerDp(payload: {
+    customerId: string;
+    invoiceId: string;
+    amount: number;
+    notes?: string;
+  }): { success: boolean; message: string } {
+    const customer = this.customers().find(c => c.id === payload.customerId);
+    if (!customer) return { success: false, message: 'Customer tidak ditemukan.' };
+
+    const currentBalance = customer.dpBalance || 0;
+    if (payload.amount > currentBalance) {
+      return { success: false, message: `Saldo DP customer tidak mencukupi (Tersedia: Rp ${currentBalance.toLocaleString('id-ID')}).` };
+    }
+
+    const inv = this.invoices().find(i => i.id === payload.invoiceId);
+    if (!inv) return { success: false, message: 'Invoice tidak ditemukan.' };
+
+    if (payload.amount > inv.balanceDue) {
+      return { success: false, message: `Nominal pemotongan DP melebihi sisa tagihan invoice (Sisa: Rp ${inv.balanceDue.toLocaleString('id-ID')}).` };
+    }
+
+    const newBalance = currentBalance - payload.amount;
+    this.customers.update(list =>
+      list.map(c => (c.id === payload.customerId ? { ...c, dpBalance: newBalance } : c))
+    );
+
+    // Update invoice balance and dpDeduction
+    this.invoices.update(list =>
+      list.map(i => {
+        if (i.id === payload.invoiceId) {
+          const newDpDeduction = (i.dpDeduction || 0) + payload.amount;
+          const newBalanceDue = Math.max(0, i.balanceDue - payload.amount);
+          const updated = {
+            ...i,
+            dpDeduction: newDpDeduction,
+            balanceDue: newBalanceDue
+          };
+          updated.status = this.deriveInvoiceStatus(updated);
+          return updated;
+        }
+        return i;
+      })
+    );
+
+    const newTrans: CustomerDpTransaction = {
+      id: `dp-${Date.now()}`,
+      customerId: payload.customerId,
+      customerName: customer.name,
+      date: this.today,
+      type: 'applied',
+      amount: payload.amount,
+      balanceAfter: newBalance,
+      invoiceNumber: inv.invoiceNumber,
+      notes: payload.notes || `Pemotongan Saldo DP untuk faktur ${inv.invoiceNumber}`
+    };
+    this.dpTransactions.update(list => [newTrans, ...list]);
+
+    this.addActivityLog({
+      type: 'invoice_updated',
+      description: `Saldo DP sebesar Rp ${payload.amount.toLocaleString('id-ID')} dialokasikan untuk pemotongan invoice ${inv.invoiceNumber} (${customer.name})`,
+      amount: payload.amount,
+      referenceId: inv.invoiceNumber,
+      badgeType: 'info'
+    });
+
+    return { success: true, message: `Berhasil memotong Rp ${payload.amount.toLocaleString('id-ID')} dari saldo DP untuk invoice ${inv.invoiceNumber}.` };
+  }
+
+  // ==========================================
+  // LAPORAN MUTASI PIUTANG (RINGKASAN & DETAIL DENGAN RUNNING BALANCE)
+  // Sesuai format riil Galesong Group (Screenshot 1 & 2)
+  // ==========================================
+
+  getMutasiPiutang(startDate: string = '2026-01-01', endDate: string = '2026-09-29'): {
+    list: MutasiCustomerSummary[];
+    grandTotal: { count: number; totalPiutang: number; piutangDibayar: number; saldo: number };
+  } {
+    const custs = this.customers();
+    const invs = this.invoices();
+    const pays = this.payments();
+
+    const list: MutasiCustomerSummary[] = custs.map(c => {
+      // Invoices in date range
+      const cInvs = invs.filter(i =>
+        i.customerId === c.id &&
+        i.status !== 'Draft' &&
+        i.status !== 'Cancelled' &&
+        (!startDate || i.issueDate >= startDate) &&
+        (!endDate || i.issueDate <= endDate)
+      );
+
+      // Payments in date range
+      const cPays = pays.filter(p =>
+        p.customerId === c.id &&
+        (!startDate || p.paymentDate >= startDate) &&
+        (!endDate || p.paymentDate <= endDate)
+      );
+
+      const totalPiutang = cInvs.reduce((sum, i) => sum + i.total, 0);
+      const piutangDibayar = cPays.reduce((sum, p) => sum + p.amount, 0);
+      const transactionCount = cInvs.length + cPays.length;
+      const saldo = Math.max(0, totalPiutang - piutangDibayar);
+
+      return {
+        customerId: c.id,
+        customerName: c.name,
+        transactionCount: transactionCount || (cInvs.length > 0 ? cInvs.length : 1),
+        totalPiutang,
+        piutangDibayar,
+        saldo
+      };
+    }).filter(row => row.totalPiutang > 0 || row.piutangDibayar > 0 || row.saldo > 0);
+
+    const grandTotal = {
+      count: list.reduce((sum, r) => sum + r.transactionCount, 0),
+      totalPiutang: list.reduce((sum, r) => sum + r.totalPiutang, 0),
+      piutangDibayar: list.reduce((sum, r) => sum + r.piutangDibayar, 0),
+      saldo: list.reduce((sum, r) => sum + r.saldo, 0)
+    };
+
+    return { list, grandTotal };
+  }
+
+  getDetailMutasiPiutang(customerId: string, startDate: string = '2026-01-01', endDate: string = '2026-09-29'): {
+    customerName: string;
+    customerCode: string;
+    details: MutasiTransactionDetail[];
+    totalPiutang: number;
+    totalTerbayar: number;
+    saldoAkhir: number;
+  } {
+    const cust = this.customers().find(c => c.id === customerId);
+    const customerName = cust ? cust.name : 'Pelanggan';
+
+    const invs = this.invoices().filter(i =>
+      i.customerId === customerId &&
+      i.status !== 'Draft' &&
+      i.status !== 'Cancelled' &&
+      (!startDate || i.issueDate >= startDate) &&
+      (!endDate || i.issueDate <= endDate)
+    );
+
+    const pays = this.payments().filter(p =>
+      p.customerId === customerId &&
+      (!startDate || p.paymentDate >= startDate) &&
+      (!endDate || p.paymentDate <= endDate)
+    );
+
+    // Combine raw entries
+    type RawItem = {
+      date: string;
+      id: string;
+      noInvoice: string;
+      noKwitansi: string;
+      keterangan: string;
+      debet: number;
+      kredit: number;
+      type: 'invoice' | 'payment';
+    };
+
+    const combined: RawItem[] = [];
+
+    for (const inv of invs) {
+      combined.push({
+        date: inv.issueDate,
+        id: inv.id,
+        noInvoice: inv.invoiceNumber,
+        noKwitansi: '-',
+        keterangan: inv.notes || inv.invoiceType,
+        debet: inv.total,
+        kredit: 0,
+        type: 'invoice'
+      });
+    }
+
+    for (const pay of pays) {
+      const invRef = pay.allocations && pay.allocations[0] ? pay.allocations[0].invoiceNumber : '-';
+      combined.push({
+        date: pay.paymentDate,
+        id: pay.id,
+        noInvoice: invRef,
+        noKwitansi: pay.kwitansiNumber || pay.referenceNumber,
+        keterangan: pay.notes || `Payment for invoice ${invRef}`,
+        debet: 0,
+        kredit: pay.amount,
+        type: 'payment'
+      });
+    }
+
+    // Sort chronologically ascending
+    combined.sort((a, b) => a.date.localeCompare(b.date));
+
+    // Calculate running balance
+    let runningBalance = 0;
+    const details: MutasiTransactionDetail[] = combined.map(item => {
+      runningBalance += item.debet - item.kredit;
+      return {
+        id: item.id,
+        tanggal: item.date,
+        noInvoice: item.noInvoice,
+        noKwitansi: item.noKwitansi,
+        keterangan: item.keterangan,
+        piutang: item.debet,
+        terbayar: item.kredit,
+        saldo: Math.max(0, runningBalance),
+        type: item.type
+      };
+    });
+
+    const totalPiutang = details.reduce((sum, d) => sum + d.piutang, 0);
+    const totalTerbayar = details.reduce((sum, d) => sum + d.terbayar, 0);
+    const saldoAkhir = Math.max(0, totalPiutang - totalTerbayar);
+
+    return {
+      customerCode: cust ? cust.code : '114.120',
+      customerName,
+      details,
+      totalPiutang,
+      totalTerbayar,
+      saldoAkhir
+    };
+  }
+
+  // ==========================================
+  // KARTU PIUTANG SEIMBANG (MATCHING T-ACCOUNT & DENDA)
+  // Sesuai format riil Galesong Group (Screenshot 3 & 4)
+  // ==========================================
+
+  getKartuPiutang(customerId: string, startDate: string = '2026-08-01', endDate: string = '2026-09-29'): KartuPiutangRow[] {
+    const invs = this.invoices().filter(i =>
+      i.customerId === customerId &&
+      i.status !== 'Draft' &&
+      i.status !== 'Cancelled' &&
+      (!startDate || i.issueDate >= startDate) &&
+      (!endDate || i.issueDate <= endDate)
+    );
+
+    const pays = this.payments().filter(p => p.customerId === customerId);
+
+    const rows: KartuPiutangRow[] = [];
+
+    for (const inv of invs) {
+      // Find matching payment for this invoice
+      const matchingPay = pays.find(p => p.allocations.some(a => a.invoiceId === inv.id || a.invoiceNumber === inv.invoiceNumber));
+
+      const isPaid = inv.status === 'Paid';
+      const paidNominal = isPaid ? inv.total : (matchingPay ? matchingPay.amount : 0);
+      const saldo = inv.balanceDue;
+
+      // Umur Piutang in days
+      const dueTime = new Date(inv.dueDate).getTime();
+      const asOfTime = new Date(this.today).getTime();
+      const diffDays = Math.max(0, Math.floor((asOfTime - dueTime) / (1000 * 60 * 60 * 24)));
+
+      // Denda simulation for overdue invoice
+      const hasDenda = inv.status === 'Overdue' || (inv.timesOverdue && inv.timesOverdue > 0);
+      const nominalDenda = hasDenda ? 50000 : 0;
+
+      rows.push({
+        // Penagihan Piutang (Debet)
+        tglTerbit: inv.issueDate,
+        noInvoice: inv.invoiceNumber,
+        noBuktiJurnalDebet: inv.journalNumber || `FN${inv.issueDate.replace(/-/g, '').substring(2)}008`,
+        keteranganDebet: `Invoice ${inv.invoiceNumber}`,
+        nominalDebet: inv.total,
+        tglJatuhTempo: inv.dueDate,
+
+        // Pembayaran Piutang (Kredit)
+        tglBayar: matchingPay ? matchingPay.paymentDate : (isPaid ? inv.dueDate : inv.issueDate),
+        noBuktiJurnalKredit: matchingPay ? (matchingPay.journalNumber || `BD${matchingPay.paymentDate.replace(/-/g, '').substring(2)}001`) : '-',
+        keteranganKredit: matchingPay ? `Payment for Invoice ${inv.invoiceNumber}` : `No Payment for Invoice ${inv.invoiceNumber}`,
+        nominalKredit: paidNominal,
+        diskon: matchingPay?.discountAmount || 0,
+        saldoPiutang: saldo,
+        umurPiutang: diffDays,
+
+        // Denda (Penalti & Penghapusan)
+        nominalDenda: nominalDenda,
+        tglBayarDenda: '-',
+        noBuktiJurnalDenda: '-',
+        keteranganDenda: '-',
+        nominalBayarDenda: 0,
+        tglHapusDenda: '-',
+        memoHapusDenda: '-',
+        keteranganHapusDenda: '-',
+        nominalHapusDenda: 0,
+        saldoDenda: nominalDenda
+      });
+    }
+
+    return rows;
+  }
+
+  // ==========================================
   // SYSTEM AUTOMATION (UC-15, SRS-F-30)
   // ==========================================
 
@@ -1333,3 +2393,4 @@ export class ArDataService {
     this.activityLogs.update(logs => [newLog, ...logs.slice(0, 49)]);
   }
 }
+  

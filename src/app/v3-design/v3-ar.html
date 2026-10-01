@@ -53,7 +53,35 @@
         </span>
       </button>
 
+      <button type="button" class="v3-nav-item"
+        [class.active]="activeView() === 'dp-management'"
+        (click)="navigateTo('dp-management')">
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-piggy-bank"></i>
+          <span>Uang Muka (DP)</span>
+        </span>
+        <span class="v3-nav-pill-muted" *ngIf="customerTotalAvailableDp() > 0">
+          Rp {{ (customerTotalAvailableDp() / 1000000) | number:'1.0-1' }}M
+        </span>
+      </button>
+
       <div class="v3-nav-group-label mt-3">Laporan & Audit</div>
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'mutasi-piutang'"
+        (click)="navigateTo('mutasi-piutang')">
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-journal-text"></i>
+          <span>Laporan Mutasi Piutang</span>
+        </span>
+      </button>
+
+      <button type="button" class="v3-nav-item" [class.active]="activeView() === 'kartu-piutang'"
+        (click)="navigateTo('kartu-piutang')">
+        <span class="d-flex align-items-center gap-2">
+          <i class="bi bi-layout-split"></i>
+          <span>Kartu Piutang Seimbang</span>
+        </span>
+      </button>
+
       <button type="button" class="v3-nav-item" [class.active]="activeView() === 'aging-report'"
         (click)="navigateTo('aging-report')">
         <span class="d-flex align-items-center gap-2">
@@ -135,6 +163,9 @@
               <span *ngSwitchCase="'aging-report'">Laporan Umur Piutang (Aging Matrix)</span>
               <span *ngSwitchCase="'bank-accounts'">Rekening Bank Hotel</span>
               <span *ngSwitchCase="'activity-logs'">Log Audit Aktivitas</span>
+              <span *ngSwitchCase="'mutasi-piutang'">Laporan Mutasi Piutang</span>
+              <span *ngSwitchCase="'kartu-piutang'">Kartu Piutang Seimbang (Rekonsiliasi)</span>
+              <span *ngSwitchCase="'dp-management'">Pengelolaan Saldo Uang Muka (DP)</span>
             </ng-container>
           </span>
           <span class="v3-date-pill ms-2 d-none d-md-inline-flex" title="Tanggal Acuan Sistem">
@@ -1287,9 +1318,134 @@
                   </div>
                 </div>
 
+                <div class="d-flex justify-content-between align-items-center text-danger small" *ngIf="invoiceFormHasRollover() && invoiceFormRolledOverAmount() > 0">
+                  <span>Tunggakan Bulan Lalu (Rollover)</span>
+                  <span class="v3-mono fw-bold text-danger">+ {{ formatMoney(invoiceFormRolledOverAmount()) }}</span>
+                </div>
+
                 <div class="d-flex justify-content-between fw-bold text-dark pt-2 border-top fs-5">
                   <span>Total Tagihan</span>
-                  <span class="v3-mono text-primary">{{ formatMoney(invoiceFormTotal()) }}</span>
+                  <span class="v3-mono text-primary">{{ formatMoney(invoiceFormTotalCalculated()) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PM Feature: Opsi Skema Cicilan & Rollover Tunggakan -->
+          <div class="row g-3 mt-3 pt-3 border-top">
+            <!-- Skema Cicilan Card -->
+            <div class="col-12 col-lg-6">
+              <div class="p-3 rounded border bg-light h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="installmentSwitch"
+                      [ngModel]="invoiceFormIsInstallment()"
+                      (ngModelChange)="onToggleInstallment($event)">
+                    <label class="form-check-label fw-bold text-dark small" for="installmentSwitch">
+                      <i class="bi bi-calendar-range text-primary me-1"></i>Opsi Pembayaran Cicilan (Installments)
+                    </label>
+                  </div>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle" *ngIf="invoiceFormIsInstallment()">
+                    {{ invoiceFormInstallmentCount() }}x Termin
+                  </span>
+                </div>
+                <p class="text-secondary small mb-3" style="font-size: 0.72rem;">
+                  Pecah total tagihan menjadi beberapa kali pembayaran angsuran dengan tempo jatuh tempo terpisah.
+                </p>
+
+                <div *ngIf="invoiceFormIsInstallment()" class="d-flex flex-column gap-2">
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold" style="font-size: 0.72rem;">Jumlah Cicilan</label>
+                      <select class="form-select form-select-sm" [ngModel]="invoiceFormInstallmentCount()"
+                        (ngModelChange)="invoiceFormInstallmentCount.set($event); generateInstallmentSchedule();">
+                        <option [value]="2">2 Kali Cicilan</option>
+                        <option [value]="3">3 Kali Cicilan</option>
+                        <option [value]="4">4 Kali Cicilan</option>
+                        <option [value]="6">6 Kali Cicilan</option>
+                        <option [value]="12">12 Kali Cicilan</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small fw-semibold" style="font-size: 0.72rem;">Tempo per Cicilan</label>
+                      <select class="form-select form-select-sm" [ngModel]="invoiceFormInstallmentIntervalDays()"
+                        (ngModelChange)="invoiceFormInstallmentIntervalDays.set($event); generateInstallmentSchedule();">
+                        <option [value]="14">Setiap 14 Hari (2 Minggu)</option>
+                        <option [value]="30">Setiap 30 Hari (Bulanan)</option>
+                        <option [value]="60">Setiap 60 Hari (2 Bulan)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Schedule Preview List -->
+                  <div class="mt-2 border rounded bg-white overflow-hidden" *ngIf="invoiceFormInstallmentSchedule().length > 0">
+                    <table class="table table-sm table-borderless mb-0 small" style="font-size: 0.72rem;">
+                      <thead class="table-light border-bottom">
+                        <tr>
+                          <th>Termin</th>
+                          <th>Tgl Jatuh Tempo</th>
+                          <th class="text-end">Nominal Angsuran</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let term of invoiceFormInstallmentSchedule()">
+                          <td class="fw-semibold">Angsuran Ke-{{ term.installmentNumber }}</td>
+                          <td class="v3-mono text-muted">{{ term.dueDate }}</td>
+                          <td class="text-end v3-mono fw-bold text-primary">{{ formatMoney(term.amount) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rollover Tunggakan Sebelumnya Card -->
+            <div class="col-12 col-lg-6">
+              <div class="p-3 rounded border bg-light h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" id="rolloverSwitch"
+                      [ngModel]="invoiceFormHasRollover()"
+                      (ngModelChange)="onToggleRollover($event)">
+                    <label class="form-check-label fw-bold text-dark small" for="rolloverSwitch">
+                      <i class="bi bi-arrow-repeat text-danger me-1"></i>Akumulasi Tagihan Tertunggak (Rollover)
+                    </label>
+                  </div>
+                  <span class="badge bg-danger text-white" *ngIf="invoiceFormHasRollover() && invoiceFormTimesOverdue() > 0">
+                    Menunggak {{ invoiceFormTimesOverdue() }}x
+                  </span>
+                </div>
+                <p class="text-secondary small mb-3" style="font-size: 0.72rem;">
+                  Otomatis menggabungkan sisa piutang bulan sebelumnya yang belum dibayar customer ke tagihan bulan ini.
+                </p>
+
+                <div *ngIf="invoiceFormHasRollover()" class="d-flex flex-column gap-2">
+                  <div class="row g-2">
+                    <div class="col-7">
+                      <label class="form-label small fw-semibold text-danger" style="font-size: 0.72rem;">Nominal Tunggakan Digulung (Rp)</label>
+                      <input type="number" class="form-control form-control-sm v3-mono fw-bold text-danger"
+                        [ngModel]="invoiceFormRolledOverAmount()"
+                        (ngModelChange)="invoiceFormRolledOverAmount.set($event)">
+                    </div>
+                    <div class="col-5">
+                      <label class="form-label small fw-semibold" style="font-size: 0.72rem;">Kali Jatuh Tempo</label>
+                      <input type="number" min="0" class="form-control form-control-sm v3-mono"
+                        [ngModel]="invoiceFormTimesOverdue()"
+                        (ngModelChange)="invoiceFormTimesOverdue.set($event)">
+                    </div>
+                  </div>
+                  <div class="mt-1">
+                    <label class="form-label small fw-semibold text-muted" style="font-size: 0.68rem;">Referensi Invoice Asal Tunggakan</label>
+                    <input type="text" class="form-control form-control-sm v3-mono text-muted"
+                      placeholder="Contoh: INV-2026-0004"
+                      [ngModel]="invoiceFormRolledOverFrom()"
+                      (ngModelChange)="invoiceFormRolledOverFrom.set($event)">
+                  </div>
+                  <div class="alert alert-warning py-1.5 px-2 mb-0 mt-1 small" style="font-size: 0.7rem;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Nominal tunggakan Rp {{ formatMoney(invoiceFormRolledOverAmount()) }} ditambahkan ke total tagihan invoice ini.
+                  </div>
                 </div>
               </div>
             </div>
@@ -1387,12 +1543,13 @@
             <table class="v3-table v3-table-fit">
               <thead>
                 <tr>
-                  <th style="width: 17%;">No. Bukti & Tanggal</th>
-                  <th style="width: 25%;">Pelanggan</th>
-                  <th style="width: 25%;">Saluran & Rekening Hotel</th>
-                  <th style="width: 13%;">Alokasi Faktur</th>
-                  <th style="width: 12%; text-align: right;">Nominal Diterima</th>
-                  <th style="width: 8%; text-align: right;">Aksi</th>
+                  <th style="width: 16%;">No. Bukti & Kwitansi</th>
+                  <th style="width: 20%;">Pelanggan</th>
+                  <th style="width: 20%;">Saluran & Rekening Hotel</th>
+                  <th style="width: 12%;">Alokasi Faktur</th>
+                  <th style="width: 14%;">Income Audit FA</th>
+                  <th style="width: 11%; text-align: right;">Nominal Diterima</th>
+                  <th style="width: 7%; text-align: right;">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -1402,6 +1559,9 @@
                     <div class="v3-mono fw-bold text-dark">{{ p.paymentNumber }}</div>
                     <div class="text-secondary small mt-0" style="font-size: 0.72rem;">
                       <i class="bi bi-calendar3 me-1"></i>{{ p.paymentDate }}
+                    </div>
+                    <div class="text-muted font-monospace" style="font-size: 0.65rem;" *ngIf="p.kwitansiNumber">
+                      Kwt: {{ p.kwitansiNumber }}
                     </div>
                   </td>
 
@@ -1453,7 +1613,30 @@
                     </div>
                   </td>
 
-                  <!-- Col 5: Nominal Diterima -->
+                  <!-- Col 5: Income Audit FA Status -->
+                  <td>
+                    <div *ngIf="p.auditStatus === 'verified_fa'">
+                      <span class="badge bg-success-subtle text-success border border-success-subtle py-1"
+                        [title]="'Diverifikasi oleh: ' + (p.auditedBy || 'Dept FA') + (p.auditedAt ? ' pada ' + p.auditedAt : '')">
+                        <i class="bi bi-shield-check me-1"></i>FA Verified
+                      </span>
+                      <div class="text-secondary small mt-0.5" style="font-size: 0.65rem;" *ngIf="p.auditedBy">
+                        {{ p.auditedBy }}
+                      </div>
+                    </div>
+                    <div *ngIf="p.auditStatus !== 'verified_fa'">
+                      <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 mb-1">
+                        <i class="bi bi-hourglass-split me-1"></i>Pending FA
+                      </span>
+                      <button type="button" class="btn btn-xs btn-outline-success py-0 px-1.5 d-block mt-1"
+                        style="font-size: 0.68rem;" (click)="openIncomeAuditModal(p)" [disabled]="isViewer()"
+                        title="Verifikasi fisik slip transfer & mutasi bank">
+                        Verifikasi
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- Col 6: Nominal Diterima -->
                   <td class="text-end">
                     <div class="v3-mono fw-bold text-success fs-6">{{ formatMoney(p.amount) }}</div>
                     <div class="text-muted" style="font-size: 0.68rem;" *ngIf="p.adminFee && p.adminFee > 0">
@@ -1461,15 +1644,20 @@
                     </div>
                   </td>
 
-                  <!-- Col 6: Aksi -->
+                  <!-- Col 7: Aksi -->
                   <td class="text-end">
-                    <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2"
-                      *ngIf="isManagerOrAdmin()"
-                      (click)="requestDeletePayment(p)"
-                      title="Batalkan pembayaran dan pulihkan saldo tagihan invoice">
-                      <i class="bi bi-arrow-counterclockwise me-1"></i>Rollback
-                    </button>
-                    <span *ngIf="!isManagerOrAdmin()" class="text-muted small">-</span>
+                    <div class="d-flex justify-content-end gap-1">
+                      <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1.5"
+                        (click)="printKwitansi(p.kwitansiNumber || p.paymentNumber)" title="Cetak Kwitansi">
+                        <i class="bi bi-printer"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1.5"
+                        *ngIf="isManagerOrAdmin()"
+                        (click)="requestDeletePayment(p)"
+                        title="Batalkan pembayaran dan pulihkan saldo tagihan invoice">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
 
@@ -2247,6 +2435,409 @@
         </div>
       </div>
 
+      <!-- =========================================================
+           8. LAPORAN MUTASI PIUTANG (Format Riil Galesong Group)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'mutasi-piutang'" class="d-flex flex-column gap-3">
+        <div class="v3-card p-3">
+          <h2 class="h5 fw-bold text-dark mb-3 text-uppercase" style="letter-spacing: 0.03em;">
+            Laporan Mutasi Piutang
+          </h2>
+
+          <!-- Date Filters & Global Search bar exactly matching Screenshot 1 -->
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="small fw-semibold text-secondary">Pilih Tanggal:</span>
+              <div class="d-flex align-items-center gap-1">
+                <input type="date" class="form-control form-control-sm v3-mono"
+                  style="width: 145px;"
+                  [ngModel]="mutasiStartDate()"
+                  (ngModelChange)="mutasiStartDate.set($event)">
+                <span class="small text-muted">s.d.</span>
+                <input type="date" class="form-control form-control-sm v3-mono"
+                  style="width: 145px;"
+                  [ngModel]="mutasiEndDate()"
+                  (ngModelChange)="mutasiEndDate.set($event)">
+              </div>
+              <button type="button" class="btn btn-sm btn-success px-3 fw-semibold"
+                style="background-color: #16a34a; border-color: #16a34a;"
+                (click)="showToast('Memuat data mutasi piutang periode ' + mutasiStartDate() + ' s/d ' + mutasiEndDate(), 'info')">
+                <i class="bi bi-search me-1"></i>Cari
+              </button>
+            </div>
+
+            <div style="min-width: 260px;">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search all fields..."
+                  [ngModel]="mutasiSearchQuery()"
+                  (ngModelChange)="mutasiSearchQuery.set($event)">
+                <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table matching Screenshot 1 -->
+          <div class="v3-table-container">
+            <table class="v3-table mb-0">
+              <thead>
+                <tr style="background-color: #212529; color: #ffffff;">
+                  <th style="width: 50px; background-color: #212529; color: #ffffff;" class="text-center">No</th>
+                  <th style="background-color: #212529; color: #ffffff;">Nama</th>
+                  <th style="width: 140px; background-color: #212529; color: #ffffff;" class="text-center">Jumlah Piutang</th>
+                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Total Piutang</th>
+                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Piutang Dibayar</th>
+                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of filteredMutasiList(); let idx = index"
+                  class="cursor-pointer v3-row-hover align-middle"
+                  (click)="openDetailMutasi(m.customerId)"
+                  title="Klik untuk membuka Detail Mutasi Piutang {{ m.customerName }}">
+                  <td class="text-center text-muted small">{{ idx + 1 }}</td>
+                  <td class="fw-bold text-dark text-primary-hover">
+                    {{ m.customerName }}
+                  </td>
+                  <td class="text-center v3-mono">{{ m.transactionCount }}</td>
+                  <td class="text-end v3-mono">{{ formatMoney(m.totalPiutang) }}</td>
+                  <td class="text-end v3-mono">{{ formatMoney(m.piutangDibayar) }}</td>
+                  <td class="text-end v3-mono fw-semibold" [class.text-danger]="m.saldo > 0">
+                    {{ formatMoney(m.saldo) }}
+                  </td>
+                </tr>
+                <tr *ngIf="filteredMutasiList().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    Tidak ada mutasi piutang pada rentang tanggal terpilih.
+                  </td>
+                </tr>
+              </tbody>
+              <!-- Grand Total Footer matching Screenshot 1 -->
+              <tfoot class="border-top-2">
+                <tr class="fw-bold fs-6" style="background-color: #f8fafc;">
+                  <td colspan="3" class="text-end text-primary" style="letter-spacing: 0.02em;">
+                    Grand Total:
+                  </td>
+                  <td class="text-end v3-mono text-primary">
+                    {{ formatMoney(mutasiReportData().grandTotal.totalPiutang) }}
+                  </td>
+                  <td class="text-end v3-mono text-primary">
+                    {{ formatMoney(mutasiReportData().grandTotal.piutangDibayar) }}
+                  </td>
+                  <td class="text-end v3-mono text-primary">
+                    {{ formatMoney(mutasiReportData().grandTotal.saldo) }}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="mt-2 text-muted small" style="font-size: 0.72rem;">
+            <i class="bi bi-info-circle me-1"></i>Klik baris pelanggan mana pun untuk melihat kartu riwayat kronologis debit/kredit dan mencetak faktur atau kwitansi.
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           9. KARTU PIUTANG SEIMBANG (Format Riil Galesong Group)
+           ========================================================= -->
+      <div *ngIf="activeView() === 'kartu-piutang'" class="d-flex flex-column gap-3">
+        <div class="v3-card p-3">
+          <!-- Filter Ribbon matching Screenshot 3 -->
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+              <label class="form-label small fw-semibold text-secondary mb-1">Tanggal Awal</label>
+              <input type="date" class="form-control form-control-sm v3-mono"
+                [ngModel]="kartuStartDate()"
+                (ngModelChange)="kartuStartDate.set($event)">
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="form-label small fw-semibold text-secondary mb-1">Tanggal Akhir</label>
+              <input type="date" class="form-control form-control-sm v3-mono"
+                [ngModel]="kartuEndDate()"
+                (ngModelChange)="kartuEndDate.set($event)">
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-semibold text-secondary mb-1">Pilih Perusahaan</label>
+              <select class="form-select form-select-sm"
+                [ngModel]="kartuSelectedPerusahaan()"
+                (ngModelChange)="kartuSelectedPerusahaan.set($event)">
+                <option value="PT. SINAR GALESONG PRATAMA">PT. SINAR GALESONG PRATAMA</option>
+                <option value="PT. SINAR GALESONG AUTO">PT. SINAR GALESONG AUTO</option>
+                <option value="PT. GALESONG PRATAMA HOTEL">PT. GALESONG PRATAMA HOTEL</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <label class="form-label small fw-semibold text-secondary mb-1">Pilih Pelanggan</label>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm"
+                  [ngModel]="kartuSelectedCustomerId()"
+                  (ngModelChange)="kartuSelectedCustomerId.set($event)">
+                  <option *ngFor="let c of arService.customers()" [value]="c.id">
+                    {{ c.name }}
+                  </option>
+                </select>
+                <button type="button" class="btn btn-sm btn-primary px-3 fw-semibold"
+                  style="background-color: #2563eb; border-color: #2563eb;"
+                  (click)="showToast('Memuat kartu piutang seimbang...', 'info')">
+                  Cari
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Title & Subtitle matching Screenshot 3 & 4 -->
+          <div class="border-top pt-3 mb-2">
+            <h3 class="fw-bold text-dark mb-0 fs-5 text-uppercase">
+              {{ selectedKartuCustomer()?.name || 'PT. SINAR GALESONG MANDIRI' }}
+            </h3>
+            <div class="text-secondary small mt-0.5">
+              Periode: <span class="v3-mono text-dark fw-medium">{{ kartuStartDate() }}</span> s/d <span class="v3-mono text-dark fw-medium">{{ kartuEndDate() }}</span>
+            </div>
+          </div>
+
+          <!-- Balanced T-Account Matching Table with Green (Piutang) and Red (Denda) Headers -->
+          <div class="v3-table-container overflow-auto border rounded">
+            <table class="table table-sm table-bordered mb-0 small" style="min-width: 1400px; font-size: 0.73rem;">
+              <!-- Super Header Row (Screenshot 3 & 4) -->
+              <thead>
+                <tr class="text-center text-white fw-bold">
+                  <th colspan="12" style="background-color: #16a34a; letter-spacing: 0.05em; font-size: 0.82rem; padding: 6px;">
+                    PIUTANG
+                  </th>
+                  <th colspan="10" style="background-color: #ef4444; letter-spacing: 0.05em; font-size: 0.82rem; padding: 6px;">
+                    DENDA
+                  </th>
+                </tr>
+                <!-- Sub-header Row -->
+                <tr class="text-center fw-semibold" style="background-color: #f1f5f9;">
+                  <th colspan="6" class="border-end" style="background-color: #ecfdf5; color: #065f46;">
+                    Penagihan Piutang
+                  </th>
+                  <th colspan="6" class="border-end" style="background-color: #ecfdf5; color: #065f46;">
+                    Pembayaran Piutang
+                  </th>
+                  <th colspan="5" class="border-end" style="background-color: #fef2f2; color: #991b1b;">
+                    Pembayaran Denda
+                  </th>
+                  <th colspan="5" style="background-color: #fef2f2; color: #991b1b;">
+                    Penghapusan Denda
+                  </th>
+                </tr>
+                <!-- Column Name Row -->
+                <tr class="text-center text-nowrap" style="background-color: #f8fafc;">
+                  <!-- Penagihan Piutang -->
+                  <th style="width: 80px;">Tgl Terbit</th>
+                  <th style="width: 130px;">No Invoice</th>
+                  <th style="width: 100px;">No Bukti Jurnal</th>
+                  <th>Keterangan</th>
+                  <th style="width: 95px;" class="text-end">Nominal</th>
+                  <th style="width: 80px;">Tgl Jatuh Tempo</th>
+
+                  <!-- Pembayaran Piutang -->
+                  <th style="width: 80px;">Tgl Bayar</th>
+                  <th style="width: 100px;">No Bukti Jurnal</th>
+                  <th>Keterangan</th>
+                  <th style="width: 95px;" class="text-end">Nominal</th>
+                  <th style="width: 60px;" class="text-end">Diskon</th>
+                  <th style="width: 95px;" class="text-end">Saldo</th>
+
+                  <!-- Pembayaran Denda -->
+                  <th style="width: 80px;" class="text-end">Nominal Denda</th>
+                  <th style="width: 75px;">Tgl Bayar</th>
+                  <th style="width: 90px;">No Bukti Jurnal</th>
+                  <th>Keterangan</th>
+                  <th style="width: 80px;" class="text-end">Nominal</th>
+
+                  <!-- Penghapusan Denda -->
+                  <th style="width: 75px;">Tgl Hapus</th>
+                  <th style="width: 80px;">Memo</th>
+                  <th>Keterangan</th>
+                  <th style="width: 80px;" class="text-end">Nominal</th>
+                  <th style="width: 80px;" class="text-end">Saldo Denda</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of kartuRows()" class="align-middle text-nowrap">
+                  <!-- Penagihan Piutang -->
+                  <td class="v3-mono text-center">{{ row.tglTerbit }}</td>
+                  <td class="v3-mono fw-bold text-primary">{{ row.noInvoice }}</td>
+                  <td class="v3-mono text-secondary small">{{ row.noBuktiJurnalDebet }}</td>
+                  <td class="text-truncate" style="max-width: 160px;" title="{{ row.keteranganDebet }}">{{ row.keteranganDebet }}</td>
+                  <td class="text-end v3-mono fw-semibold">{{ formatMoney(row.nominalDebet || 0) }}</td>
+                  <td class="v3-mono text-center text-muted">{{ row.tglJatuhTempo || '-' }}</td>
+
+                  <!-- Pembayaran Piutang -->
+                  <td class="v3-mono text-center">{{ row.tglBayar }}</td>
+                  <td class="v3-mono text-secondary small">{{ row.noBuktiJurnalKredit }}</td>
+                  <td class="text-truncate" style="max-width: 180px;" title="{{ row.keteranganKredit }}">{{ row.keteranganKredit }}</td>
+                  <td class="text-end v3-mono fw-semibold text-success">{{ formatMoney(row.nominalKredit || 0) }}</td>
+                  <td class="text-end v3-mono text-muted">{{ formatMoney(row.diskon || 0) }}</td>
+                  <td class="text-end v3-mono fw-bold" [class.text-danger]="(row.saldoPiutang || 0) > 0">
+                    {{ formatMoney(row.saldoPiutang || 0) }}
+                  </td>
+
+                  <!-- Pembayaran Denda -->
+                  <td class="text-end v3-mono text-danger">{{ formatMoney(row.nominalDenda || 0) }}</td>
+                  <td class="text-center text-muted">{{ row.tglBayarDenda || '-' }}</td>
+                  <td class="text-center text-muted">{{ row.noBuktiJurnalDenda || '-' }}</td>
+                  <td class="text-muted">{{ row.keteranganDenda || '-' }}</td>
+                  <td class="text-end v3-mono">{{ formatMoney(row.nominalBayarDenda || 0) }}</td>
+
+                  <!-- Penghapusan Denda -->
+                  <td class="text-center text-muted">{{ row.tglHapusDenda || '-' }}</td>
+                  <td class="text-center text-muted">{{ row.memoHapusDenda || '-' }}</td>
+                  <td class="text-muted">{{ row.keteranganHapusDenda || '-' }}</td>
+                  <td class="text-end v3-mono">{{ formatMoney(row.nominalHapusDenda || 0) }}</td>
+                  <td class="text-end v3-mono fw-semibold">{{ formatMoney(row.saldoDenda || 0) }}</td>
+                </tr>
+                <tr *ngIf="kartuRows().length === 0">
+                  <td colspan="22" class="text-center py-4 text-muted">
+                    Tidak ada transaksi kartu piutang untuk pelanggan ini pada periode terpilih.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           10. PENGELOLAAN SALDO UANG MUKA / DP LEDGER
+           ========================================================= -->
+      <div *ngIf="activeView() === 'dp-management'" class="d-flex flex-column gap-3">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div>
+            <h2 class="h5 fw-bold text-dark mb-1">Pengelolaan Saldo Uang Muka (DP Ledger)</h2>
+            <p class="text-secondary small mb-0">
+              Pencatatan deposit advance payment dari pelanggan dan riwayat alokasi pemotongan ke faktur tagihan hotel.
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="v3-btn-secondary" [disabled]="isViewer()" (click)="openApplyDpModal()">
+              <i class="bi bi-scissors me-1"></i>Alokasikan Potongan DP
+            </button>
+            <button type="button" class="v3-btn-primary" [disabled]="isViewer()" (click)="openRecordDpModal()">
+              <i class="bi bi-plus-lg me-1"></i>Catat Setoran DP Baru
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 KPI Cards for DP -->
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="v3-kpi-card">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold small text-uppercase">Total Saldo DP Mengendap</span>
+                <span class="badge bg-warning-subtle text-dark border border-warning-subtle"><i class="bi bi-wallet2"></i></span>
+              </div>
+              <div class="v3-kpi-value text-dark v3-mono">
+                {{ formatMoney(customerTotalAvailableDp()) }}
+              </div>
+              <div class="v3-kpi-meta text-muted small">
+                Siap dialokasikan untuk pemotongan invoice
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="v3-kpi-card">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold small text-uppercase">Total Setoran DP Diterima</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-arrow-down-circle"></i></span>
+              </div>
+              <div class="v3-kpi-value text-success v3-mono">
+                {{ formatMoney(32500000) }}
+              </div>
+              <div class="v3-kpi-meta text-muted small">
+                Akumulasi setoran advance payment tercatat
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <div class="v3-kpi-card">
+              <div class="v3-kpi-header">
+                <span class="text-secondary fw-semibold small text-uppercase">Total DP Terpakai / Dipotong</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><i class="bi bi-arrow-up-circle"></i></span>
+              </div>
+              <div class="v3-kpi-value text-primary v3-mono">
+                {{ formatMoney(15000000) }}
+              </div>
+              <div class="v3-kpi-meta text-muted small">
+                Sudah dipotongkan pada invoice yang diterbitkan
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="v3-card p-3">
+          <div class="row g-2 align-items-center mb-3">
+            <div class="col-12 col-md-5">
+              <input type="text" class="form-control form-control-sm"
+                placeholder="Cari transaksi DP berdasarkan customer, invoice, atau catatan..."
+                [ngModel]="dpSearchQuery()"
+                (ngModelChange)="dpSearchQuery.set($event)">
+            </div>
+            <div class="col-12 col-md-4">
+              <select class="form-select form-select-sm"
+                [ngModel]="dpCustomerFilter()"
+                (ngModelChange)="dpCustomerFilter.set($event)">
+                <option value="ALL">Semua Pelanggan</option>
+                <option *ngFor="let c of arService.customers()" [value]="c.id">
+                  {{ c.name }} (Saldo DP: {{ formatMoney(c.dpBalance || 0) }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- DP Ledger Table -->
+          <div class="v3-table-container">
+            <table class="v3-table mb-0">
+              <thead>
+                <tr>
+                  <th style="width: 12%;">Tanggal</th>
+                  <th style="width: 24%;">Pelanggan</th>
+                  <th style="width: 14%;">Jenis Mutasi</th>
+                  <th style="width: 14%; text-align: right;">Nominal Mutasi</th>
+                  <th style="width: 14%; text-align: right;">Saldo Setelahnya</th>
+                  <th style="width: 22%;">Referensi & Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let t of filteredDpTransactions()" class="align-middle">
+                  <td class="v3-mono text-muted small">{{ t.date }}</td>
+                  <td>
+                    <div class="fw-bold text-dark">{{ t.customerName }}</div>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="t.type === 'deposit' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-primary-subtle text-primary border border-primary-subtle'">
+                      <i class="bi" [ngClass]="t.type === 'deposit' ? 'bi-plus-circle me-1' : 'bi-dash-circle me-1'"></i>
+                      {{ t.type === 'deposit' ? 'Setoran DP' : 'Potong Invoice' }}
+                    </span>
+                  </td>
+                  <td class="text-end v3-mono fw-bold" [ngClass]="t.type === 'deposit' ? 'text-success' : 'text-primary'">
+                    {{ t.type === 'deposit' ? '+' : '-' }} {{ formatMoney(t.amount) }}
+                  </td>
+                  <td class="text-end v3-mono fw-semibold text-dark">
+                    {{ formatMoney(t.balanceAfter) }}
+                  </td>
+                  <td class="small">
+                    <span class="v3-mono fw-semibold text-primary" *ngIf="t.invoiceNumber">{{ t.invoiceNumber }} &bull; </span>
+                    <span class="text-secondary">{{ t.notes }}</span>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredDpTransactions().length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted">
+                    Tidak ada riwayat mutasi uang muka sesuai filter.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -2781,6 +3372,305 @@
         <button type="button" class="v3-btn-secondary" (click)="showPdfModal.set(false)">Tutup Pratinjau</button>
         <button type="button" class="v3-btn-primary" onclick="window.print()">
           Cetak Dokumen (Print)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DETAIL MUTASI PIUTANG (SCREENSHOT 2) ==================== -->
+  <div class="v3-modal-backdrop" *ngIf="showDetailMutasiModal() && detailMutasiData() as mutasi">
+    <div class="v3-modal v3-modal-xl">
+      <div class="v3-modal-header bg-primary text-white">
+        <div>
+          <div class="fw-bold fs-5 d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+            DETAIL MUTASI PIUTANG PELANGGAN
+          </div>
+          <div class="small opacity-75">
+            [{{ mutasi.customerCode }}] {{ mutasi.customerName }} &bull; Periode: {{ mutasiStartDate() }} s/d {{ mutasiEndDate() }}
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDetailMutasi()"></button>
+      </div>
+
+      <div class="v3-modal-body p-3">
+        <!-- Summary Cards Row -->
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3">
+            <div class="p-2.5 rounded bg-light border text-center">
+              <div class="text-muted small">Total Piutang</div>
+              <div class="v3-mono fw-bold fs-6 text-primary">{{ formatMoney(mutasi.totalPiutang) }}</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-2.5 rounded bg-light border text-center">
+              <div class="text-muted small">Piutang Terbayar</div>
+              <div class="v3-mono fw-bold fs-6 text-success">{{ formatMoney(mutasi.totalTerbayar) }}</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-2.5 rounded bg-light border text-center">
+              <div class="text-muted small">Total Transaksi</div>
+              <div class="v3-mono fw-bold fs-6 text-dark">{{ mutasi.details.length }} Transaksi</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-2.5 rounded bg-primary bg-opacity-10 border border-primary text-center">
+              <div class="text-primary small fw-semibold">Saldo Akhir</div>
+              <div class="v3-mono fw-bold fs-6 text-primary">{{ formatMoney(mutasi.saldoAkhir) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <div class="v3-table-container border rounded" style="max-height: 480px; overflow-y: auto;">
+          <table class="v3-table mb-0 align-middle">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 10%;">Tgl</th>
+                <th style="width: 15%;">No Bukti</th>
+                <th style="width: 28%;">Keterangan Transaksi</th>
+                <th style="width: 14%; text-align: right;">Piutang (Rp)</th>
+                <th style="width: 14%; text-align: right;">Terbayar (Rp)</th>
+                <th style="width: 14%; text-align: right;">Saldo (Rp)</th>
+                <th style="width: 5%; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Transaction lines -->
+              <tr *ngFor="let item of mutasi.details" [ngClass]="item.type === 'payment' ? 'v3-mutasi-payment-row' : ''">
+                <td class="v3-mono text-muted small">{{ item.tanggal }}</td>
+                <td>
+                  <span class="v3-mono fw-bold text-dark">{{ item.type === 'invoice' ? item.noInvoice : item.noKwitansi }}</span>
+                </td>
+                <td>
+                  <div class="text-truncate" style="max-width: 320px;" [title]="item.keterangan">
+                    <span class="badge me-1" [ngClass]="item.type === 'invoice' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-success-subtle text-success border border-success-subtle'">
+                      {{ item.type === 'invoice' ? 'Tagihan' : 'Kwitansi' }}
+                    </span>
+                    {{ item.keterangan }}
+                  </div>
+                </td>
+                <td class="text-end v3-mono fw-semibold text-primary">
+                  {{ item.piutang > 0 ? formatMoney(item.piutang) : '-' }}
+                </td>
+                <td class="text-end v3-mono fw-bold text-success">
+                  {{ item.terbayar > 0 ? formatMoney(item.terbayar) : '-' }}
+                </td>
+                <td class="text-end v3-mono fw-bold text-dark">
+                  {{ formatMoney(item.saldo) }}
+                </td>
+                <td class="text-center">
+                  <button type="button" class="btn btn-sm btn-light border p-1" title="Cetak Dokumen"
+                    (click)="item.type === 'invoice' ? printInvoice(item.noInvoice) : printKwitansi(item.noKwitansi)">
+                    <i class="bi bi-printer-fill" [ngClass]="item.type === 'invoice' ? 'text-primary' : 'text-success'"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light fw-bold">
+              <tr>
+                <td colspan="3" class="text-uppercase text-end">TOTAL MUTASI PERIODE INI:</td>
+                <td class="text-end v3-mono text-primary">{{ formatMoney(mutasi.totalPiutang) }}</td>
+                <td class="text-end v3-mono text-success">{{ formatMoney(mutasi.totalTerbayar) }}</td>
+                <td class="text-end v3-mono text-dark">{{ formatMoney(mutasi.saldoAkhir) }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="closeDetailMutasi()">Tutup</button>
+        <button type="button" class="v3-btn-primary" onclick="window.print()">
+          <i class="bi bi-printer me-1"></i> Cetak Mutasi Piutang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL INCOME AUDIT FA VERIFICATION ==================== -->
+  <div class="v3-modal-backdrop" *ngIf="showIncomeAuditModal() && auditSelectedPayment() as pay">
+    <div class="v3-modal">
+      <div class="v3-modal-header">
+        <div>
+          <div class="fw-bold fs-5 text-dark">Verifikasi Income Audit FA</div>
+          <div class="text-muted small">Pencocokan fisik slip setor / mutasi bank oleh departemen FA</div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeIncomeAuditModal()"></button>
+      </div>
+
+      <div class="v3-modal-body">
+        <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-shield-check fs-4"></i>
+          <div>
+            <strong>Pemeriksaan Formal FA:</strong> Pastikan nominal fisik di rekening koran bank atau slip setoran tunai telah klop dengan mutasi kas AR.
+          </div>
+        </div>
+
+        <div class="card bg-light border-0 p-3 mb-3">
+          <div class="row g-2">
+            <div class="col-6">
+              <span class="text-muted small d-block">No. Kwitansi:</span>
+              <strong class="v3-mono text-primary">{{ pay.paymentNumber }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted small d-block">Pelanggan:</span>
+              <strong class="text-dark">{{ pay.customerName }}</strong>
+            </div>
+            <div class="col-6">
+              <span class="text-muted small d-block">Tanggal Bayar:</span>
+              <span class="v3-mono">{{ pay.paymentDate }}</span>
+            </div>
+            <div class="col-6">
+              <span class="text-muted small d-block">Metode / Bank:</span>
+              <span class="badge bg-secondary-subtle text-secondary">{{ pay.method }} ({{ pay.paymentChannel || 'Bank Transfer' }})</span>
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top">
+              <span class="text-muted small d-block">Nominal Diterima:</span>
+              <span class="v3-mono fs-5 fw-bold text-success">{{ formatMoney(pay.amount) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Nama Petugas Auditor FA</label>
+          <input type="text" class="form-control" [ngModel]="auditAuditorName()" (ngModelChange)="auditAuditorName.set($event)">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Catatan Verifikasi Rekening Koran / Slip</label>
+          <textarea class="form-control" rows="3" [ngModel]="auditNotes()" (ngModelChange)="auditNotes.set($event)"></textarea>
+        </div>
+      </div>
+
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="closeIncomeAuditModal()">Batal</button>
+        <button type="button" class="v3-btn-primary bg-success border-success" (click)="confirmIncomeAudit()">
+          <i class="bi bi-patch-check-fill me-1"></i> Sahkan Verifikasi FA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL CATAT SETORAN UANG MUKA (DP) ==================== -->
+  <div class="v3-modal-backdrop" *ngIf="showRecordDpModal()">
+    <div class="v3-modal">
+      <div class="v3-modal-header">
+        <div>
+          <div class="fw-bold fs-5 text-dark">Penerimaan Uang Muka (DP)</div>
+          <div class="text-muted small">Catat setoran deposit pelanggan ke buku pembantu uang muka</div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeRecordDpModal()"></button>
+      </div>
+
+      <div class="v3-modal-body">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Pilih Pelanggan <span class="text-danger">*</span></label>
+          <select class="form-select" [ngModel]="dpRecordCustomerId()" (ngModelChange)="dpRecordCustomerId.set($event)">
+            <option *ngFor="let c of arService.customers()" [value]="c.id">
+              {{ c.name }} (Saldo DP: {{ formatMoney(c.dpBalance || 0) }})
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Nominal Uang Muka (Rp) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control v3-mono fs-5 fw-bold" [ngModel]="dpRecordAmount()" (ngModelChange)="dpRecordAmount.set(+$event)">
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Metode Pembayaran</label>
+            <select class="form-select" [ngModel]="dpRecordMethod()" (ngModelChange)="dpRecordMethod.set($event)">
+              <option value="bank_transfer">Transfer Bank</option>
+              <option value="cash">Tunai (Cash)</option>
+              <option value="giro">Bilyet Giro / Cek</option>
+              <option value="credit_card">Kartu Kredit</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-semibold">Bank / Channel Penerima</label>
+            <input type="text" class="form-control" [ngModel]="dpRecordChannel()" (ngModelChange)="dpRecordChannel.set($event)" placeholder="BCA / Mandiri / Kasir">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">No. Referensi / Bukti Setor</label>
+          <input type="text" class="form-control v3-mono" [ngModel]="dpRecordRef()" (ngModelChange)="dpRecordRef.set($event)" placeholder="Contoh: TRF-DP-883921">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Catatan / Keperluan Deposit</label>
+          <textarea class="form-control" rows="2" [ngModel]="dpRecordNotes()" (ngModelChange)="dpRecordNotes.set($event)"></textarea>
+        </div>
+      </div>
+
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="closeRecordDpModal()">Batal</button>
+        <button type="button" class="v3-btn-primary" (click)="submitRecordDp()">
+          <i class="bi bi-save me-1"></i> Simpan Setoran DP
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL ALOKASI POTONGAN DP KE INVOICE ==================== -->
+  <div class="v3-modal-backdrop" *ngIf="showApplyDpModal()">
+    <div class="v3-modal">
+      <div class="v3-modal-header">
+        <div>
+          <div class="fw-bold fs-5 text-dark">Alokasi Potongan Uang Muka (DP)</div>
+          <div class="text-muted small">Gunakan saldo deposit pelanggan untuk mengurangi sisa tagihan faktur</div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeApplyDpModal()"></button>
+      </div>
+
+      <div class="v3-modal-body">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Pelanggan</label>
+          <select class="form-select" [ngModel]="dpApplyCustomerId()" (ngModelChange)="dpApplyCustomerId.set($event)">
+            <option *ngFor="let c of arService.customers()" [value]="c.id">
+              {{ c.name }} (Saldo DP: {{ formatMoney(c.dpBalance || 0) }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Info Saldo DP Tersedia -->
+        <div class="alert alert-success py-2 px-3 small d-flex justify-content-between align-items-center mb-3" *ngIf="getCustomer(dpApplyCustomerId()) as cust">
+          <span>Saldo Uang Muka Tersedia:</span>
+          <strong class="v3-mono fs-6">{{ formatMoney(cust.dpBalance || 0) }}</strong>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Pilih Invoice Yang Akan Dipotong <span class="text-danger">*</span></label>
+          <select class="form-select" [ngModel]="dpApplyInvoiceId()" (ngModelChange)="dpApplyInvoiceId.set($event)">
+            <option value="" disabled>-- Pilih Invoice Tertagih --</option>
+            <option *ngFor="let inv of arService.invoices()" [value]="inv.id" [disabled]="inv.customerId !== dpApplyCustomerId() || inv.balanceDue <= 0">
+              <span *ngIf="inv.customerId === dpApplyCustomerId()">
+                {{ inv.invoiceNumber }} &bull; Sisa: {{ formatMoney(inv.balanceDue) }} (Status: {{ inv.status }})
+              </span>
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Nominal Potongan DP (Rp) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control v3-mono fs-5 fw-bold text-primary" [ngModel]="dpApplyAmount()" (ngModelChange)="dpApplyAmount.set(+$event)">
+          <div class="form-text small text-muted">Nominal tidak boleh melebihi saldo DP pelanggan maupun sisa piutang faktur.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Catatan Pemotongan</label>
+          <textarea class="form-control" rows="2" [ngModel]="dpApplyNotes()" (ngModelChange)="dpApplyNotes.set($event)"></textarea>
+        </div>
+      </div>
+
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="closeApplyDpModal()">Batal</button>
+        <button type="button" class="v3-btn-primary" (click)="submitApplyDp()">
+          <i class="bi bi-check2-circle me-1"></i> Terapkan Potongan DP
         </button>
       </div>
     </div>

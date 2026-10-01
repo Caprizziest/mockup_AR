@@ -10,7 +10,12 @@ import {
   PaymentMethod,
   LineItem,
   BankAccount,
-  UserRole
+  UserRole,
+  InstallmentItem,
+  CustomerDpTransaction,
+  MutasiCustomerSummary,
+  MutasiTransactionDetail,
+  KartuPiutangRow
 } from '../models/ar.models';
 
 export type V3ActiveView =
@@ -24,7 +29,10 @@ export type V3ActiveView =
   | 'customer-detail'
   | 'aging-report'
   | 'bank-accounts'
-  | 'activity-logs';
+  | 'activity-logs'
+  | 'mutasi-piutang'
+  | 'kartu-piutang'
+  | 'dp-management';
 
 export interface DeleteModalState {
   type: 'customer' | 'invoice' | 'bank_account' | 'payment';
@@ -238,6 +246,99 @@ export class V3ArComponent {
     { description: 'Grand Ballroom Rental - Corporate Package', itemType: 'Banquet', quantity: 1, unitPrice: 35000000 },
     { description: 'Executive Buffet Catering (100 pax)', itemType: 'F&B', quantity: 100, unitPrice: 150000 }
   ]);
+
+  // --- Invoice Form Extensions (Cicilan & Rollover Tunggakan) ---
+  invoiceFormIsInstallment = signal<boolean>(false);
+  invoiceFormInstallmentCount = signal<number>(3);
+  invoiceFormInstallmentIntervalDays = signal<number>(30);
+  invoiceFormInstallmentSchedule = signal<InstallmentItem[]>([]);
+  invoiceFormHasRollover = signal<boolean>(false);
+  invoiceFormRolledOverAmount = signal<number>(0);
+  invoiceFormRolledOverFrom = signal<string>('');
+  invoiceFormTimesOverdue = signal<number>(0);
+
+  // --- Income Audit Modal State ---
+  showIncomeAuditModal = signal<boolean>(false);
+  auditSelectedPayment = signal<Payment | null>(null);
+  auditAuditorName = signal<string>('Staf Income Audit FA');
+  auditNotes = signal<string>('Telah diverifikasi fisik slip transfer & mutasi rekening koran valid.');
+
+  // --- Laporan Mutasi Piutang State (Screenshot 1 & 2) ---
+  mutasiStartDate = signal<string>('2026-01-01');
+  mutasiEndDate = signal<string>('2026-09-29');
+  mutasiSearchQuery = signal<string>('');
+  showDetailMutasiModal = signal<boolean>(false);
+  selectedMutasiCustomerId = signal<string>('cust-ainun');
+
+  mutasiReportData = computed(() => {
+    return this.arService.getMutasiPiutang(this.mutasiStartDate(), this.mutasiEndDate());
+  });
+
+  filteredMutasiList = computed(() => {
+    const q = this.mutasiSearchQuery().toLowerCase().trim();
+    const list = this.mutasiReportData().list;
+    if (!q) return list;
+    return list.filter(m => m.customerName.toLowerCase().includes(q));
+  });
+
+  detailMutasiData = computed(() => {
+    const custId = this.selectedMutasiCustomerId();
+    if (!custId) return null;
+    return this.arService.getDetailMutasiPiutang(custId, this.mutasiStartDate(), this.mutasiEndDate());
+  });
+
+  // --- Kartu Piutang Seimbang State (Screenshot 3 & 4) ---
+  kartuStartDate = signal<string>('2026-08-01');
+  kartuEndDate = signal<string>('2026-09-29');
+  kartuSelectedPerusahaan = signal<string>('PT. SINAR GALESONG PRATAMA');
+  kartuSelectedCustomerId = signal<string>('cust-sgm');
+
+  kartuRows = computed(() => {
+    return this.arService.getKartuPiutang(this.kartuSelectedCustomerId(), this.kartuStartDate(), this.kartuEndDate());
+  });
+
+  selectedKartuCustomer = computed(() => {
+    return this.arService.customers().find(c => c.id === this.kartuSelectedCustomerId());
+  });
+
+  // --- Pengelolaan Uang Muka (DP Ledger) State ---
+  dpCustomerFilter = signal<string>('ALL');
+  dpSearchQuery = signal<string>('');
+  showRecordDpModal = signal<boolean>(false);
+  dpRecordCustomerId = signal<string>('cust-1');
+  dpRecordAmount = signal<number>(5000000);
+  dpRecordMethod = signal<PaymentMethod>('bank_transfer');
+  dpRecordChannel = signal<string>('BCA (Overbooking)');
+  dpRecordRef = signal<string>('');
+  dpRecordNotes = signal<string>('Setoran Uang Muka (DP) reservasi ballroom & event');
+
+  showApplyDpModal = signal<boolean>(false);
+  dpApplyCustomerId = signal<string>('cust-1');
+  dpApplyInvoiceId = signal<string>('');
+  dpApplyAmount = signal<number>(0);
+  dpApplyNotes = signal<string>('Potongan Saldo DP untuk faktur invoice');
+
+  filteredDpTransactions = computed(() => {
+    const custId = this.dpCustomerFilter();
+    const q = this.dpSearchQuery().toLowerCase().trim();
+    let list = this.arService.dpTransactions();
+
+    if (custId !== 'ALL') {
+      list = list.filter(t => t.customerId === custId);
+    }
+    if (q) {
+      list = list.filter(t =>
+        t.customerName.toLowerCase().includes(q) ||
+        (t.invoiceNumber && t.invoiceNumber.toLowerCase().includes(q)) ||
+        (t.notes && t.notes.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  });
+
+  customerTotalAvailableDp = computed(() => {
+    return this.arService.customers().reduce((sum, c) => sum + (c.dpBalance || 0), 0);
+  });
 
   // --- Customer Form State ---
   customerFormName = signal<string>('');
@@ -870,6 +971,14 @@ export class V3ArComponent {
       { description: 'Sewa Grand Ballroom & Pre-Function Foyer', itemType: 'Banquet', quantity: 1, unitPrice: 30000000 },
       { description: 'Buffet Catering VIP Package (100 pax)', itemType: 'F&B', quantity: 100, unitPrice: 150000 }
     ]);
+    this.invoiceFormIsInstallment.set(false);
+    this.invoiceFormInstallmentCount.set(3);
+    this.invoiceFormInstallmentIntervalDays.set(30);
+    this.invoiceFormInstallmentSchedule.set([]);
+    this.invoiceFormHasRollover.set(false);
+    this.invoiceFormRolledOverAmount.set(0);
+    this.invoiceFormRolledOverFrom.set('');
+    this.invoiceFormTimesOverdue.set(0);
     this.navigateTo('invoice-create');
   }
 
@@ -902,6 +1011,14 @@ export class V3ArComponent {
         unitPrice: item.unitPrice
       }))
     );
+    this.invoiceFormIsInstallment.set(inv.isInstallment || false);
+    this.invoiceFormInstallmentCount.set(inv.installmentCount || 3);
+    this.invoiceFormInstallmentIntervalDays.set(inv.installmentIntervalDays || 30);
+    this.invoiceFormInstallmentSchedule.set(inv.installmentSchedule || []);
+    this.invoiceFormHasRollover.set(inv.hasRollover || false);
+    this.invoiceFormRolledOverAmount.set(inv.rolledOverAmount || 0);
+    this.invoiceFormRolledOverFrom.set(inv.rolledOverFrom || '');
+    this.invoiceFormTimesOverdue.set(inv.timesOverdue || 0);
     this.navigateTo('invoice-create');
   }
 
@@ -912,6 +1029,86 @@ export class V3ArComponent {
       const d = new Date(this.invoiceFormIssueDate());
       d.setDate(d.getDate() + (cust.dueDays || 30));
       this.invoiceFormDueDate.set(d.toISOString().split('T')[0]);
+    }
+    // Check if customer has rollover overdue amounts
+    if (this.invoiceFormHasRollover()) {
+      this.onRolloverCustomerChange();
+    }
+  }
+
+  // --- Dynamic Invoice Calculation Signals ---
+  invoiceFormSubtotalCalculated = computed(() => {
+    return this.invoiceFormLineItems().reduce((acc, curr) => acc + ((Number(curr.quantity) || 0) * (Number(curr.unitPrice) || 0)), 0);
+  });
+
+  invoiceFormTaxCalculated = computed(() => {
+    return Math.round((this.invoiceFormSubtotalCalculated() * (Number(this.invoiceFormTaxRate()) || 0)) / 100);
+  });
+
+  invoiceFormPphCalculated = computed(() => {
+    return Math.round((this.invoiceFormSubtotalCalculated() * (Number(this.invoiceFormPphRate()) || 0)) / 100);
+  });
+
+  invoiceFormTotalCalculated = computed(() => {
+    const base = Math.max(0, this.invoiceFormSubtotalCalculated() + this.invoiceFormTaxCalculated() - this.invoiceFormPphCalculated() - (Number(this.invoiceFormDpDeduction()) || 0));
+    const rollover = this.invoiceFormHasRollover() ? (Number(this.invoiceFormRolledOverAmount()) || 0) : 0;
+    return base + rollover;
+  });
+
+  onToggleInstallment(val: boolean) {
+    this.invoiceFormIsInstallment.set(val);
+    if (val) this.generateInstallmentSchedule();
+  }
+
+  onToggleRollover(val: boolean) {
+    this.invoiceFormHasRollover.set(val);
+    if (val) this.onRolloverCustomerChange();
+  }
+
+  generateInstallmentSchedule() {
+    const count = Math.max(1, Number(this.invoiceFormInstallmentCount()) || 1);
+    const interval = Math.max(1, Number(this.invoiceFormInstallmentIntervalDays()) || 30);
+    const total = this.invoiceFormTotalCalculated();
+    const amountPerTerm = Math.round(total / count);
+
+    const schedule: InstallmentItem[] = [];
+    const baseDate = new Date(this.invoiceFormIssueDate() || this.arService.today);
+
+    for (let i = 1; i <= count; i++) {
+      const termDueDate = new Date(baseDate);
+      termDueDate.setDate(termDueDate.getDate() + (interval * i));
+      const dueDateStr = termDueDate.toISOString().split('T')[0];
+
+      const currentAmount = (i === count)
+        ? Math.max(0, total - (amountPerTerm * (count - 1)))
+        : amountPerTerm;
+
+      schedule.push({
+        installmentNumber: i,
+        dueDate: dueDateStr,
+        amount: currentAmount,
+        amountPaid: 0,
+        status: 'Unpaid'
+      });
+    }
+
+    this.invoiceFormInstallmentSchedule.set(schedule);
+    this.showToast(`Jadwal ${count}x cicilan berhasil dihitung otomatis!`, 'info');
+  }
+
+  onRolloverCustomerChange() {
+    const custId = this.invoiceFormCustomerId();
+    const overdueInvs = this.arService.invoices().filter(i => i.customerId === custId && i.status === 'Overdue');
+    if (overdueInvs.length > 0) {
+      const overdueTotal = overdueInvs.reduce((sum, i) => sum + i.balanceDue, 0);
+      this.invoiceFormRolledOverAmount.set(overdueTotal);
+      this.invoiceFormRolledOverFrom.set(overdueInvs.map(i => i.invoiceNumber).join(', '));
+      this.invoiceFormTimesOverdue.set(overdueInvs.length);
+      this.showToast(`Terdeteksi ${overdueInvs.length} invoice jatuh tempo dari pelanggan ini. Saldo tertunggak Rp ${overdueTotal.toLocaleString('id-ID')} digulung (rollover) ke tagihan baru.`, 'warning');
+    } else {
+      this.invoiceFormRolledOverAmount.set(0);
+      this.invoiceFormRolledOverFrom.set('');
+      this.invoiceFormTimesOverdue.set(0);
     }
   }
 
@@ -988,7 +1185,15 @@ export class V3ArComponent {
         pphRate: this.invoiceFormPphRate(),
         dpDeduction: this.invoiceFormDpDeduction(),
         notes: this.invoiceFormNotes(),
-        sourceType: this.invoiceFormSourceType()
+        sourceType: this.invoiceFormSourceType(),
+        isInstallment: this.invoiceFormIsInstallment(),
+        installmentCount: this.invoiceFormInstallmentCount(),
+        installmentIntervalDays: this.invoiceFormInstallmentIntervalDays(),
+        installmentSchedule: this.invoiceFormInstallmentSchedule(),
+        hasRollover: this.invoiceFormHasRollover(),
+        rolledOverAmount: this.invoiceFormRolledOverAmount(),
+        rolledOverFrom: this.invoiceFormRolledOverFrom(),
+        timesOverdue: this.invoiceFormTimesOverdue()
       });
 
       if (result.success && result.invoice) {
@@ -1013,11 +1218,159 @@ export class V3ArComponent {
         dpDeduction: this.invoiceFormDpDeduction(),
         notes: this.invoiceFormNotes(),
         sourceType: this.invoiceFormSourceType(),
-        saveAs
+        saveAs,
+        isInstallment: this.invoiceFormIsInstallment(),
+        installmentCount: this.invoiceFormInstallmentCount(),
+        installmentIntervalDays: this.invoiceFormInstallmentIntervalDays(),
+        installmentSchedule: this.invoiceFormInstallmentSchedule(),
+        hasRollover: this.invoiceFormHasRollover(),
+        rolledOverAmount: this.invoiceFormRolledOverAmount(),
+        rolledOverFrom: this.invoiceFormRolledOverFrom(),
+        timesOverdue: this.invoiceFormTimesOverdue()
       });
 
       this.showToast(`Invoice ${newInvoice.invoiceNumber} berhasil disimpan sebagai ${newInvoice.status}!`, 'success');
       this.viewInvoice(newInvoice);
+    }
+  }
+
+  // --- Mutasi Piutang Actions ---
+  openDetailMutasi(customerId: string) {
+    this.selectedMutasiCustomerId.set(customerId);
+    this.showDetailMutasiModal.set(true);
+  }
+
+  closeDetailMutasi() {
+    this.showDetailMutasiModal.set(false);
+  }
+
+  printInvoice(invoiceNo: string) {
+    this.showToast(`Mencetak Faktur / Invoice: ${invoiceNo} ...`, 'info');
+    window.print();
+  }
+
+  printKwitansi(kwitansiNo: string) {
+    this.showToast(`Mencetak Bukti Pembayaran / Kwitansi: ${kwitansiNo} ...`, 'success');
+    window.print();
+  }
+
+  // --- Income Audit Actions ---
+  openIncomeAuditModal(payment: Payment) {
+    if (this.isViewer()) {
+      this.showToast('Akses Ditolak: Role Viewer tidak dapat memverifikasi Income Audit.', 'danger');
+      return;
+    }
+    this.auditSelectedPayment.set(payment);
+    this.auditAuditorName.set(this.arService.currentUser().fullName || 'Auditor FA Galesong');
+    this.auditNotes.set(`Verifikasi fisik slip transfer & mutasi bank atas pembayaran ${payment.paymentNumber} valid.`);
+    this.showIncomeAuditModal.set(true);
+  }
+
+  closeIncomeAuditModal() {
+    this.showIncomeAuditModal.set(false);
+    this.auditSelectedPayment.set(null);
+  }
+
+  confirmIncomeAudit() {
+    const pay = this.auditSelectedPayment();
+    if (!pay) return;
+
+    const res = this.arService.verifyIncomeAudit(pay.id, this.auditAuditorName(), this.auditNotes());
+    if (res.success) {
+      this.showToast(res.message, 'success');
+      this.closeIncomeAuditModal();
+    } else {
+      this.showToast(res.message, 'danger');
+    }
+  }
+
+  // --- DP Management Actions ---
+  openRecordDpModal(customerId?: string) {
+    if (this.isViewer()) {
+      this.showToast('Akses Ditolak: Role Viewer tidak dapat mencatat Uang Muka.', 'danger');
+      return;
+    }
+    this.dpRecordCustomerId.set(customerId || this.arService.customers()[0]?.id || '');
+    this.dpRecordAmount.set(5000000);
+    this.dpRecordRef.set(`TRF-DP-${Date.now().toString().substring(7)}`);
+    this.dpRecordNotes.set('Setoran Uang Muka / Deposit Layanan');
+    this.showRecordDpModal.set(true);
+  }
+
+  closeRecordDpModal() {
+    this.showRecordDpModal.set(false);
+  }
+
+  submitRecordDp() {
+    if (!this.dpRecordCustomerId()) {
+      this.showToast('Pilih pelanggan terlebih dahulu.', 'warning');
+      return;
+    }
+    if (this.dpRecordAmount() <= 0) {
+      this.showToast('Nominal setoran uang muka harus lebih besar dari 0.', 'warning');
+      return;
+    }
+
+    const res = this.arService.recordCustomerDp({
+      customerId: this.dpRecordCustomerId(),
+      amount: this.dpRecordAmount(),
+      method: this.dpRecordMethod(),
+      paymentChannel: this.dpRecordChannel(),
+      referenceNumber: this.dpRecordRef() || `DP-REF-${Date.now()}`,
+      notes: this.dpRecordNotes()
+    });
+
+    if (res.success) {
+      this.showToast(res.message, 'success');
+      this.closeRecordDpModal();
+    } else {
+      this.showToast(res.message, 'danger');
+    }
+  }
+
+  openApplyDpModal(customerId?: string, invoiceId?: string) {
+    if (this.isViewer()) {
+      this.showToast('Akses Ditolak: Role Viewer tidak dapat memotong Uang Muka.', 'danger');
+      return;
+    }
+    const custId = customerId || this.arService.customers()[0]?.id || '';
+    this.dpApplyCustomerId.set(custId);
+    const openInvs = this.arService.invoices().filter(i => i.customerId === custId && i.balanceDue > 0);
+    this.dpApplyInvoiceId.set(invoiceId || (openInvs[0]?.id || ''));
+    const cust = this.arService.customers().find(c => c.id === custId);
+    const maxDp = cust?.dpBalance || 0;
+    const inv = this.arService.invoices().find(i => i.id === this.dpApplyInvoiceId());
+    const maxApply = inv ? Math.min(maxDp, inv.balanceDue) : maxDp;
+    this.dpApplyAmount.set(maxApply);
+    this.showApplyDpModal.set(true);
+  }
+
+  closeApplyDpModal() {
+    this.showApplyDpModal.set(false);
+  }
+
+  submitApplyDp() {
+    if (!this.dpApplyCustomerId() || !this.dpApplyInvoiceId()) {
+      this.showToast('Pilih invoice yang akan dipotong DP.', 'warning');
+      return;
+    }
+    if (this.dpApplyAmount() <= 0) {
+      this.showToast('Nominal pemotongan DP harus lebih dari 0.', 'warning');
+      return;
+    }
+
+    const res = this.arService.applyCustomerDp({
+      customerId: this.dpApplyCustomerId(),
+      invoiceId: this.dpApplyInvoiceId(),
+      amount: this.dpApplyAmount(),
+      notes: this.dpApplyNotes()
+    });
+
+    if (res.success) {
+      this.showToast(res.message, 'success');
+      this.closeApplyDpModal();
+    } else {
+      this.showToast(res.message, 'danger');
     }
   }
 

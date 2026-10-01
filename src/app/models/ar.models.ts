@@ -35,6 +35,81 @@ export interface BankAccount {
   isDefault?: boolean;
 }
 
+export interface InstallmentItem {
+  installmentNumber: number; // Angsuran Ke-1, Ke-2, dst.
+  dueDate: string;
+  amount: number;
+  amountPaid: number;
+  status: 'Unpaid' | 'Paid' | 'Overdue';
+  paidDate?: string;
+}
+
+export interface CustomerDpTransaction {
+  id: string;
+  customerId: string;
+  customerName: string;
+  date: string;
+  type: 'deposit' | 'applied'; // Setoran DP atau Pemotongan ke Invoice
+  amount: number;
+  balanceAfter: number;
+  invoiceNumber?: string;
+  paymentNumber?: string;
+  referenceNumber?: string;
+  notes: string;
+}
+
+export interface MutasiCustomerSummary {
+  customerId: string;
+  customerName: string;
+  transactionCount: number;
+  totalPiutang: number;
+  piutangDibayar: number;
+  saldo: number;
+}
+
+export interface MutasiTransactionDetail {
+  id: string;
+  tanggal: string;
+  noInvoice: string;
+  noKwitansi: string;
+  keterangan: string;
+  piutang: number;
+  terbayar: number;
+  saldo: number;
+  type: 'invoice' | 'payment';
+}
+
+export interface KartuPiutangRow {
+  // Penagihan Piutang (Debet)
+  tglTerbit?: string;
+  noInvoice?: string;
+  noBuktiJurnalDebet?: string;
+  keteranganDebet?: string;
+  nominalDebet?: number;
+  tglJatuhTempo?: string;
+  
+  // Pembayaran Piutang (Kredit)
+  tglBayar?: string;
+  noBuktiJurnalKredit?: string;
+  keteranganKredit?: string;
+  nominalKredit?: number;
+  diskon?: number;
+  saldoPiutang?: number;
+  umurPiutang?: number;
+
+  // Denda (Penalti & Penghapusan)
+  nominalDenda?: number;
+  tglBayarDenda?: string;
+  noBuktiJurnalDenda?: string;
+  keteranganDenda?: string;
+  nominalBayarDenda?: number;
+  tglHapusDenda?: string;
+  memoHapusDenda?: string;
+  keteranganHapusDenda?: string;
+  nominalHapusDenda?: number;
+  saldoDenda?: number;
+}
+
 export interface Customer {
   id: string;
   code: string;
@@ -50,6 +125,7 @@ export interface Customer {
   status: 'active' | 'credit_hold';
   notes?: string;
   createdAt: string;
+  dpBalance?: number; // Saldo Uang Muka yang tersedia
 }
 
 export interface LineItem {
@@ -64,6 +140,7 @@ export interface LineItem {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
+  journalNumber?: string; // No Bukti Jurnal Akuntansi Galesong (e.g. FN00260803008)
   customerId: string;
   customerName: string;
   customerNik?: string;
@@ -92,6 +169,16 @@ export interface Invoice {
   cancelledBy?: string;
   voidDate?: string;
   voidReason?: string;
+
+  // Fitur Cicilan (Installments) & Rollover
+  isInstallment?: boolean;
+  installmentCount?: number;            // e.g. 3 kali
+  installmentIntervalDays?: number;     // e.g. 30 hari
+  installmentSchedule?: InstallmentItem[];
+  timesOverdue?: number;                // Berapa kali jatuh tempo terlewati
+  hasRollover?: boolean;                // Apakah tagihan ini mencakup akumulasi tunggakan sebelumnya
+  rolledOverAmount?: number;            // Nominal tunggakan yang digulung
+  rolledOverFrom?: string;              // Nomor invoice asal tunggakan
 }
 
 export interface PaymentAllocation {
@@ -104,19 +191,28 @@ export interface PaymentAllocation {
 export interface Payment {
   id: string;
   paymentNumber: string;
+  journalNumber?: string;       // No Bukti Jurnal Kas/Bank Galesong (e.g. BD00260828001)
+  kwitansiNumber?: string;      // No Kwitansi Resmi (e.g. 540/KLBR-FNC/MKS/I/2026)
   customerId: string;
   customerName: string;
   paymentDate: string;
   amount: number;
+  discountAmount?: number;      // Diskon pembayaran pelunasan jika ada
   method: PaymentMethod;
-  paymentChannel: string; // e.g. BCA, Mandiri, BCA VA, GoPay, OVO, ShopeePay, EDC BCA, Tunai Front Office
+  paymentChannel: string;       // e.g. BCA, Mandiri, BCA VA, GoPay, OVO, ShopeePay, EDC BCA, Tunai Front Office
   referenceNumber: string;
   adminFee?: number;
   bankAccountId?: string;
   notes?: string;
   allocations: PaymentAllocation[];
-  isDownPayment?: boolean; // Payment recorded as unallocated down payment
+  isDownPayment?: boolean;      // Payment recorded as unallocated down payment
   createdAt: string;
+
+  // Income Audit Status (Pencatatan kas masuk vs Verifikasi Fisik oleh Dept FA)
+  auditStatus?: 'pending_fa' | 'verified_fa';
+  auditedBy?: string;
+  auditedAt?: string;
+  auditNotes?: string;
 }
 
 export interface AgingBucket {

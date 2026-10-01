@@ -1123,3 +1123,17 @@
   }
 }
 
+/* Modal XL for Mutasi & Kartu Piutang Drilldowns */
+.v3-modal-xl {
+  max-width: 1140px;
+}
+
+/* Mutasi Piutang Yellow Highlight for Payment Rows (PT Sinar Galesong Pratama Reference) */
+.v3-mutasi-payment-row {
+  background-color: #fef9c3 !important;
+}
+
+.v3-mutasi-payment-row:hover {
+  background-color: #fef08a !important;
+}
+
