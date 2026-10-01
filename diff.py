@@ -1,14 +1,16 @@
 import os
 import subprocess
 
-# Daftar commit milik Caprizziest (Sep 22, 2026)
+# Daftar commit milik Caprizziest (Oct 1, 2026)
 COMMITS = [
-    {"hash": "4a15ccb", "title": "apa_coba"},
-    {"hash": "853a724", "title": "etst"},
+    {
+        "hash": "637ce9d",
+        "title": "revisi",
+    },
 ]
 
-OUTPUT_DIR = "diff_output_sep22"
-COMBINED_FILE = "caprizziest_all_diffs_sep22.txt"
+OUTPUT_DIR = "diff_output_oct1"
+COMBINED_FILE = "caprizziest_all_diffs_oct1.txt"
 
 
 def run_git_command(args):

@@ -2128,6 +2128,10 @@ export class ArDataService {
     return { success: true, message: `Berhasil memotong Rp ${payload.amount.toLocaleString('id-ID')} dari saldo DP untuk invoice ${inv.invoiceNumber}.` };
   }
 
+  getCustomerDpTransactions(customerId: string): CustomerDpTransaction[] {
+    return this.dpTransactions().filter(t => t.customerId === customerId);
+  }
+
   // ==========================================
   // LAPORAN MUTASI PIUTANG (RINGKASAN & DETAIL DENGAN RUNNING BALANCE)
   // Sesuai format riil Galesong Group (Screenshot 1 & 2)

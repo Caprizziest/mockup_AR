@@ -25,6 +25,7 @@ export type V3ActiveView =
   | 'invoice-edit'
   | 'invoice-detail'
   | 'payments'
+  | 'income-audit'
   | 'customers'
   | 'customer-detail'
   | 'aging-report'
@@ -61,7 +62,7 @@ export class V3ArComponent {
   // Selection state
   selectedInvoice = signal<Invoice | null>(null);
   selectedCustomer = signal<Customer | null>(null);
-  customerActiveTab = signal<'invoices' | 'payments' | 'profile'>('invoices');
+  customerActiveTab = signal<'invoices' | 'payments' | 'dp' | 'profile'>('invoices');
 
   // Invoices Filters & Search
   invoiceCategoryFilter = signal<'ALL' | 'Draft' | 'Issued' | 'Partially Paid' | 'Overdue' | 'Paid' | 'Cancelled'>('ALL');
@@ -257,6 +258,34 @@ export class V3ArComponent {
   invoiceFormRolledOverFrom = signal<string>('');
   invoiceFormTimesOverdue = signal<number>(0);
 
+  // --- Payment Tabs & Income Audit State ---
+  paymentActiveTab = signal<'all' | 'income-audit'>('all');
+  incomeAuditStatusFilter = signal<'ALL' | 'pending' | 'verified'>('ALL');
+
+  pendingIncomeAuditCount = computed(() => {
+    return this.arService.payments().filter(p => p.auditStatus !== 'verified_fa').length;
+  });
+
+  filteredIncomeAuditPayments = computed(() => {
+    let list = this.arService.payments();
+    const filter = this.incomeAuditStatusFilter();
+    if (filter === 'pending') {
+      list = list.filter(p => p.auditStatus !== 'verified_fa');
+    } else if (filter === 'verified') {
+      list = list.filter(p => p.auditStatus === 'verified_fa');
+    }
+    const q = this.paymentSearchQuery().toLowerCase().trim();
+    if (q) {
+      list = list.filter(p =>
+        p.paymentNumber.toLowerCase().includes(q) ||
+        p.customerName.toLowerCase().includes(q) ||
+        (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)) ||
+        (p.auditedBy && p.auditedBy.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  });
+
   // --- Income Audit Modal State ---
   showIncomeAuditModal = signal<boolean>(false);
   auditSelectedPayment = signal<Payment | null>(null);
@@ -301,7 +330,8 @@ export class V3ArComponent {
     return this.arService.customers().find(c => c.id === this.kartuSelectedCustomerId());
   });
 
-  // --- Pengelolaan Uang Muka (DP Ledger) State ---
+  // --- Pengelolaan Uang Muka (DP per Customer) State ---
+  selectedDpCustomerId = signal<string | null>(null);
   dpCustomerFilter = signal<string>('ALL');
   dpSearchQuery = signal<string>('');
   showRecordDpModal = signal<boolean>(false);
@@ -317,6 +347,54 @@ export class V3ArComponent {
   dpApplyInvoiceId = signal<string>('');
   dpApplyAmount = signal<number>(0);
   dpApplyNotes = signal<string>('Potongan Saldo DP untuk faktur invoice');
+
+  customerDpSummaries = computed(() => {
+    const customers = this.arService.customers();
+    const allTx = this.arService.dpTransactions();
+    const q = this.dpSearchQuery().toLowerCase().trim();
+
+    let result = customers.map(c => {
+      const txs = allTx.filter(t => t.customerId === c.id);
+      const totalDeposits = txs.filter(t => t.type === 'deposit').reduce((sum, t) => sum + t.amount, 0);
+      const totalDeductions = txs.filter(t => t.type === 'applied').reduce((sum, t) => sum + t.amount, 0);
+      return {
+        customer: c,
+        dpBalance: c.dpBalance || 0,
+        totalDeposits,
+        totalDeductions,
+        txCount: txs.length,
+        transactions: txs
+      };
+    });
+
+    if (q) {
+      result = result.filter(r =>
+        r.customer.name.toLowerCase().includes(q) ||
+        r.customer.code.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  });
+
+  selectedCustomerDpDetails = computed(() => {
+    const custId = this.selectedDpCustomerId();
+    if (!custId) return null;
+    const cust = this.arService.customers().find(c => c.id === custId);
+    if (!cust) return null;
+    const txs = this.arService.dpTransactions().filter(t => t.customerId === custId);
+    const totalDeposits = txs.filter(t => t.type === 'deposit').reduce((sum, t) => sum + t.amount, 0);
+    const totalDeductions = txs.filter(t => t.type === 'applied').reduce((sum, t) => sum + t.amount, 0);
+    return {
+      customer: cust,
+      totalDeposits,
+      totalDeductions,
+      transactions: txs
+    };
+  });
+
+  selectCustomerDp(customerId: string | null) {
+    this.selectedDpCustomerId.set(customerId);
+  }
 
   filteredDpTransactions = computed(() => {
     const custId = this.dpCustomerFilter();
@@ -1252,6 +1330,11 @@ export class V3ArComponent {
   printKwitansi(kwitansiNo: string) {
     this.showToast(`Mencetak Bukti Pembayaran / Kwitansi: ${kwitansiNo} ...`, 'success');
     window.print();
+  }
+
+  isInvoicePaid(invoiceNo: string): boolean {
+    const inv = this.arService.invoices().find(i => i.invoiceNumber === invoiceNo);
+    return inv ? inv.status === 'Paid' : false;
   }
 
   // --- Income Audit Actions ---
