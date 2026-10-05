@@ -160,9 +160,9 @@ export class ArDataService {
     {
       id: 'cust-7',
       code: 'CUST-007',
-      name: 'Dr. Hendra Wijaya, Sp.A',
-      contactPerson: 'Dr. Hendra Wijaya',
-      email: 'hendra.wijaya@gmail.com',
+      name: 'PT Medika Nusantara Sejahtera',
+      contactPerson: 'dr. Ardiansyah Pratama',
+      email: 'finance@medikanusantara.co.id',
       phone: '+62 811 882 391',
       address: 'Jl. Cemara Indah No. 42, Menteng, Jakarta Pusat',
       nik: '3171011503780007',
@@ -170,7 +170,7 @@ export class ArDataService {
       creditLimit: 50000000,
       dueDays: 14,
       status: 'active',
-      notes: 'Individual VIP Customer (No active invoices - test deletion candidate)',
+      notes: 'Corporate Account - Paket Akomodasi & Simposium Medis (Test Deletion Candidate)',
       createdAt: '2026-09-01',
       dpBalance: 0
     },
@@ -192,11 +192,11 @@ export class ArDataService {
       dpBalance: 10000000
     },
     {
-      id: 'cust-ainun',
+      id: 'cust-009',
       code: 'CUST-009',
-      name: 'AINUN',
-      contactPerson: 'Ibu Ainun',
-      email: 'ainun.lifestyle@gmail.com',
+      name: 'PT BINTANG TIMUR UTAMA',
+      contactPerson: 'Bpk. Hendra Gunawan',
+      email: 'finance@bintangtimur.co.id',
       phone: '+62 812 4290 8812',
       address: 'Jl. Somba Opu No. 88, Makassar',
       nik: '7371014502900009',
@@ -209,11 +209,11 @@ export class ArDataService {
       dpBalance: 2500000
     },
     {
-      id: 'cust-abdkadir',
+      id: 'cust-010',
       code: 'CUST-010',
-      name: 'Abd Kadir MN',
-      contactPerson: 'Abd Kadir MN',
-      email: 'abdkadir.mn@gmail.com',
+      name: 'PT GRAHA MANDIRI NUSANTARA',
+      contactPerson: 'Bpk. Bambang Wijaya',
+      email: 'finance@grahamandiri.co.id',
       phone: '+62 813 5521 9081',
       address: 'Jl. Pengayoman No. 12, Makassar',
       nik: '7371021408850010',
@@ -266,14 +266,14 @@ export class ArDataService {
     },
     {
       id: 'dp-04',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       date: '2026-01-02',
       type: 'deposit',
       amount: 2500000,
       balanceAfter: 2500000,
       paymentNumber: 'PAY-DP-003',
-      referenceNumber: 'TRF-BCA-AINUN-01',
+      referenceNumber: 'TRF-BCA-BTU-01',
       notes: 'Setoran Uang Muka paket katering rutin semester 1'
     }
   ]);
@@ -612,18 +612,18 @@ export class ArDataService {
       createdByName: 'Staf Penagihan AR',
       createdAt: '2026-09-01'
     },
-    // Data Riil AINUN (Sesuai Lampiran Laporan Mutasi Piutang Galesong Group)
+    // Data Riil PT BINTANG TIMUR UTAMA (Sesuai Lampiran Laporan Mutasi Piutang Galesong Group)
     {
       id: 'inv-ain-01',
       invoiceNumber: 'ARP260104063',
       journalNumber: 'FN00260104063',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-04',
       dueDate: '2026-01-18',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a1', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 22000, lineTotal: 22000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a1', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 22000, lineTotal: 22000 }],
       subtotal: 22000,
       taxRate: 0,
       taxAmount: 0,
@@ -633,7 +633,7 @@ export class ArDataService {
       total: 22000,
       amountPaid: 22000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-04'
     },
@@ -641,13 +641,13 @@ export class ArDataService {
       id: 'inv-ain-02',
       invoiceNumber: 'ARP260109061',
       journalNumber: 'FN00260109061',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-09',
       dueDate: '2026-01-23',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a2', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a2', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
       subtotal: 20000,
       taxRate: 0,
       taxAmount: 0,
@@ -657,7 +657,7 @@ export class ArDataService {
       total: 20000,
       amountPaid: 20000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-09'
     },
@@ -665,13 +665,13 @@ export class ArDataService {
       id: 'inv-ain-03',
       invoiceNumber: 'ARP260116009',
       journalNumber: 'FN00260116009',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-16',
       dueDate: '2026-01-30',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a3', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 21500, lineTotal: 21500 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a3', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 21500, lineTotal: 21500 }],
       subtotal: 21500,
       taxRate: 0,
       taxAmount: 0,
@@ -681,7 +681,7 @@ export class ArDataService {
       total: 21500,
       amountPaid: 21500,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-16'
     },
@@ -689,13 +689,13 @@ export class ArDataService {
       id: 'inv-ain-04',
       invoiceNumber: 'ARP260116066',
       journalNumber: 'FN00260116066',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-16',
       dueDate: '2026-01-30',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a4', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 65000, lineTotal: 65000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a4', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 65000, lineTotal: 65000 }],
       subtotal: 65000,
       taxRate: 0,
       taxAmount: 0,
@@ -705,7 +705,7 @@ export class ArDataService {
       total: 65000,
       amountPaid: 65000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-16'
     },
@@ -713,13 +713,13 @@ export class ArDataService {
       id: 'inv-ain-05',
       invoiceNumber: 'ARP260117083',
       journalNumber: 'FN00260117083',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-17',
       dueDate: '2026-01-31',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a5', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 18500, lineTotal: 18500 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a5', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 18500, lineTotal: 18500 }],
       subtotal: 18500,
       taxRate: 0,
       taxAmount: 0,
@@ -729,7 +729,7 @@ export class ArDataService {
       total: 18500,
       amountPaid: 18500,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-17'
     },
@@ -737,13 +737,13 @@ export class ArDataService {
       id: 'inv-ain-06',
       invoiceNumber: 'ARP260118047',
       journalNumber: 'FN00260118047',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-18',
       dueDate: '2026-02-01',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a6', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 15000, lineTotal: 15000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a6', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 15000, lineTotal: 15000 }],
       subtotal: 15000,
       taxRate: 0,
       taxAmount: 0,
@@ -753,7 +753,7 @@ export class ArDataService {
       total: 15000,
       amountPaid: 15000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-18'
     },
@@ -761,13 +761,13 @@ export class ArDataService {
       id: 'inv-ain-07',
       invoiceNumber: 'ARP260124011',
       journalNumber: 'FN00260124011',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-24',
       dueDate: '2026-02-07',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a7', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 9000, lineTotal: 9000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a7', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 9000, lineTotal: 9000 }],
       subtotal: 9000,
       taxRate: 0,
       taxAmount: 0,
@@ -777,7 +777,7 @@ export class ArDataService {
       total: 9000,
       amountPaid: 9000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-24'
     },
@@ -785,13 +785,13 @@ export class ArDataService {
       id: 'inv-ain-08',
       invoiceNumber: 'ARP260125181',
       journalNumber: 'FN00260125181',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-25',
       dueDate: '2026-02-08',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a8', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 14000, lineTotal: 14000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a8', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 14000, lineTotal: 14000 }],
       subtotal: 14000,
       taxRate: 0,
       taxAmount: 0,
@@ -801,7 +801,7 @@ export class ArDataService {
       total: 14000,
       amountPaid: 14000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-25'
     },
@@ -809,13 +809,13 @@ export class ArDataService {
       id: 'inv-ain-09',
       invoiceNumber: 'ARP260125142',
       journalNumber: 'FN00260125142',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-25',
       dueDate: '2026-02-08',
       status: 'Paid',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a9', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 3000, lineTotal: 3000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a9', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 3000, lineTotal: 3000 }],
       subtotal: 3000,
       taxRate: 0,
       taxAmount: 0,
@@ -825,7 +825,7 @@ export class ArDataService {
       total: 3000,
       amountPaid: 3000,
       balanceDue: 0,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-25'
     },
@@ -833,13 +833,13 @@ export class ArDataService {
       id: 'inv-ain-10',
       invoiceNumber: 'ARP260131015',
       journalNumber: 'FN00260131015',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-01-31',
       dueDate: '2026-02-14',
       status: 'Issued',
-      invoiceType: 'PVC0001 AINUN, January 2026',
-      lineItems: [{ id: 'li-a10', description: 'PVC0001 AINUN, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 12000, lineTotal: 12000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, January 2026',
+      lineItems: [{ id: 'li-a10', description: 'PVC0001 BINTANG TIMUR, January 2026', itemType: 'F&B', quantity: 1, unitPrice: 12000, lineTotal: 12000 }],
       subtotal: 12000,
       taxRate: 0,
       taxAmount: 0,
@@ -849,7 +849,7 @@ export class ArDataService {
       total: 12000,
       amountPaid: 0,
       balanceDue: 12000,
-      notes: 'PVC0001 AINUN, January 2026',
+      notes: 'PVC0001 BINTANG TIMUR, January 2026',
       sourceType: 'generic',
       createdAt: '2026-01-31'
     },
@@ -857,13 +857,13 @@ export class ArDataService {
       id: 'inv-ain-11',
       invoiceNumber: 'ARP260201043',
       journalNumber: 'FN00260201043',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       issueDate: '2026-02-01',
       dueDate: '2026-02-15',
       status: 'Issued',
-      invoiceType: 'PVC0001 AINUN, February 2026',
-      lineItems: [{ id: 'li-a11', description: 'PVC0001 AINUN, February 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
+      invoiceType: 'PVC0001 BINTANG TIMUR, February 2026',
+      lineItems: [{ id: 'li-a11', description: 'PVC0001 BINTANG TIMUR, February 2026', itemType: 'F&B', quantity: 1, unitPrice: 20000, lineTotal: 20000 }],
       subtotal: 20000,
       taxRate: 0,
       taxAmount: 0,
@@ -873,7 +873,7 @@ export class ArDataService {
       total: 20000,
       amountPaid: 0,
       balanceDue: 20000,
-      notes: 'PVC0001 AINUN, February 2026',
+      notes: 'PVC0001 BINTANG TIMUR, February 2026',
       sourceType: 'generic',
       createdAt: '2026-02-01'
     }
@@ -902,6 +902,8 @@ export class ArDataService {
       auditStatus: 'verified_fa',
       auditedBy: 'Rina Hartati (Finance Audit)',
       auditedAt: '2026-08-26 09:30',
+      attachmentName: 'slip_transfer_bca_8839120.pdf',
+      attachmentSize: '1.2 MB',
       createdAt: '2026-08-25'
     },
     {
@@ -923,6 +925,8 @@ export class ArDataService {
         { invoiceId: 'inv-102', invoiceNumber: 'INV-2026-0002', allocatedAmount: 20000000, timesPaid: 1 }
       ],
       auditStatus: 'pending_fa',
+      attachmentName: 'slip_va_bca_9921004.pdf',
+      attachmentSize: '840 KB',
       createdAt: '2026-09-10'
     },
     {
@@ -969,14 +973,14 @@ export class ArDataService {
       auditedAt: '2026-08-29 11:00',
       createdAt: '2026-08-28'
     },
-    // Payments for AINUN (from real screenshot)
+    // Payments for PT BINTANG TIMUR UTAMA (from real screenshot)
     {
       id: 'pay-ain-01',
       paymentNumber: 'PAY-AIN-01',
       journalNumber: 'BD00260128001',
       kwitansiNumber: '540/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 15000,
       method: 'cash',
@@ -994,8 +998,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-02',
       journalNumber: 'BD00260128002',
       kwitansiNumber: '542/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 26000,
       method: 'cash',
@@ -1013,8 +1017,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-03',
       journalNumber: 'BD00260128003',
       kwitansiNumber: '541/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 9000,
       method: 'cash',
@@ -1032,8 +1036,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-04',
       journalNumber: 'BD00260128004',
       kwitansiNumber: '539/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 26000,
       method: 'cash',
@@ -1051,8 +1055,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-05',
       journalNumber: 'BD00260128005',
       kwitansiNumber: '538/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 16000,
       method: 'cash',
@@ -1070,8 +1074,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-06',
       journalNumber: 'BD00260128006',
       kwitansiNumber: '537/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 18500,
       method: 'cash',
@@ -1089,8 +1093,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-07',
       journalNumber: 'BD00260128007',
       kwitansiNumber: '536/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 14000,
       method: 'cash',
@@ -1108,8 +1112,8 @@ export class ArDataService {
       paymentNumber: 'PAY-AIN-08',
       journalNumber: 'BD00260128008',
       kwitansiNumber: '535/KLBR-FNC/MKS/I/2026',
-      customerId: 'cust-ainun',
-      customerName: 'AINUN',
+      customerId: 'cust-009',
+      customerName: 'PT BINTANG TIMUR UTAMA',
       paymentDate: '2026-01-28',
       amount: 18000,
       method: 'cash',
@@ -1698,6 +1702,10 @@ export class ArDataService {
     notes?: string;
     isDownPayment?: boolean;
     allocations: { invoiceId: string; allocatedAmount: number }[];
+    attachmentName?: string;
+    attachmentSize?: string;
+    attachmentUrl?: string;
+    overpaymentToDeposit?: number;
   }): Payment {
     const customer = this.customers().find(c => c.id === payload.customerId);
     const customerName = customer ? customer.name : 'Unknown Customer';
@@ -1738,9 +1746,43 @@ export class ArDataService {
       });
     });
 
+    const paymentNumber = this.getNextPaymentNumber();
+
+    // Auto-allocate overpayment to customer deposit (DP) balance if applicable (PowerPro standard)
+    if (payload.overpaymentToDeposit && payload.overpaymentToDeposit > 0) {
+      const currentDp = customer?.dpBalance || 0;
+      const newDp = currentDp + payload.overpaymentToDeposit;
+
+      this.customers.update(list =>
+        list.map(c => (c.id === payload.customerId ? { ...c, dpBalance: newDp } : c))
+      );
+
+      const dpTrans: CustomerDpTransaction = {
+        id: `dp-${Date.now()}`,
+        customerId: payload.customerId,
+        customerName,
+        date: payload.paymentDate,
+        type: 'deposit',
+        amount: payload.overpaymentToDeposit,
+        balanceAfter: newDp,
+        paymentNumber,
+        referenceNumber: payload.referenceNumber,
+        notes: `Kelebihan bayar tagihan invoice dialokasikan otomatis ke Saldo Deposit (Ref: ${payload.referenceNumber})`
+      };
+      this.dpTransactions.update(list => [dpTrans, ...list]);
+
+      this.addActivityLog({
+        type: 'payment_recorded',
+        description: `Kelebihan pembayaran Rp ${payload.overpaymentToDeposit.toLocaleString('id-ID')} atas transaksi ${paymentNumber} (${customerName}) otomatis dialokasikan ke Saldo Deposit. Saldo DP kini: Rp ${newDp.toLocaleString('id-ID')}`,
+        amount: payload.overpaymentToDeposit,
+        referenceId: paymentNumber,
+        badgeType: 'info'
+      });
+    }
+
     const payment: Payment = {
       id: `pay-${Date.now()}`,
-      paymentNumber: this.getNextPaymentNumber(),
+      paymentNumber,
       customerId: payload.customerId,
       customerName,
       paymentDate: payload.paymentDate,
@@ -1753,6 +1795,11 @@ export class ArDataService {
       notes: payload.notes,
       allocations: finalAllocations,
       isDownPayment: payload.isDownPayment || false,
+      auditStatus: 'pending_fa',
+      attachmentName: payload.attachmentName,
+      attachmentSize: payload.attachmentSize,
+      attachmentUrl: payload.attachmentUrl,
+      overpaymentToDeposit: payload.overpaymentToDeposit,
       createdAt: this.today
     };
 
@@ -1760,7 +1807,7 @@ export class ArDataService {
 
     this.addActivityLog({
       type: 'payment_recorded',
-      description: `Pembayaran ${payment.paymentNumber} sebesar Rp ${payment.amount.toLocaleString('id-ID')} dicatat via ${payment.paymentChannel} (${customerName})`,
+      description: `Pembayaran ${payment.paymentNumber} sebesar Rp ${payment.amount.toLocaleString('id-ID')} dicatat via ${payment.paymentChannel} (${customerName})${payload.attachmentName ? ' [Dilampirkan Bukti Fisik Slip]' : ''}`,
       amount: payment.amount,
       referenceId: payment.paymentNumber,
       badgeType: 'success'
@@ -1999,6 +2046,9 @@ export class ArDataService {
     paymentChannel: string;
     referenceNumber: string;
     notes: string;
+    attachmentName?: string;
+    attachmentSize?: string;
+    attachmentUrl?: string;
   }): { success: boolean; message: string; transaction?: CustomerDpTransaction } {
     const customer = this.customers().find(c => c.id === payload.customerId);
     if (!customer) return { success: false, message: 'Customer tidak ditemukan.' };
@@ -2045,13 +2095,16 @@ export class ArDataService {
       allocations: [],
       isDownPayment: true,
       auditStatus: 'pending_fa',
+      attachmentName: payload.attachmentName,
+      attachmentSize: payload.attachmentSize,
+      attachmentUrl: payload.attachmentUrl,
       createdAt: this.today
     };
     this.payments.update(list => [newPayment, ...list]);
 
     this.addActivityLog({
       type: 'payment_recorded',
-      description: `Uang Muka (DP) sebesar Rp ${payload.amount.toLocaleString('id-ID')} diterima dari ${customer.name}. Saldo DP kini: Rp ${newBalance.toLocaleString('id-ID')}`,
+      description: `Uang Muka (DP) sebesar Rp ${payload.amount.toLocaleString('id-ID')} diterima dari ${customer.name}. Saldo DP kini: Rp ${newBalance.toLocaleString('id-ID')}${payload.attachmentName ? ' [Dilampirkan Bukti Fisik Slip]' : ''}`,
       amount: payload.amount,
       referenceId: paymentNumber,
       badgeType: 'success'

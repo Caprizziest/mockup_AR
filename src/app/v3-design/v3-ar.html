@@ -1697,6 +1697,10 @@
       <!-- =========================================================
            4B. DEDICATED Income Audit VIEW (TAB SENDIRI)
            ========================================================= -->
+      <!-- =========================================================
+           4B. DEDICATED Income Audit VIEW (TAB SENDIRI)
+           STANDAR REKONSILIASI REKENING KORAN PER BANK (POWERPRO)
+           ========================================================= -->
       <div *ngIf="activeView() === 'income-audit'" class="d-flex flex-column gap-3">
         <!-- Header -->
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
@@ -1706,29 +1710,41 @@
               Pemeriksaan fisik slip setoran & pencocokan mutasi rekening koran bank terhadap jurnal penerimaan kas AR.
             </p>
           </div>
-          <div class="d-flex align-items-center gap-2">
-            <span class="text-muted small">Status Audit:</span>
-            <span class="text-warning-emphasis fw-semibold small">{{ pendingIncomeAuditCount() }} Pending Verifikasi</span>
-            <span class="text-muted small">&bull;</span>
-            <span class="text-success fw-semibold small">{{ arService.payments().length - pendingIncomeAuditCount() }} Terverifikasi</span>
+          <div class="d-flex align-items-center gap-3">
+            <div>
+              <span class="text-muted small">Status Verifikasi:</span>
+              <span class="text-warning-emphasis fw-semibold small ms-1">{{ pendingIncomeAuditCount() }} Pending</span>
+              <span class="text-muted small mx-1">&bull;</span>
+              <span class="text-success fw-semibold small">{{ arService.payments().length - pendingIncomeAuditCount() }} Terverifikasi</span>
+            </div>
           </div>
         </div>
 
-        <!-- Income Audit Filter Toolbar -->
+        <!-- Filter & View Mode Toolbar -->
         <div class="v3-card p-3">
           <div class="row g-2 align-items-center">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-4">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white text-muted border-end-0">
                   <i class="bi bi-search"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-0"
-                  placeholder="Cari no. kwitansi, pelanggan, rekening koran, atau auditor..."
+                  placeholder="Cari no. kwitansi, pelanggan, ref slip/koran..."
                   [ngModel]="paymentSearchQuery()"
                   (ngModelChange)="paymentSearchQuery.set($event)" />
               </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
+              <select class="form-select form-select-sm"
+                [ngModel]="incomeAuditBankFilter()"
+                (ngModelChange)="incomeAuditBankFilter.set($event)">
+                <option value="ALL">Semua Rekening Bank</option>
+                <option *ngFor="let b of incomeAuditBankSummaries()" [value]="b.id">
+                  {{ b.name }} ({{ b.accountNumber }})
+                </option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
               <select class="form-select form-select-sm"
                 [ngModel]="incomeAuditStatusFilter()"
                 (ngModelChange)="incomeAuditStatusFilter.set($event)">
@@ -1737,24 +1753,152 @@
                 <option value="verified">Sudah Diverifikasi FA (Valid)</option>
               </select>
             </div>
-            <div class="col-12 col-md-3 text-md-end text-muted small">
-              Menampilkan: <strong class="text-dark">{{ filteredIncomeAuditPayments().length }}</strong> transaksi
+            <div class="col-12 col-md-2 text-md-end">
+              <div class="btn-group btn-group-sm w-100" role="group">
+                <button type="button" class="btn btn-outline-secondary py-1"
+                  [class.active]="incomeAuditViewMode() === 'grouped'"
+                  (click)="incomeAuditViewMode.set('grouped')"
+                  title="Tampilan Grup per Bank (PowerPro Rekening Koran)">
+                  Grup Bank
+                </button>
+                <button type="button" class="btn btn-outline-secondary py-1"
+                  [class.active]="incomeAuditViewMode() === 'table'"
+                  (click)="incomeAuditViewMode.set('table')"
+                  title="Tampilan Tabel Rinci Seluruh Transaksi">
+                  Tabel
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Income Audit Table with Direct Verification Button -->
-        <div class="v3-card">
+        <!-- VIEW MODE A: GROUPED PER BANK (STANDAR POWERPRO REKENING KORAN) -->
+        <div *ngIf="incomeAuditViewMode() === 'grouped'" class="d-flex flex-column gap-3">
+          <div *ngFor="let group of incomeAuditGroupedData()" class="v3-card">
+            <!-- Group Header with Bank Info & Batch Verification -->
+            <div class="v3-card-header bg-light d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 py-2 px-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-dark fs-6">{{ group.name }}</span>
+                <span class="v3-mono text-secondary small">({{ group.accountNumber }})</span>
+                <span class="badge bg-secondary-subtle text-secondary border small" *ngIf="group.isDefault">Default AR</span>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="text-end">
+                  <span class="text-muted small">Subtotal:</span>
+                  <span class="v3-mono fw-bold text-dark ms-1">{{ formatMoney(group.filteredTotal) }}</span>
+                  <span class="text-muted small mx-1">&bull;</span>
+                  <span class="text-warning-emphasis small fw-medium" *ngIf="group.filteredPending > 0">
+                    {{ group.filteredPending }} Pending
+                  </span>
+                  <span class="text-success small fw-medium" *ngIf="group.filteredPending === 0">
+                    Semua Terverifikasi
+                  </span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-success py-1 px-2.5 text-nowrap"
+                  style="font-size: 0.75rem;"
+                  *ngIf="group.filteredPending > 0"
+                  [disabled]="isViewer()"
+                  (click)="verifyAllInBank(group.id, group.name)">
+                  Verifikasi Semua di Bank Ini ({{ group.filteredPending }})
+                </button>
+              </div>
+            </div>
+
+            <!-- Group Table -->
+            <div class="v3-table-container">
+              <table class="v3-table mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 12%;">Tgl Bayar</th>
+                    <th style="width: 18%;">No. Kwitansi / Jurnal</th>
+                    <th style="width: 24%;">Pelanggan</th>
+                    <th style="width: 16%;">Ref Slip / Mutasi</th>
+                    <th style="width: 14%; text-align: right;">Nominal</th>
+                    <th style="width: 14%;">Status Audit FA</th>
+                    <th style="width: 10%; text-align: center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of group.filteredPayments">
+                    <td class="v3-mono text-muted small">{{ p.paymentDate }}</td>
+                    <td>
+                      <span class="v3-mono fw-bold text-dark">{{ p.paymentNumber }}</span>
+                      <div class="v3-mono text-secondary small" *ngIf="p.kwitansiNumber">{{ p.kwitansiNumber }}</div>
+                    </td>
+                    <td>
+                      <div class="fw-semibold text-dark">{{ p.customerName }}</div>
+                    </td>
+                    <td>
+                      <div class="text-dark small" *ngIf="p.referenceNumber">{{ p.referenceNumber }}</div>
+                      <div class="text-muted small" *ngIf="!p.referenceNumber">-</div>
+                      <div *ngIf="p.attachmentName" class="mt-0.5">
+                        <button type="button" class="btn btn-link p-0 text-decoration-none small d-inline-flex align-items-center gap-1 text-primary" style="font-size: 0.68rem;" (click)="openAttachmentPreview(p)" title="Klik untuk lihat lampiran slip">
+                          <i class="bi bi-paperclip"></i>
+                          <span class="text-truncate" style="max-width: 130px;">{{ p.attachmentName }}</span>
+                        </button>
+                      </div>
+                      <div *ngIf="p.overpaymentToDeposit" class="text-info small fw-semibold" style="font-size: 0.68rem;">
+                        <i class="bi bi-arrow-return-right me-0.5"></i>DP: +{{ formatMoney(p.overpaymentToDeposit) }}
+                      </div>
+                    </td>
+                    <td class="text-end v3-mono fw-bold text-success fs-6">
+                      {{ formatMoney(p.amount) }}
+                    </td>
+                    <td>
+                      <div *ngIf="p.auditStatus === 'verified_fa'">
+                        <span class="text-success small fw-semibold">
+                          Verified FA
+                        </span>
+                        <div class="text-muted small" style="font-size: 0.68rem;" *ngIf="p.auditedBy">
+                          {{ p.auditedBy }} &bull; {{ p.auditedAt || '' }}
+                        </div>
+                      </div>
+                      <div *ngIf="p.auditStatus !== 'verified_fa'">
+                        <span class="text-warning-emphasis small fw-semibold">
+                          Pending FA
+                        </span>
+                        <div class="text-muted small" style="font-size: 0.68rem;">Periksa slip fisik & mutasi</div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <button type="button" class="btn btn-sm btn-success py-1 px-2.5 text-nowrap"
+                        style="font-size: 0.72rem; background-color: #16a34a; border-color: #16a34a;"
+                        *ngIf="p.auditStatus !== 'verified_fa'"
+                        [disabled]="isViewer()"
+                        (click)="openIncomeAuditModal(p)">
+                        Verifikasi
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 text-nowrap"
+                        style="font-size: 0.72rem;"
+                        *ngIf="p.auditStatus === 'verified_fa'"
+                        (click)="openIncomeAuditModal(p)">
+                        Detail Audit
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="group.filteredPayments.length === 0">
+                    <td colspan="7" class="text-center py-3 text-muted">
+                      Tidak ada transaksi pada rekening bank ini sesuai filter saat ini.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW MODE B: FLAT TABLE VIEW -->
+        <div *ngIf="incomeAuditViewMode() === 'table'" class="v3-card">
           <div class="v3-table-container">
             <table class="v3-table mb-0 align-middle">
               <thead>
                 <tr>
-                  <th style="width: 11%;">Tgl Bayar</th>
-                  <th style="width: 15%;">No. Kwitansi / Jurnal</th>
-                  <th style="width: 20%;">Pelanggan</th>
-                  <th style="width: 16%;">Bank / Rekening Koran</th>
-                  <th style="width: 14%; text-align: right;">Nominal Diterima</th>
-                  <th style="width: 14%;">Status Audit FA</th>
+                  <th style="width: 10%;">Tgl Bayar</th>
+                  <th style="width: 14%;">No. Kwitansi / Jurnal</th>
+                  <th style="width: 18%;">Pelanggan</th>
+                  <th style="width: 18%;">Bank / Rekening Koran</th>
+                  <th style="width: 14%; text-align: right;">Nominal</th>
+                  <th style="width: 16%;">Status Audit FA</th>
                   <th style="width: 10%; text-align: center;">Aksi</th>
                 </tr>
               </thead>
@@ -1769,9 +1913,18 @@
                     <div class="fw-semibold text-dark">{{ p.customerName }}</div>
                   </td>
                   <td>
-                    <div class="small text-dark">{{ p.paymentChannel }}</div>
+                    <div class="small fw-medium text-dark">{{ p.paymentChannel }}</div>
                     <div class="text-muted v3-mono small" style="font-size: 0.68rem;" *ngIf="p.referenceNumber">
                       Ref: {{ p.referenceNumber }}
+                    </div>
+                    <div *ngIf="p.attachmentName" class="mt-0.5">
+                      <button type="button" class="btn btn-link p-0 text-decoration-none small d-inline-flex align-items-center gap-1 text-primary" style="font-size: 0.68rem;" (click)="openAttachmentPreview(p)" title="Klik untuk lihat lampiran slip">
+                        <i class="bi bi-paperclip"></i>
+                        <span class="text-truncate" style="max-width: 140px;">{{ p.attachmentName }}</span>
+                      </button>
+                    </div>
+                    <div *ngIf="p.overpaymentToDeposit" class="text-info small fw-semibold" style="font-size: 0.68rem;">
+                      <i class="bi bi-arrow-return-right me-0.5"></i>DP: +{{ formatMoney(p.overpaymentToDeposit) }}
                     </div>
                   </td>
                   <td class="text-end v3-mono fw-bold text-success fs-6">
@@ -1780,7 +1933,7 @@
                   <td>
                     <div *ngIf="p.auditStatus === 'verified_fa'">
                       <span class="text-success small fw-semibold">
-                        <i class="bi bi-patch-check-fill me-1"></i>Verified FA
+                        Verified FA
                       </span>
                       <div class="text-muted small" style="font-size: 0.68rem;" *ngIf="p.auditedBy">
                         {{ p.auditedBy }} &bull; {{ p.auditedAt || '' }}
@@ -1788,13 +1941,12 @@
                     </div>
                     <div *ngIf="p.auditStatus !== 'verified_fa'">
                       <span class="text-warning-emphasis small fw-semibold">
-                        <i class="bi bi-hourglass-split me-1"></i>Pending FA
+                        Pending FA
                       </span>
                       <div class="text-muted small" style="font-size: 0.68rem;">Menunggu fisik slip/koran</div>
                     </div>
                   </td>
                   <td class="text-center">
-                    <!-- Direct Button Verifikasi as requested -->
                     <button type="button" class="btn btn-sm btn-success py-1 px-2.5 text-nowrap"
                       style="font-size: 0.72rem; background-color: #16a34a; border-color: #16a34a;"
                       *ngIf="p.auditStatus !== 'verified_fa'"
@@ -3118,157 +3270,306 @@
        MODAL 1: RECORD PAYMENT & MULTI-INVOICE ALLOCATION
        ========================================================= -->
   <div class="v3-modal-backdrop" *ngIf="showPaymentModal()">
-    <div class="v3-modal v3-modal-lg">
-      <div class="v3-modal-header">
-        <h4 class="fw-bold mb-0 fs-5">Pencatatan Pembayaran Masuk</h4>
+    <div class="v3-modal v3-modal-xl">
+      <!-- Modal Header -->
+      <div class="v3-modal-header bg-white py-3 px-4 border-bottom">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h4 class="fw-bold mb-0 fs-5 text-dark">Pencatatan Pembayaran Masuk</h4>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">Kas & Rekonsiliasi AR</span>
+          </div>
+          <div class="text-secondary small mt-0.5">
+            Pencatatan kas/bank masuk dan rekonsiliasi alokasi pelunasan ke faktur terbuka pelanggan.
+          </div>
+        </div>
         <button type="button" class="btn-close" (click)="showPaymentModal.set(false)"></button>
       </div>
-      <div class="v3-modal-body">
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-semibold">Pelanggan Penerima Tagihan *</label>
-            <select class="form-select form-select-sm" [ngModel]="paymentCustomerId()"
-              (ngModelChange)="onPaymentCustomerChange($event)">
-              <option *ngFor="let c of arService.customers()" [value]="c.id">
-                {{ c.name }} (NPWP: {{ c.npwp }})
-              </option>
-            </select>
-          </div>
 
-          <div class="col-6 col-md-3">
-            <label class="form-label small fw-semibold">Tanggal Pembayaran *</label>
-            <input type="date" class="form-control form-control-sm" [ngModel]="paymentDate()"
-              (ngModelChange)="paymentDate.set($event)">
-          </div>
+      <!-- Modal Body (2-Column Architecture) -->
+      <div class="v3-modal-body p-0">
+        <div class="row g-0">
 
-          <div class="col-6 col-md-3">
-            <label class="form-label small fw-semibold">Metode Pembayaran</label>
-            <select class="form-select form-select-sm" [ngModel]="paymentMethod()"
-              (ngModelChange)="onPaymentMethodChange($event)">
-              <option value="bank_transfer">Bank Transfer (Giro / RTGS)</option>
-              <option value="virtual_account">Virtual Account</option>
-              <option value="qris">QRIS Standar Nasional</option>
-              <option value="credit_card">Kartu Kredit (EDC)</option>
-              <option value="e_wallet">E-Wallet (GoPay, OVO, etc.)</option>
-              <option value="cash">Tunai (Kasir Hotel)</option>
-            </select>
-          </div>
+          <!-- ==================== KOLOM KIRI (38%): SUMBER PENERIMAAN KAS & BUKTI FISIK ==================== -->
+          <div class="col-12 col-lg-5 p-3 p-md-4 border-end bg-light-subtle d-flex flex-column gap-3">
 
-          <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Kanal Pembayaran</label>
-            <select class="form-select form-select-sm" [ngModel]="paymentChannel()"
-              (ngModelChange)="paymentChannel.set($event)">
-              <option *ngFor="let ch of availablePaymentChannels()" [value]="ch">{{ ch }}</option>
-            </select>
-          </div>
-
-          <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Rekening Bank Tujuan</label>
-            <select class="form-select form-select-sm" [ngModel]="paymentBankAccountId()"
-              (ngModelChange)="paymentBankAccountId.set($event)">
-              <option *ngFor="let b of arService.bankAccounts()" [value]="b.id">
-                {{ b.bankName }} - {{ b.accountNumber }}
-              </option>
-            </select>
-          </div>
-
-          <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Nomor Referensi / Bukti Transfer</label>
-            <input type="text" class="form-control form-control-sm v3-mono" [ngModel]="paymentRef()"
-              (ngModelChange)="paymentRef.set($event)">
-          </div>
-
-          <div class="col-12 col-md-5">
-            <label class="form-label small fw-semibold">Nominal Pembayaran Diterima (Rp) *</label>
-            <input type="number" step="50000" class="form-control form-control-sm v3-mono fs-6 fw-bold text-success"
-              [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
-          </div>
-
-          <div class="col-12 col-md-3">
-            <label class="form-label small fw-semibold">Biaya Admin Bank</label>
-            <input type="number" min="0" step="1000" class="form-control form-control-sm v3-mono"
-              [ngModel]="paymentAdminFee()" (ngModelChange)="paymentAdminFee.set($event)">
-          </div>
-
-          <!-- Clear Segmented Button for Uang Muka / DP vs Pelunasan Tagihan -->
-          <div class="col-12 col-md-4">
-            <label class="form-label small fw-semibold">Tipe Pembayaran</label>
-            <div class="btn-group w-100" role="group">
-              <button type="button" class="btn btn-sm py-1" [class.btn-primary]="!paymentIsDownPayment()"
-                [class.btn-outline-secondary]="paymentIsDownPayment()" (click)="paymentIsDownPayment.set(false)">
-                <i class="bi bi-receipt me-1"></i> Pelunasan Tagihan
-              </button>
-              <button type="button" class="btn btn-sm py-1" [class.btn-warning]="paymentIsDownPayment()"
-                [class.text-dark]="paymentIsDownPayment()" [class.fw-bold]="paymentIsDownPayment()"
-                [class.btn-outline-secondary]="!paymentIsDownPayment()" (click)="paymentIsDownPayment.set(true)">
-                <i class="bi bi-wallet2 me-1"></i> Uang Muka / DP
-              </button>
+            <!-- 1. Pelanggan & Informasi Piutang -->
+            <div>
+              <label class="form-label small fw-bold text-dark mb-1">Pelanggan Penerima Tagihan <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" [ngModel]="paymentCustomerId()"
+                (ngModelChange)="onPaymentCustomerChange($event)">
+                <option *ngFor="let c of arService.customers()" [value]="c.id">
+                  {{ c.name }}
+                </option>
+              </select>
+              <!-- Info Ringkas Saldo Pelanggan -->
+              <div class="d-flex align-items-center justify-content-between p-2 mt-1.5 bg-white border rounded small">
+                <div>
+                  <span class="text-muted" style="font-size: 0.7rem;">Total Tagihan Terbuka:</span>
+                  <div class="v3-mono fw-bold text-danger">{{ formatMoney(paymentCustomerTotalOutstanding()) }}</div>
+                </div>
+                <div class="text-end" *ngIf="(paymentSelectedCustomer()?.dpBalance || 0) > 0">
+                  <span class="text-muted" style="font-size: 0.7rem;">Saldo DP Tersedia:</span>
+                  <div class="v3-mono fw-bold text-success">{{ formatMoney(paymentSelectedCustomer()?.dpBalance || 0) }}</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <!-- Invoice Allocations Table (if not DP) -->
-        <div *ngIf="!paymentIsDownPayment()">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <label class="small fw-bold text-dark mb-0">Alokasi Pembayaran ke Invoice</label>
-            <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 fw-semibold"
-              style="font-size: 0.75rem;" (click)="autoAllocateOldestFirst()"
-              title="Otomatis mendistribusikan nominal ke tagihan paling awal (metode FIFO)">
-              <i class="bi bi-magic me-1"></i> Auto-Alokasi (Faktur Tertua Dulu)
-            </button>
+            <!-- 2. HERO AMOUNT: NOMINAL PEMBAYARAN DITERIMA -->
+            <div class="p-3 bg-white border rounded shadow-sm">
+              <label class="form-label small fw-bold text-dark text-uppercase mb-1" style="letter-spacing: 0.04em;">
+                Nominal Pembayaran Diterima (Rp) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-light fw-bold text-dark border-end-0">Rp</span>
+                <input type="number" step="50000" class="form-control border-start-0 v3-mono fw-bold fs-4 text-success"
+                  placeholder="0"
+                  [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)">
+              </div>
+
+              <!-- Biaya Admin & Tipe Transaksi -->
+              <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top gap-2">
+                <div class="d-flex align-items-center gap-1.5 flex-grow-1">
+                  <label class="form-label small text-muted mb-0 text-nowrap" style="font-size: 0.72rem;">Admin Bank:</label>
+                  <input type="number" min="0" step="1000" class="form-control form-control-sm v3-mono py-0.5 px-2"
+                    style="font-size: 0.78rem; max-width: 95px;"
+                    [ngModel]="paymentAdminFee()" (ngModelChange)="paymentAdminFee.set($event)">
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-sm py-1 px-2.5" [class.btn-primary]="!paymentIsDownPayment()"
+                    [class.btn-outline-secondary]="paymentIsDownPayment()" (click)="paymentIsDownPayment.set(false)"
+                    style="font-size: 0.72rem;">
+                    Pelunasan
+                  </button>
+                  <button type="button" class="btn btn-sm py-1 px-2.5" [class.btn-warning]="paymentIsDownPayment()"
+                    [class.text-dark]="paymentIsDownPayment()" [class.btn-outline-secondary]="!paymentIsDownPayment()"
+                    (click)="paymentIsDownPayment.set(true)" style="font-size: 0.72rem;">
+                    Uang Muka (DP)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Rincian Rekening Bank & Metode Pembayaran -->
+            <div class="row g-2">
+              <div class="col-6">
+                <label class="form-label small fw-semibold mb-1">Tanggal Bayar <span class="text-danger">*</span></label>
+                <input type="date" class="form-control form-control-sm" [ngModel]="paymentDate()"
+                  (ngModelChange)="paymentDate.set($event)">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold mb-1">Metode Bayar</label>
+                <select class="form-select form-select-sm" [ngModel]="paymentMethod()"
+                  (ngModelChange)="onPaymentMethodChange($event)">
+                  <option value="bank_transfer">Transfer Bank (Giro/RTGS)</option>
+                  <option value="virtual_account">Virtual Account</option>
+                  <option value="qris">QRIS Standar</option>
+                  <option value="credit_card">Kartu Kredit (EDC)</option>
+                  <option value="e_wallet">E-Wallet</option>
+                  <option value="cash">Tunai (Kasir FO)</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold mb-1">Rekening Bank Tujuan (Penerima)</label>
+                <select class="form-select form-select-sm" [ngModel]="paymentBankAccountId()"
+                  (ngModelChange)="paymentBankAccountId.set($event)">
+                  <option *ngFor="let b of arService.bankAccounts()" [value]="b.id">
+                    {{ b.bankName }} &bull; {{ b.accountNumber }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-semibold mb-1">No. Referensi / Slip Transfer</label>
+                <input type="text" class="form-control form-control-sm v3-mono" [ngModel]="paymentRef()"
+                  (ngModelChange)="paymentRef.set($event)" placeholder="Contoh: TRF-BCA-982103">
+              </div>
+            </div>
+
+            <!-- 4. Lampiran Bukti Fisik Slip / Mutasi (Poin 3) -->
+            <div class="border rounded p-2.5 bg-white">
+              <label class="form-label small fw-semibold d-flex align-items-center justify-content-between mb-1.5">
+                <span>Lampiran Bukti Slip Fisik / Mutasi</span>
+                <span class="text-muted" style="font-size: 0.68rem;">Untuk Validasi FA</span>
+              </label>
+              <input type="file" #paymentFileInput class="d-none" (change)="onPaymentFileSelected($event)" accept="image/*,.pdf,.doc,.docx">
+              
+              <div *ngIf="!paymentAttachmentName()" class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2.5 d-flex align-items-center gap-1.5"
+                  (click)="paymentFileInput.click()" style="font-size: 0.75rem;">
+                  <i class="bi bi-paperclip"></i>
+                  <span>Pilih File Bukti</span>
+                </button>
+                <span class="text-muted small" style="font-size: 0.72rem;">Belum ada slip fisik dilampirkan.</span>
+              </div>
+
+              <div *ngIf="paymentAttachmentName()" class="d-flex align-items-center justify-content-between p-2 bg-light border rounded">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                  <i class="bi bi-file-earmark-check-fill text-success fs-5"></i>
+                  <div class="text-truncate">
+                    <div class="fw-bold text-dark text-truncate small" style="max-width: 180px;">{{ paymentAttachmentName() }}</div>
+                    <div class="text-muted small" style="font-size: 0.68rem;">{{ paymentAttachmentSize() }}</div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0.5 px-1.5" (click)="removePaymentAttachment()" title="Hapus file" style="font-size: 0.7rem;">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 5. Catatan Internal Kasir / AR -->
+            <div>
+              <label class="form-label small fw-semibold mb-1">Catatan Internal Kasir</label>
+              <textarea class="form-control form-control-sm" rows="1" placeholder="Catatan opsional..."
+                [ngModel]="paymentNotes()" (ngModelChange)="paymentNotes.set($event)"></textarea>
+            </div>
+
           </div>
 
-          <div class="border rounded overflow-hidden mb-3">
-            <table class="v3-table mb-0">
-              <thead>
-                <tr>
-                  <th>No. Invoice</th>
-                  <th>Jatuh Tempo</th>
-                  <th class="text-end">Sisa Tagihan</th>
-                  <th class="text-end" style="width: 200px;">Nominal Dialokasikan (Rp)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of paymentAllocations()">
-                  <td class="v3-mono fw-bold text-primary">{{ item.invoiceNumber }}</td>
-                  <td class="v3-mono text-muted">{{ item.dueDate }}</td>
-                  <td class="text-end v3-mono text-danger">{{ formatMoney(item.balanceDue) }}</td>
-                  <td class="text-end">
-                    <input type="number" min="0" [max]="item.balanceDue"
-                      class="form-control form-control-sm text-end v3-mono fw-semibold"
-                      [(ngModel)]="item.allocatedAmount">
-                  </td>
-                </tr>
-                <tr *ngIf="paymentAllocations().length === 0">
-                  <td colspan="4" class="text-center py-3 text-muted">
-                    Tidak ada invoice aktif yang memiliki sisa tagihan untuk pelanggan ini.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- ==================== KOLOM KANAN (62%): ALOKASI PELUNASAN KE FAKTUR ==================== -->
+          <div class="col-12 col-lg-7 p-3 p-md-4 d-flex flex-column gap-3">
+
+            <!-- KASUS A: PELUNASAN TAGIHAN -->
+            <ng-container *ngIf="!paymentIsDownPayment()">
+
+              <!-- 1. Live Match KPI Summary Strip -->
+              <div class="row g-2">
+                <div class="col-4">
+                  <div class="p-2.5 rounded border bg-light">
+                    <div class="text-muted small" style="font-size: 0.7rem;">Nominal Diterima:</div>
+                    <div class="v3-mono fw-bold text-dark fs-6">{{ formatMoney(paymentAmount()) }}</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-2.5 rounded border bg-light">
+                    <div class="text-muted small" style="font-size: 0.7rem;">Teralokasi ke Faktur:</div>
+                    <div class="v3-mono fw-bold text-success fs-6">{{ formatMoney(totalAllocatedAmount()) }}</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-2.5 rounded border" [class.bg-success-subtle]="unallocatedAmount() === 0 && totalAllocatedAmount() > 0"
+                    [class.bg-warning-subtle]="unallocatedAmount() > 0" [class.bg-light]="unallocatedAmount() === 0 && totalAllocatedAmount() === 0">
+                    <div class="text-muted small" style="font-size: 0.7rem;">
+                      {{ unallocatedAmount() > 0 ? 'Kelebihan (Deposit):' : 'Sisa Belum Dialokasi:' }}
+                    </div>
+                    <div class="v3-mono fw-bold fs-6" [class.text-warning-emphasis]="unallocatedAmount() > 0" [class.text-dark]="unallocatedAmount() === 0">
+                      {{ formatMoney(unallocatedAmount()) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Header Tabel Faktur & Tombol Auto-Alokasi -->
+              <div class="d-flex align-items-center justify-content-between pt-1">
+                <div>
+                  <span class="fw-bold text-dark small">Daftar Faktur Terbuka</span>
+                  <span class="text-muted small ms-1">({{ paymentAllocations().length }} faktur aktif)</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 fw-semibold d-flex align-items-center gap-1.5"
+                  style="font-size: 0.75rem;" (click)="autoAllocateOldestFirst()"
+                  title="Otomatis mendistribusikan nominal ke tagihan paling awal (metode FIFO)">
+                  <i class="bi bi-magic"></i>
+                  <span>Auto-Alokasi (Faktur Tertua)</span>
+                </button>
+              </div>
+
+              <!-- 3. Tabel Alokasi Faktur -->
+              <div class="border rounded overflow-hidden flex-grow-1" style="max-height: 290px; overflow-y: auto;">
+                <table class="v3-table mb-0 align-middle">
+                  <thead class="sticky-top bg-light">
+                    <tr>
+                      <th style="width: 25%;">No. Faktur</th>
+                      <th style="width: 20%;">Jatuh Tempo</th>
+                      <th style="width: 25%; text-align: right;">Sisa Tagihan</th>
+                      <th style="width: 30%; text-align: right;">Alokasi Bayar (Rp)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of paymentAllocations()">
+                      <td>
+                        <span class="v3-mono fw-bold text-primary">{{ item.invoiceNumber }}</span>
+                      </td>
+                      <td class="v3-mono text-muted small">{{ item.dueDate }}</td>
+                      <td class="text-end v3-mono text-danger fw-semibold">
+                        {{ formatMoney(item.balanceDue) }}
+                      </td>
+                      <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-1">
+                          <input type="number" min="0" [max]="item.balanceDue"
+                            class="form-control form-control-sm text-end v3-mono fw-bold"
+                            style="max-width: 140px; font-size: 0.85rem;"
+                            [(ngModel)]="item.allocatedAmount">
+                          <button type="button" class="btn btn-sm btn-light border py-0.5 px-1.5 text-muted"
+                            style="font-size: 0.68rem;" (click)="allocateFull(item)" title="Set Lunas Penuh">
+                            Max
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="paymentAllocations().length === 0">
+                      <td colspan="4" class="text-center py-4 text-muted small">
+                        Tidak ada faktur aktif yang memiliki sisa tagihan untuk pelanggan ini.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 4. Alert & Penanganan Otomatis Kelebihan Bayar (Poin 2 - Standar PowerPro) -->
+              <div *ngIf="unallocatedAmount() > 0" class="alert alert-warning border-warning d-flex align-items-start gap-2 py-2.5 px-3 mb-0">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-5 mt-0.5"></i>
+                <div class="small">
+                  <div class="fw-bold text-dark">
+                    Kelebihan Pembayaran Sebesar {{ formatMoney(unallocatedAmount()) }} Terdeteksi
+                  </div>
+                  <div class="text-secondary mt-0.5" style="font-size: 0.78rem;">
+                    Nominal pembayaran melebihi total faktur yang dialokasikan. Sesuai standar PowerPro, kelebihan ini akan dialokasikan ke <strong>Saldo Deposit (DP)</strong> pelanggan sebagai uang muka transaksi mendatang.
+                  </div>
+                  <div class="form-check mt-1.5 mb-0">
+                    <input class="form-check-input" type="checkbox" id="autoDepositCheck" [ngModel]="paymentAutoDepositOverpayment()" (ngModelChange)="paymentAutoDepositOverpayment.set($event)">
+                    <label class="form-check-label text-dark fw-semibold" for="autoDepositCheck" style="font-size: 0.78rem;">
+                      Alokasikan kelebihan Rp {{ formatMoney(unallocatedAmount()) }} ke Saldo Deposit (DP) Pelanggan
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </ng-container>
+
+            <!-- KASUS B: UANG MUKA / DOWN PAYMENT (DP) MURNI -->
+            <div *ngIf="paymentIsDownPayment()" class="p-4 bg-light rounded border text-center d-flex flex-column align-items-center justify-content-center h-100">
+              <i class="bi bi-wallet2 text-warning fs-1 mb-2"></i>
+              <h5 class="fw-bold text-dark fs-6 mb-1">Setoran Uang Muka (Down Payment) Murni</h5>
+              <p class="text-secondary small mb-3" style="max-width: 420px;">
+                Nominal pembayaran sebesar <strong class="text-dark">{{ formatMoney(paymentAmount()) }}</strong> akan langsung dicatat ke buku pembantu uang muka (DP) pelanggan <strong>{{ paymentSelectedCustomer()?.name }}</strong> dan dapat dipotongkan pada faktur mendatang.
+              </p>
+              <div class="d-flex align-items-center gap-2 p-2.5 bg-white border rounded small">
+                <i class="bi bi-info-circle-fill text-primary"></i>
+                <span class="text-muted">Tidak memerlukan pencocokan faktur terbuka saat penyetoran awal.</span>
+              </div>
+            </div>
+
           </div>
 
-          <!-- Allocation Summary Strip -->
-          <div class="d-flex justify-content-between p-2 bg-light rounded text-muted small border">
-            <span>Diterima: <strong class="v3-mono text-dark">{{ formatMoney(paymentAmount()) }}</strong></span>
-            <span>Teralokasi: <strong class="v3-mono text-success">{{ formatMoney(totalAllocatedAmount())
-                }}</strong></span>
-            <span>Belum Teralokasi: <strong class="v3-mono" [class.text-warning]="unallocatedAmount() > 0">{{
-                formatMoney(unallocatedAmount()) }}</strong></span>
-          </div>
-        </div>
-
-        <div *ngIf="paymentIsDownPayment()" class="p-3 bg-light rounded border text-muted small">
-          <strong>Pembayaran Uang Muka (Down Payment):</strong> Nominal pembayaran akan dicatat sebagai deposit uang
-          muka pelanggan dan dapat dipotongkan pada invoice mendatang.
         </div>
       </div>
-      <div class="v3-modal-footer">
-        <button type="button" class="v3-btn-secondary" (click)="showPaymentModal.set(false)">Batal</button>
-        <button type="button" class="v3-btn-primary" [disabled]="!paymentIsDownPayment() && totalAllocatedAmount() <= 0"
-          (click)="submitPayment()">
-          Simpan & Terapkan Pembayaran
-        </button>
+
+      <!-- Modal Footer -->
+      <div class="v3-modal-footer bg-white py-2.5 px-4 border-top d-flex align-items-center justify-content-between">
+        <div class="small">
+          <span *ngIf="!paymentIsDownPayment() && totalAllocatedAmount() > 0" class="text-success fw-medium">
+            <i class="bi bi-check-circle-fill me-1"></i>Siap diproses: {{ formatMoney(totalAllocatedAmount()) }} dialokasikan ke faktur
+          </span>
+          <span *ngIf="paymentIsDownPayment() && paymentAmount() > 0" class="text-warning-emphasis fw-medium">
+            <i class="bi bi-wallet2 me-1"></i>Siap dicatat sebagai Saldo Deposit Uang Muka
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="v3-btn-secondary" (click)="showPaymentModal.set(false)">Batal</button>
+          <button type="button" class="v3-btn-primary"
+            [disabled]="(!paymentIsDownPayment() && totalAllocatedAmount() <= 0) || (paymentIsDownPayment() && paymentAmount() <= 0)"
+            (click)="submitPayment()">
+            Simpan & Terapkan Pembayaran
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -3855,6 +4156,28 @@
           <input type="text" class="form-control v3-mono" [ngModel]="dpRecordRef()" (ngModelChange)="dpRecordRef.set($event)" placeholder="Contoh: TRF-DP-883921">
         </div>
 
+        <!-- Lampiran Bukti Transfer Fisik (Poin 3) -->
+        <div class="mb-3">
+          <label class="form-label small fw-semibold d-flex align-items-center justify-content-between mb-1">
+            <span>Lampiran Bukti Transfer / Slip Fisik Bank</span>
+            <span class="text-muted" style="font-size: 0.7rem;">Opsional - Untuk Rekonsiliasi Audit FA</span>
+          </label>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="file" #dpFileInput class="d-none" (change)="onDpFileSelected($event)" accept="image/*,.pdf,.doc,.docx">
+            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-3 d-flex align-items-center gap-1.5" (click)="dpFileInput.click()">
+              <i class="bi bi-paperclip"></i>
+              <span>{{ dpRecordAttachmentName() ? 'Ganti File Bukti' : 'Pilih File Bukti Setoran' }}</span>
+            </button>
+            <div *ngIf="dpRecordAttachmentName()" class="d-flex align-items-center gap-2 bg-light border rounded px-2.5 py-1 small">
+              <i class="bi bi-file-earmark-check-fill text-success"></i>
+              <span class="fw-semibold text-dark text-truncate" style="max-width: 220px;">{{ dpRecordAttachmentName() }}</span>
+              <span class="text-muted small">({{ dpRecordAttachmentSize() }})</span>
+              <button type="button" class="btn-close ms-1" style="font-size: 0.65rem;" (click)="removeDpAttachment()" title="Hapus file"></button>
+            </div>
+            <span *ngIf="!dpRecordAttachmentName()" class="text-muted small">Belum ada file bukti.</span>
+          </div>
+        </div>
+
         <div class="mb-3">
           <label class="form-label small fw-semibold">Catatan / Keperluan Deposit</label>
           <textarea class="form-control" rows="2" [ngModel]="dpRecordNotes()" (ngModelChange)="dpRecordNotes.set($event)"></textarea>
@@ -3866,6 +4189,47 @@
         <button type="button" class="v3-btn-primary" (click)="submitRecordDp()">
           <i class="bi bi-save me-1"></i> Simpan Setoran DP
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL PREVIEW BUKTI TRANSFER FISIK (POIN 3) ==================== -->
+  <div class="v3-modal-backdrop" *ngIf="showAttachmentPreviewModal()">
+    <div class="v3-modal">
+      <div class="v3-modal-header">
+        <div>
+          <div class="fw-bold fs-5 text-dark">Lampiran Bukti Fisik Slip / Transfer Bank</div>
+          <div class="text-muted small">Bukti Transaksi Keuangan: {{ previewAttachmentData()?.paymentRef || '-' }}</div>
+        </div>
+        <button type="button" class="btn-close" (click)="closeAttachmentPreview()"></button>
+      </div>
+      <div class="v3-modal-body p-3">
+        <!-- If Image preview available -->
+        <div *ngIf="previewAttachmentData()?.url" class="border rounded p-2 mb-3 bg-light text-center">
+          <img [src]="previewAttachmentData()?.url" alt="Slip Bukti" class="img-fluid rounded" style="max-height: 380px;">
+        </div>
+        <!-- If Document/PDF -->
+        <div *ngIf="!previewAttachmentData()?.url" class="p-4 bg-light border rounded mb-3 text-center">
+          <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
+          <div class="fw-bold text-dark mt-2 fs-6">{{ previewAttachmentData()?.name }}</div>
+          <div class="text-muted small">{{ previewAttachmentData()?.size }}</div>
+          <div class="text-secondary small mt-2">
+            Dokumen fisik slip bukti transfer bank tersimpan pada arsip audit keuangan.
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between p-2.5 bg-light rounded border text-start small">
+          <div>
+            <span class="text-muted">Nama Dokumen:</span>
+            <span class="fw-semibold text-dark ms-1">{{ previewAttachmentData()?.name }}</span>
+          </div>
+          <div>
+            <span class="text-muted">Ukuran:</span>
+            <span class="fw-semibold text-dark ms-1">{{ previewAttachmentData()?.size }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="v3-modal-footer">
+        <button type="button" class="v3-btn-secondary" (click)="closeAttachmentPreview()">Tutup</button>
       </div>
     </div>
   </div>

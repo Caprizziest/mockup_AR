@@ -227,6 +227,33 @@ export class V3ArComponent {
     allocatedAmount: number;
   }[]>([]);
 
+  // --- Poin 2: Overpayment State (Standar PowerPro) ---
+  paymentAutoDepositOverpayment = signal<boolean>(true);
+
+  // --- Poin 3: Attachment State (Slip Bukti Transfer Fisik Pajak & Audit) ---
+  paymentAttachmentName = signal<string>('');
+  paymentAttachmentSize = signal<string>('');
+  paymentAttachmentUrl = signal<string>('');
+
+  dpRecordAttachmentName = signal<string>('');
+  dpRecordAttachmentSize = signal<string>('');
+  dpRecordAttachmentUrl = signal<string>('');
+
+  showAttachmentPreviewModal = signal<boolean>(false);
+  previewAttachmentData = signal<{ name: string; size?: string; url?: string; paymentRef?: string } | null>(null);
+
+  // --- Payment Modal Computed Helpers (2-Column Architecture) ---
+  paymentSelectedCustomer = computed(() => {
+    return this.arService.customers().find(c => c.id === this.paymentCustomerId());
+  });
+
+  paymentCustomerTotalOutstanding = computed(() => {
+    const custId = this.paymentCustomerId();
+    return this.arService.invoices()
+      .filter(i => i.customerId === custId && i.status !== 'Cancelled' && i.status !== 'Paid' && i.status !== 'Draft')
+      .reduce((sum, i) => sum + i.balanceDue, 0);
+  });
+
   // --- Invoice Form State (Create & Edit) ---
   editingInvoiceId = signal<string | null>(null);
   invoiceFormCustomerId = signal<string>('');
@@ -261,29 +288,131 @@ export class V3ArComponent {
   // --- Payment Tabs & Income Audit State ---
   paymentActiveTab = signal<'all' | 'income-audit'>('all');
   incomeAuditStatusFilter = signal<'ALL' | 'pending' | 'verified'>('ALL');
+  incomeAuditBankFilter = signal<string>('ALL'); // 'ALL' | 'bank-01' | 'bank-02' | 'bank-03' | 'cash'
+  incomeAuditViewMode = signal<'grouped' | 'table'>('grouped'); // Standar Rekap Rekening Koran PowerPro
+
+  getPaymentBankId(p: Payment): string {
+    if (p.bankAccountId) return p.bankAccountId;
+    const channel = (p.paymentChannel || '').toLowerCase();
+    if (channel.includes('bca')) return 'bank-01';
+    if (channel.includes('mandiri')) return 'bank-02';
+    if (channel.includes('bni')) return 'bank-03';
+    return 'cash';
+  }
 
   pendingIncomeAuditCount = computed(() => {
     return this.arService.payments().filter(p => p.auditStatus !== 'verified_fa').length;
   });
 
+  incomeAuditTotalAmount = computed(() => {
+    return this.arService.payments().reduce((sum, p) => sum + p.amount, 0);
+  });
+
+  incomeAuditBankSummaries = computed(() => {
+    const payments = this.arService.payments();
+    const bankAccounts = this.arService.bankAccounts();
+
+    // Registered bank accounts (BCA, Mandiri, BNI)
+    const banks = bankAccounts.map(b => {
+      const bPayments = payments.filter(p => this.getPaymentBankId(p) === b.id);
+      const totalAmount = bPayments.reduce((sum, p) => sum + p.amount, 0);
+      const pendingCount = bPayments.filter(p => p.auditStatus !== 'verified_fa').length;
+      return {
+        id: b.id,
+        name: b.bankName,
+        accountNumber: b.accountNumber,
+        accountHolder: b.accountHolder,
+        isDefault: b.isDefault,
+        totalAmount,
+        totalCount: bPayments.length,
+        pendingCount,
+        verifiedCount: bPayments.length - pendingCount,
+        payments: bPayments
+      };
+    });
+
+    // Kasir Front Office (Kas Fisik, Setoran Tunai & Settlement EDC)
+    const cashPayments = payments.filter(p => this.getPaymentBankId(p) === 'cash');
+    const cashTotal = cashPayments.reduce((sum, p) => sum + p.amount, 0);
+    const cashPending = cashPayments.filter(p => p.auditStatus !== 'verified_fa').length;
+
+    const cashGroup = {
+      id: 'cash',
+      name: 'Kasir Front Office (Kas Fisik & EDC)',
+      accountNumber: 'SETORAN-TUNAI-FO',
+      accountHolder: 'Kasir Operasional Hotel',
+      isDefault: false,
+      totalAmount: cashTotal,
+      totalCount: cashPayments.length,
+      pendingCount: cashPending,
+      verifiedCount: cashPayments.length - cashPending,
+      payments: cashPayments
+    };
+
+    return [...banks, cashGroup];
+  });
+
   filteredIncomeAuditPayments = computed(() => {
     let list = this.arService.payments();
-    const filter = this.incomeAuditStatusFilter();
-    if (filter === 'pending') {
+    const statusFilter = this.incomeAuditStatusFilter();
+    if (statusFilter === 'pending') {
       list = list.filter(p => p.auditStatus !== 'verified_fa');
-    } else if (filter === 'verified') {
+    } else if (statusFilter === 'verified') {
       list = list.filter(p => p.auditStatus === 'verified_fa');
     }
+
+    const bankFilter = this.incomeAuditBankFilter();
+    if (bankFilter !== 'ALL') {
+      list = list.filter(p => this.getPaymentBankId(p) === bankFilter);
+    }
+
     const q = this.paymentSearchQuery().toLowerCase().trim();
     if (q) {
       list = list.filter(p =>
         p.paymentNumber.toLowerCase().includes(q) ||
         p.customerName.toLowerCase().includes(q) ||
         (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)) ||
-        (p.auditedBy && p.auditedBy.toLowerCase().includes(q))
+        (p.auditedBy && p.auditedBy.toLowerCase().includes(q)) ||
+        (p.paymentChannel && p.paymentChannel.toLowerCase().includes(q))
       );
     }
     return list;
+  });
+
+  incomeAuditGroupedData = computed(() => {
+    const bankFilter = this.incomeAuditBankFilter();
+    const statusFilter = this.incomeAuditStatusFilter();
+    const q = this.paymentSearchQuery().toLowerCase().trim();
+    const summaries = this.incomeAuditBankSummaries();
+
+    return summaries
+      .filter(group => bankFilter === 'ALL' || group.id === bankFilter)
+      .map(group => {
+        let filteredPayments = group.payments;
+
+        if (statusFilter === 'pending') {
+          filteredPayments = filteredPayments.filter(p => p.auditStatus !== 'verified_fa');
+        } else if (statusFilter === 'verified') {
+          filteredPayments = filteredPayments.filter(p => p.auditStatus === 'verified_fa');
+        }
+
+        if (q) {
+          filteredPayments = filteredPayments.filter(p =>
+            p.paymentNumber.toLowerCase().includes(q) ||
+            p.customerName.toLowerCase().includes(q) ||
+            (p.referenceNumber && p.referenceNumber.toLowerCase().includes(q)) ||
+            (p.auditedBy && p.auditedBy.toLowerCase().includes(q)) ||
+            (p.paymentChannel && p.paymentChannel.toLowerCase().includes(q))
+          );
+        }
+
+        return {
+          ...group,
+          filteredPayments,
+          filteredTotal: filteredPayments.reduce((s, p) => s + p.amount, 0),
+          filteredPending: filteredPayments.filter(p => p.auditStatus !== 'verified_fa').length
+        };
+      });
   });
 
   // --- Income Audit Modal State ---
@@ -297,7 +426,7 @@ export class V3ArComponent {
   mutasiEndDate = signal<string>('2026-09-29');
   mutasiSearchQuery = signal<string>('');
   showDetailMutasiModal = signal<boolean>(false);
-  selectedMutasiCustomerId = signal<string>('cust-ainun');
+  selectedMutasiCustomerId = signal<string>('cust-009');
 
   mutasiReportData = computed(() => {
     return this.arService.getMutasiPiutang(this.mutasiStartDate(), this.mutasiEndDate());
@@ -1367,6 +1496,36 @@ export class V3ArComponent {
     }
   }
 
+  verifyAllInBank(bankId: string, bankName: string) {
+    if (this.isViewer()) {
+      this.showToast('Akses Ditolak: Role Viewer tidak dapat memverifikasi Income Audit.', 'danger');
+      return;
+    }
+
+    const pendingList = this.arService.payments().filter(p => {
+      const matchBank = this.getPaymentBankId(p) === bankId;
+      return matchBank && p.auditStatus !== 'verified_fa';
+    });
+
+    if (pendingList.length === 0) {
+      this.showToast(`Tidak ada pembayaran pending di ${bankName}.`, 'warning');
+      return;
+    }
+
+    const auditor = this.arService.currentUser().fullName || 'Auditor FA Galesong';
+    let count = 0;
+    pendingList.forEach(p => {
+      this.arService.verifyIncomeAudit(
+        p.id,
+        auditor,
+        `Verifikasi serentak (Batch) mutasi rekening koran ${bankName} valid.`
+      );
+      count++;
+    });
+
+    this.showToast(`${count} transaksi di ${bankName} berhasil diverifikasi.`, 'success');
+  }
+
   // --- DP Management Actions ---
   openRecordDpModal(customerId?: string) {
     if (this.isViewer()) {
@@ -1377,11 +1536,38 @@ export class V3ArComponent {
     this.dpRecordAmount.set(5000000);
     this.dpRecordRef.set(`TRF-DP-${Date.now().toString().substring(7)}`);
     this.dpRecordNotes.set('Setoran Uang Muka / Deposit Layanan');
+    this.removeDpAttachment();
     this.showRecordDpModal.set(true);
   }
 
   closeRecordDpModal() {
     this.showRecordDpModal.set(false);
+    this.removeDpAttachment();
+  }
+
+  onDpFileSelected(event: any) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+
+    this.dpRecordAttachmentName.set(file.name);
+    const sizeKB = Math.round(file.size / 1024);
+    this.dpRecordAttachmentSize.set(sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`);
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.dpRecordAttachmentUrl.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.dpRecordAttachmentUrl.set('');
+    }
+  }
+
+  removeDpAttachment() {
+    this.dpRecordAttachmentName.set('');
+    this.dpRecordAttachmentSize.set('');
+    this.dpRecordAttachmentUrl.set('');
   }
 
   submitRecordDp() {
@@ -1400,7 +1586,10 @@ export class V3ArComponent {
       method: this.dpRecordMethod(),
       paymentChannel: this.dpRecordChannel(),
       referenceNumber: this.dpRecordRef() || `DP-REF-${Date.now()}`,
-      notes: this.dpRecordNotes()
+      notes: this.dpRecordNotes(),
+      attachmentName: this.dpRecordAttachmentName() || undefined,
+      attachmentSize: this.dpRecordAttachmentSize() || undefined,
+      attachmentUrl: this.dpRecordAttachmentUrl() || undefined
     });
 
     if (res.success) {
@@ -1539,8 +1728,51 @@ export class V3ArComponent {
     this.paymentIsDownPayment.set(false);
 
     this.loadInvoicesForPayment(custId, targetInvoiceId);
+    this.removePaymentAttachment();
+    this.paymentAutoDepositOverpayment.set(true);
     this.showActionInbox.set(false);
     this.showPaymentModal.set(true);
+  }
+
+  onPaymentFileSelected(event: any) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+
+    this.paymentAttachmentName.set(file.name);
+    const sizeKB = Math.round(file.size / 1024);
+    this.paymentAttachmentSize.set(sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`);
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.paymentAttachmentUrl.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.paymentAttachmentUrl.set('');
+    }
+  }
+
+  removePaymentAttachment() {
+    this.paymentAttachmentName.set('');
+    this.paymentAttachmentSize.set('');
+    this.paymentAttachmentUrl.set('');
+  }
+
+  openAttachmentPreview(payment: Payment) {
+    if (!payment.attachmentName) return;
+    this.previewAttachmentData.set({
+      name: payment.attachmentName,
+      size: payment.attachmentSize || 'Dokumen Slip Fisik',
+      url: payment.attachmentUrl || '',
+      paymentRef: payment.paymentNumber
+    });
+    this.showAttachmentPreviewModal.set(true);
+  }
+
+  closeAttachmentPreview() {
+    this.showAttachmentPreviewModal.set(false);
+    this.previewAttachmentData.set(null);
   }
 
   onPaymentMethodChange(method: PaymentMethod) {
@@ -1618,6 +1850,14 @@ export class V3ArComponent {
     this.showToast(`Auto-alokasi berhasil: ${this.formatMoney(totalAmount - remaining)} teralokasi ke invoice tertua.`, 'success');
   }
 
+  allocateFull(item: any) {
+    item.allocatedAmount = item.balanceDue;
+  }
+
+  clearAllocation(item: any) {
+    item.allocatedAmount = 0;
+  }
+
   submitPayment() {
     if (this.isViewer()) {
       this.showToast('Akses Ditolak: Akun Viewer tidak memiliki izin mencatat pembayaran.', 'danger');
@@ -1646,6 +1886,9 @@ export class V3ArComponent {
       return;
     }
 
+    const overpayment = (!isDP && amount > totalAlloc) ? (amount - totalAlloc) : 0;
+    const overpaymentToDeposit = (overpayment > 0 && this.paymentAutoDepositOverpayment()) ? overpayment : 0;
+
     const payment = this.arService.recordPayment({
       customerId: this.paymentCustomerId(),
       paymentDate: this.paymentDate(),
@@ -1657,12 +1900,22 @@ export class V3ArComponent {
       adminFee: this.paymentAdminFee(),
       notes: this.paymentNotes(),
       isDownPayment: isDP,
-      allocations: allocs
+      allocations: allocs,
+      attachmentName: this.paymentAttachmentName() || undefined,
+      attachmentSize: this.paymentAttachmentSize() || undefined,
+      attachmentUrl: this.paymentAttachmentUrl() || undefined,
+      overpaymentToDeposit: overpaymentToDeposit || undefined
     });
 
     if (payment) {
       this.showPaymentModal.set(false);
-      this.showToast(`Pembayaran ${payment.paymentNumber} berhasil dicatat via ${payment.paymentChannel || 'Bank Transfer'}!`, 'success');
+      this.removePaymentAttachment();
+
+      let successMsg = `Pembayaran ${payment.paymentNumber} berhasil dicatat via ${payment.paymentChannel || 'Bank Transfer'}!`;
+      if (overpaymentToDeposit > 0) {
+        successMsg += ` Kelebihan bayar ${this.formatMoney(overpaymentToDeposit)} otomatis dialokasikan ke Saldo Deposit.`;
+      }
+      this.showToast(successMsg, 'success');
 
       if (this.selectedInvoice()) {
         const refreshed = this.arService.invoices().find(i => i.id === this.selectedInvoice()!.id);

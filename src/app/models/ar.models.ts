@@ -213,6 +213,14 @@ export interface Payment {
   auditedBy?: string;
   auditedAt?: string;
   auditNotes?: string;
+
+  // Lampiran Bukti Transfer / Slip Setoran Bank (Bukti Fisik Pajak & Audit)
+  attachmentName?: string;
+  attachmentSize?: string;
+  attachmentUrl?: string;
+
+  // Penanganan Kelebihan Bayar (Overpayment dialihkan ke Saldo Deposit / AP Tamu)
+  overpaymentToDeposit?: number;
 }
 
 export interface AgingBucket {

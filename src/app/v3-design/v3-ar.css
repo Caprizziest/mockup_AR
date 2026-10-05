@@ -1137,3 +1137,24 @@
   background-color: #fef08a !important;
 }
 
+/* Income Audit Bank Selector Cards */
+.v3-bank-selector-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.v3-bank-selector-card:hover {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.v3-bank-selector-card.active {
+  border-color: #0284c7;
+  background-color: #f0f9ff;
+  box-shadow: 0 0 0 1px #0284c7;
+}
+
