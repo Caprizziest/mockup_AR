@@ -41,7 +41,6 @@
           <i class="bi bi-wallet2"></i>
           <span>Riwayat Pembayaran</span>
         </span>
-        <!-- <span class="v3-nav-pill-muted">{{ arService.payments().length }}</span> -->
       </button>
 
       <button type="button" class="v3-nav-item"
@@ -72,9 +71,6 @@
           <i class="bi bi-piggy-bank"></i>
           <span>Uang Muka (DP)</span>
         </span>
-        <!-- <span class="v3-nav-pill-muted" *ngIf="customerTotalAvailableDp() > 0">
-          Rp {{ (customerTotalAvailableDp() / 1000000) | number:'1.0-1' }}M
-        </span> -->
       </button>
 
       <div class="v3-nav-group-label mt-3">Laporan & Audit</div>
@@ -712,7 +708,7 @@
                   <th>Jatuh Tempo</th>
                   <th class="text-end">Total & Dibayar</th>
                   <th class="text-end">Sisa Tagihan (AR)</th>
-                  <th>Status (SRS 4.3.1)</th>
+                  <th>Status</th>
                   <th class="text-end">Tindakan</th>
                 </tr>
               </thead>
@@ -807,7 +803,7 @@
 
                       <!-- Cancel Button for Issued/Overdue (Manager or Admin only, if no payments) -->
                       <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.72rem;"
-                        *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'" [disabled]="isViewer()"
+                        *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled' && inv.amountPaid === 0" [disabled]="isViewer()"
                         (click)="openCancelInvoiceModal(inv)" title="Batalkan Invoice">
                         Batal
                       </button>
@@ -862,7 +858,7 @@
 
             <!-- Cancel Button -->
             <button type="button" class="v3-btn-danger-outline"
-              *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled'" [disabled]="isViewer()"
+              *ngIf="inv.status !== 'Draft' && inv.status !== 'Cancelled' && inv.amountPaid === 0" [disabled]="isViewer()"
               (click)="openCancelInvoiceModal(inv)">
               Batalkan Invoice
             </button>
@@ -1807,13 +1803,13 @@
               <table class="v3-table mb-0 align-middle">
                 <thead>
                   <tr>
-                    <th style="width: 12%;">Tgl Bayar</th>
-                    <th style="width: 18%;">No. Kwitansi / Jurnal</th>
-                    <th style="width: 24%;">Pelanggan</th>
+                    <th style="width: 10%;">Tgl Bayar</th>
+                    <th style="width: 16%;">No. Kwitansi / Jurnal</th>
+                    <th style="width: 22%;">Pelanggan</th>
                     <th style="width: 16%;">Ref Slip / Mutasi</th>
                     <th style="width: 14%; text-align: right;">Nominal</th>
                     <th style="width: 14%;">Status Audit FA</th>
-                    <th style="width: 10%; text-align: center;">Aksi</th>
+                    <th style="width: 8%; text-align: center;">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2510,8 +2506,8 @@
               <tbody>
                 <ng-container *ngFor="let b of agingData().buckets">
                   <tr class="cursor-pointer" (click)="toggleAgingRow(b.customerId)">
-                    <td class="text-center text-muted fw-bold">
-                      {{ expandedCustomerAgingId() === b.customerId ? '▼' : '▶' }}
+                    <td class="text-center">
+                      <i class="bi" [ngClass]="expandedCustomerAgingId() === b.customerId ? 'bi-chevron-down text-primary fw-bold' : 'bi-chevron-right text-muted'"></i>
                     </td>
                     <td>
                       <div class="fw-bold text-dark">{{ b.customerName }}</div>
@@ -2816,7 +2812,7 @@
 
             <div style="min-width: 260px;">
               <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search all fields..."
+                <input type="text" class="form-control" placeholder="Cari transaksi mutasi..."
                   [ngModel]="mutasiSearchQuery()"
                   (ngModelChange)="mutasiSearchQuery.set($event)">
                 <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
@@ -2827,14 +2823,14 @@
           <!-- Main Table matching Screenshot 1 -->
           <div class="v3-table-container">
             <table class="v3-table mb-0">
-              <thead>
-                <tr style="background-color: #212529; color: #ffffff;">
-                  <th style="width: 50px; background-color: #212529; color: #ffffff;" class="text-center">No</th>
-                  <th style="background-color: #212529; color: #ffffff;">Nama</th>
-                  <th style="width: 140px; background-color: #212529; color: #ffffff;" class="text-center">Jumlah Piutang</th>
-                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Total Piutang</th>
-                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Piutang Dibayar</th>
-                  <th style="width: 180px; background-color: #212529; color: #ffffff;" class="text-end">Saldo</th>
+              <thead class="table-dark">
+                <tr>
+                  <th style="width: 50px;" class="text-center">No</th>
+                  <th>Nama</th>
+                  <th style="width: 140px;" class="text-center">Jumlah Piutang</th>
+                  <th style="width: 180px;" class="text-end">Total Piutang</th>
+                  <th style="width: 180px;" class="text-end">Piutang Dibayar</th>
+                  <th style="width: 180px;" class="text-end">Saldo</th>
                 </tr>
               </thead>
               <tbody>
@@ -3094,7 +3090,7 @@
                 <i class="bi bi-arrow-down-circle text-success fs-5"></i>
               </div>
               <div class="v3-kpi-value text-success v3-mono">
-                {{ formatMoney(32500000) }}
+                {{ formatMoney(totalDpDeposits()) }}
               </div>
               <div class="v3-kpi-meta text-muted small">
                 Akumulasi setoran advance payment
@@ -3109,7 +3105,7 @@
                 <i class="bi bi-arrow-up-circle text-primary fs-5"></i>
               </div>
               <div class="v3-kpi-value text-primary v3-mono">
-                {{ formatMoney(15000000) }}
+                {{ formatMoney(totalDpDeductions()) }}
               </div>
               <div class="v3-kpi-meta text-muted small">
                 Telah dipotongkan pada invoice yang diterbitkan
@@ -4221,7 +4217,7 @@
       <div class="v3-modal-body">
         <div class="mb-3">
           <label class="form-label small fw-semibold">Pelanggan</label>
-          <select class="form-select" [ngModel]="dpApplyCustomerId()" (ngModelChange)="dpApplyCustomerId.set($event)">
+          <select class="form-select" [ngModel]="dpApplyCustomerId()" (ngModelChange)="onApplyDpCustomerChange($event)">
             <option *ngFor="let c of arService.customers()" [value]="c.id">
               {{ c.name }} (Saldo DP: {{ formatMoney(c.dpBalance || 0) }})
             </option>
@@ -4236,12 +4232,13 @@
 
         <div class="mb-3">
           <label class="form-label small fw-semibold">Pilih Invoice <span class="text-danger">*</span></label>
-          <select class="form-select" [ngModel]="dpApplyInvoiceId()" (ngModelChange)="dpApplyInvoiceId.set($event)">
+          <select class="form-select" [ngModel]="dpApplyInvoiceId()" (ngModelChange)="onApplyDpInvoiceChange($event)">
             <option value="" disabled>-- Pilih Invoice Tertagih --</option>
-            <option *ngFor="let inv of arService.invoices()" [value]="inv.id" [disabled]="inv.customerId !== dpApplyCustomerId() || inv.balanceDue <= 0">
-              <span *ngIf="inv.customerId === dpApplyCustomerId()">
-                {{ inv.invoiceNumber }} &bull; Sisa: {{ formatMoney(inv.balanceDue) }} (Status: {{ inv.status }})
-              </span>
+            <option *ngFor="let inv of dpApplyEligibleInvoices()" [value]="inv.id">
+              {{ inv.invoiceNumber }} &bull; Sisa: {{ formatMoney(inv.balanceDue) }} (Status: {{ inv.status }})
+            </option>
+            <option *ngIf="dpApplyEligibleInvoices().length === 0" disabled>
+              (Tidak ada invoice aktif dengan sisa tagihan)
             </option>
           </select>
         </div>

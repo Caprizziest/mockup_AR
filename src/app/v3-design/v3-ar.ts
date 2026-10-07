@@ -547,6 +547,20 @@ export class V3ArComponent {
     return this.arService.customers().reduce((sum, c) => sum + (c.dpBalance || 0), 0);
   });
 
+  totalDpDeposits = computed(() => {
+    return this.arService.dpTransactions().filter(t => t.type === 'deposit').reduce((sum, t) => sum + t.amount, 0);
+  });
+
+  totalDpDeductions = computed(() => {
+    return this.arService.dpTransactions().filter(t => t.type === 'applied').reduce((sum, t) => sum + t.amount, 0);
+  });
+
+  dpApplyEligibleInvoices = computed(() => {
+    const custId = this.dpApplyCustomerId();
+    if (!custId) return [];
+    return this.arService.invoices().filter(i => i.customerId === custId && i.balanceDue > 0 && i.status !== 'Cancelled');
+  });
+
   // --- Customer Form State ---
   customerFormName = signal<string>('');
   customerFormContact = signal<string>('');
@@ -1619,6 +1633,26 @@ export class V3ArComponent {
 
   closeApplyDpModal() {
     this.showApplyDpModal.set(false);
+  }
+
+  onApplyDpCustomerChange(custId: string) {
+    this.dpApplyCustomerId.set(custId);
+    const eligible = this.dpApplyEligibleInvoices();
+    const firstInv = eligible[0];
+    this.dpApplyInvoiceId.set(firstInv?.id || '');
+    const cust = this.arService.customers().find(c => c.id === custId);
+    const maxDp = cust?.dpBalance || 0;
+    const maxApply = firstInv ? Math.min(maxDp, firstInv.balanceDue) : maxDp;
+    this.dpApplyAmount.set(maxApply);
+  }
+
+  onApplyDpInvoiceChange(invoiceId: string) {
+    this.dpApplyInvoiceId.set(invoiceId);
+    const cust = this.arService.customers().find(c => c.id === this.dpApplyCustomerId());
+    const maxDp = cust?.dpBalance || 0;
+    const inv = this.arService.invoices().find(i => i.id === invoiceId);
+    const maxApply = inv ? Math.min(maxDp, inv.balanceDue) : maxDp;
+    this.dpApplyAmount.set(maxApply);
   }
 
   submitApplyDp() {
