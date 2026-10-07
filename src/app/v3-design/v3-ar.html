@@ -169,16 +169,16 @@
                 }}</span>
               <span *ngSwitchCase="'invoice-edit'">Ubah Invoice Draft</span>
               <span *ngSwitchCase="'invoice-detail'">Faktur {{ selectedInvoice()?.invoiceNumber }}</span>
-              <span *ngSwitchCase="'payments'">Riwayat Pembayaran Masuk</span>
-              <span *ngSwitchCase="'income-audit'">Income Audit (Verifikasi Fisik)</span>
+              <span *ngSwitchCase="'payments'">Riwayat Pembayaran</span>
+              <span *ngSwitchCase="'income-audit'">Income Audit</span>
               <span *ngSwitchCase="'customers'">Data Pelanggan</span>
               <span *ngSwitchCase="'customer-detail'">{{ selectedCustomer()?.name }}</span>
-              <span *ngSwitchCase="'aging-report'">Laporan Umur Piutang (Aging Matrix)</span>
-              <span *ngSwitchCase="'bank-accounts'">Rekening Bank Hotel</span>
-              <span *ngSwitchCase="'activity-logs'">Log Audit Aktivitas</span>
+              <span *ngSwitchCase="'aging-report'">Umur Piutang (Aging)</span>
+              <span *ngSwitchCase="'bank-accounts'">Rekening Bank</span>
+              <span *ngSwitchCase="'activity-logs'">Log Aktivitas</span>
               <span *ngSwitchCase="'mutasi-piutang'">Laporan Mutasi Piutang</span>
-              <span *ngSwitchCase="'kartu-piutang'">Kartu Piutang Seimbang (Rekonsiliasi)</span>
-              <span *ngSwitchCase="'dp-management'">Pengelolaan Saldo Uang Muka (DP)</span>
+              <span *ngSwitchCase="'kartu-piutang'">Kartu Piutang</span>
+              <span *ngSwitchCase="'dp-management'">Uang Muka (DP)</span>
             </ng-container>
           </span>
           <span class="v3-date-pill ms-2 d-none d-md-inline-flex" title="Tanggal Acuan Sistem">
@@ -921,7 +921,7 @@
           </div>
 
           <div class="text-end">
-            <div class="text-muted small">Sisa Tagihan (Outstanding)</div>
+            <div class="text-muted small">Sisa Tagihan</div>
             <div class="v3-mono fw-bold fs-3" [class.text-danger]="inv.balanceDue > 0"
               [class.text-success]="inv.balanceDue === 0">
               {{ formatMoney(inv.balanceDue) }}
@@ -933,7 +933,7 @@
         <div class="v3-lifecycle-ribbon" *ngIf="inv.status !== 'Cancelled'">
           <div class="v3-ribbon-step" [class.done]="inv.status !== 'Draft'">
             <div class="v3-ribbon-circle">{{ inv.status !== 'Draft' ? '✓' : '1' }}</div>
-            <span>1. Draft Disusun</span>
+            <span>1. Draft</span>
           </div>
           <div class="v3-ribbon-divider" [class.done]="inv.status !== 'Draft'"></div>
 
@@ -943,20 +943,20 @@
               {{ (inv.status === 'Partially Paid' || inv.status === 'Paid') ? '✓' : (inv.status === 'Overdue' ? '!' :
               '2') }}
             </div>
-            <span>{{ inv.status === 'Overdue' ? '2. Overdue (Lewat Tempo)' : '2. Issued (Diterbitkan)' }}</span>
+            <span>{{ inv.status === 'Overdue' ? '2. Lewat Jatuh Tempo' : '2. Diterbitkan' }}</span>
           </div>
           <div class="v3-ribbon-divider" [class.done]="inv.status === 'Partially Paid' || inv.status === 'Paid'"></div>
 
           <div class="v3-ribbon-step" [class.done]="inv.status === 'Paid'"
             [class.current]="inv.status === 'Partially Paid'">
             <div class="v3-ribbon-circle">{{ inv.status === 'Paid' ? '✓' : '3' }}</div>
-            <span>3. Partially Paid (Bertahap)</span>
+            <span>3. Dibayar Sebagian</span>
           </div>
           <div class="v3-ribbon-divider" [class.done]="inv.status === 'Paid'"></div>
 
           <div class="v3-ribbon-step" [class.done]="inv.status === 'Paid'">
             <div class="v3-ribbon-circle">{{ inv.status === 'Paid' ? '✓' : '4' }}</div>
-            <span>4. Lunas (Paid)</span>
+            <span>4. Lunas</span>
           </div>
         </div>
 
@@ -969,7 +969,7 @@
               <div class="v3-card p-3">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <span class="text-muted small text-uppercase fw-semibold">Ditagihkan Kepada (Pelanggan)</span>
+                    <span class="text-muted small text-uppercase fw-semibold">Ditagihkan Kepada</span>
                     <h4 class="fw-bold text-dark mt-1 mb-1" style="font-size: 1.1rem;">{{ inv.customerName }}</h4>
                     <div class="text-muted small">
                       <span class="me-3">NIK: <strong class="v3-mono text-dark">{{ inv.customerNik || '-'
@@ -990,7 +990,7 @@
               <!-- Line Items Table -->
               <div class="v3-card">
                 <div class="v3-card-header">
-                  <h3 class="v3-card-title">Rincian Item / Layanan Hotel</h3>
+                  <h3 class="v3-card-title">Rincian Item</h3>
                   <span class="text-muted small">{{ inv.lineItems.length }} item</span>
                 </div>
                 <div class="v3-table-container">
@@ -998,11 +998,11 @@
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Deskripsi Item / Layanan</th>
+                        <th>Deskripsi</th>
                         <th>Kategori</th>
-                        <th class="text-end">Kuantitas</th>
+                        <th class="text-end">Qty</th>
                         <th class="text-end">Harga Satuan</th>
-                        <th class="text-end">Total Harga</th>
+                        <th class="text-end">Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1022,14 +1022,14 @@
                   </table>
                 </div>
                 <div class="p-3 bg-light border-top text-muted small" *ngIf="inv.notes">
-                  <strong>Catatan & Instruksi Pembayaran:</strong> {{ inv.notes }}
+                  <strong>Catatan:</strong> {{ inv.notes }}
                 </div>
               </div>
 
               <!-- Payment Receipts Allocation History (Installments) -->
               <div class="v3-card" *ngIf="getPaymentsForInvoice(inv.id).length > 0">
                 <div class="v3-card-header">
-                  <h3 class="v3-card-title text-success">Riwayat Pembayaran Masuk (Termin / Installment)</h3>
+                  <h3 class="v3-card-title text-success">Riwayat Pembayaran</h3>
                   <span class="text-muted small">{{ getPaymentsForInvoice(inv.id).length }} transaksi</span>
                 </div>
                 <div class="v3-table-container">
@@ -1209,7 +1209,7 @@
                       [ngModel]="invoiceFormIsInstallment()"
                       (ngModelChange)="onToggleInstallment($event)">
                     <label class="form-check-label fw-bold text-dark small" for="installmentSwitch">
-                      <i class="bi bi-calendar-range text-primary me-1"></i>Opsi Pembayaran Cicilan (Installments)
+                      <i class="bi bi-calendar-range text-primary me-1"></i>Pembayaran Cicilan (Installment)
                     </label>
                   </div>
                   <span class="text-primary fw-semibold small" *ngIf="invoiceFormIsInstallment()">
@@ -1217,7 +1217,7 @@
                   </span>
                 </div>
                 <p class="text-secondary small mb-2" style="font-size: 0.72rem;">
-                  Pecah total tagihan menjadi beberapa kali pembayaran angsuran dengan tempo jatuh tempo terpisah.
+                  Bagi total tagihan menjadi beberapa termin angsuran.
                 </p>
 
                 <div *ngIf="invoiceFormIsInstallment()" class="d-flex flex-column gap-2 mt-2 pt-2 border-top">
@@ -1276,7 +1276,7 @@
                       [ngModel]="invoiceFormHasRollover()"
                       (ngModelChange)="onToggleRollover($event)">
                     <label class="form-check-label fw-bold text-dark small" for="rolloverSwitch">
-                      <i class="bi bi-arrow-repeat text-danger me-1"></i>Akumulasi Tagihan Tertunggak (Rollover)
+                      <i class="bi bi-arrow-repeat text-danger me-1"></i>Rollover Tunggakan
                     </label>
                   </div>
                   <span class="text-danger fw-semibold small" *ngIf="invoiceFormHasRollover() && invoiceFormTimesOverdue() > 0">
@@ -1284,13 +1284,13 @@
                   </span>
                 </div>
                 <p class="text-secondary small mb-2" style="font-size: 0.72rem;">
-                  Otomatis menggabungkan sisa piutang bulan sebelumnya yang belum dibayar customer ke tagihan bulan ini.
+                  Gabungkan saldo piutang tertunggak ke tagihan invoice ini.
                 </p>
 
                 <div *ngIf="invoiceFormHasRollover()" class="d-flex flex-column gap-2 mt-2 pt-2 border-top">
                   <div class="row g-2">
                     <div class="col-7">
-                      <label class="form-label small fw-semibold text-danger" style="font-size: 0.72rem;">Nominal Tunggakan Digulung (Rp)</label>
+                      <label class="form-label small fw-semibold text-danger" style="font-size: 0.72rem;">Nominal Tunggakan (Rp)</label>
                       <input type="number" class="form-control form-control-sm v3-mono fw-bold text-danger"
                         [ngModel]="invoiceFormRolledOverAmount()"
                         (ngModelChange)="invoiceFormRolledOverAmount.set($event)">
@@ -1303,7 +1303,7 @@
                     </div>
                   </div>
                   <div class="mt-1">
-                    <label class="form-label small fw-semibold text-muted" style="font-size: 0.68rem;">Referensi Invoice Asal Tunggakan</label>
+                    <label class="form-label small fw-semibold text-muted" style="font-size: 0.68rem;">No. Invoice Asal</label>
                     <input type="text" class="form-control form-control-sm v3-mono text-muted"
                       placeholder="Contoh: INV-2026-0004"
                       [ngModel]="invoiceFormRolledOverFrom()"
@@ -1311,7 +1311,7 @@
                   </div>
                   <div class="alert alert-warning py-1.5 px-2 mb-0 mt-1 small" style="font-size: 0.7rem;">
                     <i class="bi bi-info-circle me-1"></i>
-                    Nominal tunggakan Rp {{ formatMoney(invoiceFormRolledOverAmount()) }} ditambahkan ke total tagihan invoice ini.
+                    Tunggakan {{ formatMoney(invoiceFormRolledOverAmount()) }} ditambahkan ke total invoice ini.
                   </div>
                 </div>
               </div>
@@ -1320,10 +1320,10 @@
 
           <!-- Dynamic Line Items Table (SRS-F-07, SRS-F-08) -->
           <div class="d-flex align-items-center justify-content-between mb-2">
-            <label class="small fw-bold text-dark mb-0">Rincian Item Barang / Jasa (Invoice Detail)</label>
+            <label class="small fw-bold text-dark mb-0">Rincian Item</label>
             <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;"
               (click)="addLineItem()">
-              + Tambah Baris Rincian
+              + Tambah Baris
             </button>
           </div>
 
@@ -1331,11 +1331,11 @@
             <table class="v3-table mb-0">
               <thead>
                 <tr>
-                  <th>Deskripsi Item / Layanan *</th>
+                  <th>Deskripsi *</th>
                   <th style="width: 140px;">Kategori</th>
-                  <th style="width: 100px;">Kuantitas</th>
+                  <th style="width: 100px;">Qty</th>
                   <th style="width: 180px;">Harga Satuan (Rp)</th>
-                  <th style="width: 180px;" class="text-end">Total Harga</th>
+                  <th style="width: 180px;" class="text-end">Total</th>
                   <th style="width: 50px;"></th>
                 </tr>
               </thead>
@@ -1435,7 +1435,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center text-muted small">
-                  <span>Potongan Uang Muka / DP</span>
+                  <span>Potongan DP</span>
                   <div class="d-flex align-items-center gap-1" style="width: 170px;">
                     <input type="number" min="0" step="100000"
                       class="form-control form-control-sm text-end v3-mono py-0" [ngModel]="invoiceFormDpDeduction()"
@@ -1444,7 +1444,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center text-danger small" *ngIf="invoiceFormHasRollover() && invoiceFormRolledOverAmount() > 0">
-                  <span>Tunggakan Bulan Lalu (Rollover)</span>
+                  <span>Tunggakan (Rollover)</span>
                   <span class="v3-mono fw-bold text-danger">+ {{ formatMoney(invoiceFormRolledOverAmount()) }}</span>
                 </div>
 
@@ -1466,15 +1466,15 @@
         <!-- Header & Action Ribbon -->
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div>
-            <h2 class="h5 fw-bold text-dark mb-1">Riwayat Pembayaran Masuk</h2>
+            <h2 class="h5 fw-bold text-dark mb-1">Riwayat Pembayaran</h2>
             <p class="text-secondary small mb-0">
-              Jurnal transaksi penerimaan kas, bukti setor/transfer bank, alokasi faktur, dan mutasi uang muka (DP).
+              Jurnal transaksi penerimaan kas dan mutasi bank masuk.
             </p>
           </div>
           <div class="d-flex align-items-center gap-2">
             <button type="button" class="v3-btn-primary" [disabled]="isViewer()" (click)="openPaymentModal()">
               <i class="bi bi-plus-lg me-1"></i>
-              <span>Catat Pembayaran Baru</span>
+              <span>+ Catat Pembayaran</span>
             </button>
           </div>
         </div>
@@ -2434,10 +2434,8 @@
       <div *ngIf="activeView() === 'aging-report'" class="d-flex flex-column gap-3">
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
           <div>
-            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Laporan Analisis Umur Piutang (Aging Report Matrix)
-            </h3>
-            <p class="text-muted small mb-0">Distribusi umur piutang per pelanggan per interval periode 30 hari. Klik
-              baris untuk melihat rincian faktur.</p>
+            <h3 class="fw-bold mb-1" style="font-size: 1.15rem;">Laporan Umur Piutang (Aging)</h3>
+            <p class="text-muted small mb-0">Distribusi umur piutang pelanggan per interval 30 hari.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
             <label class="small text-muted fw-semibold text-nowrap">As of Date:</label>
@@ -4095,14 +4093,13 @@
       <div class="v3-modal-header">
         <div>
           <div class="fw-bold fs-5 text-dark">Penerimaan Uang Muka (DP)</div>
-          <div class="text-muted small">Catat setoran deposit pelanggan ke buku pembantu uang muka</div>
         </div>
         <button type="button" class="btn-close" (click)="closeRecordDpModal()"></button>
       </div>
 
       <div class="v3-modal-body">
         <div class="mb-3">
-          <label class="form-label small fw-semibold">Pilih Pelanggan <span class="text-danger">*</span></label>
+          <label class="form-label small fw-semibold">Pelanggan <span class="text-danger">*</span></label>
           <select class="form-select" [ngModel]="dpRecordCustomerId()" (ngModelChange)="dpRecordCustomerId.set($event)">
             <option *ngFor="let c of arService.customers()" [value]="c.id">
               {{ c.name }} (Saldo DP: {{ formatMoney(c.dpBalance || 0) }})
@@ -4111,7 +4108,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label small fw-semibold">Nominal Uang Muka (Rp) <span class="text-danger">*</span></label>
+          <label class="form-label small fw-semibold">Nominal Uang Muka <span class="text-danger">*</span></label>
           <input type="number" class="form-control v3-mono fs-5 fw-bold" [ngModel]="dpRecordAmount()" (ngModelChange)="dpRecordAmount.set(+$event)">
         </div>
 
@@ -4120,19 +4117,19 @@
             <label class="form-label small fw-semibold">Metode Pembayaran</label>
             <select class="form-select" [ngModel]="dpRecordMethod()" (ngModelChange)="dpRecordMethod.set($event)">
               <option value="bank_transfer">Transfer Bank</option>
-              <option value="cash">Tunai (Cash)</option>
+              <option value="cash">Tunai</option>
               <option value="giro">Bilyet Giro / Cek</option>
               <option value="credit_card">Kartu Kredit</option>
             </select>
           </div>
           <div class="col-6">
-            <label class="form-label small fw-semibold">Bank / Channel Penerima</label>
+            <label class="form-label small fw-semibold">Bank / Channel</label>
             <input type="text" class="form-control" [ngModel]="dpRecordChannel()" (ngModelChange)="dpRecordChannel.set($event)" placeholder="BCA / Mandiri / Kasir">
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label small fw-semibold">No. Referensi / Bukti Setor</label>
+          <label class="form-label small fw-semibold">No. Referensi</label>
           <input type="text" class="form-control v3-mono" [ngModel]="dpRecordRef()" (ngModelChange)="dpRecordRef.set($event)" placeholder="Contoh: TRF-DP-883921">
         </div>
 
@@ -4158,7 +4155,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label small fw-semibold">Catatan / Keperluan Deposit</label>
+          <label class="form-label small fw-semibold">Catatan</label>
           <textarea class="form-control" rows="2" [ngModel]="dpRecordNotes()" (ngModelChange)="dpRecordNotes.set($event)"></textarea>
         </div>
       </div>
@@ -4166,7 +4163,7 @@
       <div class="v3-modal-footer">
         <button type="button" class="v3-btn-secondary" (click)="closeRecordDpModal()">Batal</button>
         <button type="button" class="v3-btn-primary" (click)="submitRecordDp()">
-          <i class="bi bi-save me-1"></i> Simpan Setoran DP
+          <i class="bi bi-save me-1"></i> Simpan DP
         </button>
       </div>
     </div>
@@ -4177,8 +4174,8 @@
     <div class="v3-modal">
       <div class="v3-modal-header">
         <div>
-          <div class="fw-bold fs-5 text-dark">Lampiran Bukti Fisik Slip / Transfer Bank</div>
-          <div class="text-muted small">Bukti Transaksi Keuangan: {{ previewAttachmentData()?.paymentRef || '-' }}</div>
+          <div class="fw-bold fs-5 text-dark">Lampiran Bukti</div>
+          <div class="text-muted small">No. Ref: {{ previewAttachmentData()?.paymentRef || '-' }}</div>
         </div>
         <button type="button" class="btn-close" (click)="closeAttachmentPreview()"></button>
       </div>
@@ -4192,9 +4189,6 @@
           <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
           <div class="fw-bold text-dark mt-2 fs-6">{{ previewAttachmentData()?.name }}</div>
           <div class="text-muted small">{{ previewAttachmentData()?.size }}</div>
-          <div class="text-secondary small mt-2">
-            Dokumen fisik slip bukti transfer bank tersimpan pada arsip audit keuangan.
-          </div>
         </div>
         <div class="d-flex align-items-center justify-content-between p-2.5 bg-light rounded border text-start small">
           <div>
@@ -4285,9 +4279,7 @@
             <i class="bi bi-bell-fill fs-6"></i>
           </div>
           <div>
-            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Agenda Tindak Lanjut Penagihan</div>
-            <div class="text-muted" style="font-size: 0.72rem;">Daftar tugas penagihan overdue dan draft yang perlu
-              diproses hari ini</div>
+            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Tindak Lanjut Penagihan</div>
           </div>
         </div>
         <button type="button" class="btn-close" (click)="showActionInbox.set(false)" title="Tutup Panel"></button>
@@ -4303,12 +4295,12 @@
         <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
           [ngClass]="actionInboxTab() === 'overdue' ? 'btn-danger' : 'btn-light border text-muted'"
           style="font-size: 0.75rem;" (click)="actionInboxTab.set('overdue')">
-          Overdue Penagihan ({{ priorityOverdueInvoices().length }})
+          Overdue ({{ priorityOverdueInvoices().length }})
         </button>
         <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill"
           [ngClass]="actionInboxTab() === 'draft' ? 'btn-secondary' : 'btn-light border text-muted'"
           style="font-size: 0.75rem;" (click)="actionInboxTab.set('draft')">
-          Draft Siap Terbit ({{ draftInvoices().length }})
+          Draft ({{ draftInvoices().length }})
         </button>
       </div>
 
@@ -4319,7 +4311,7 @@
         <div *ngIf="actionInboxTab() === 'all' || actionInboxTab() === 'overdue'">
           <div class="d-flex align-items-center justify-content-between mb-2">
             <div class="text-uppercase fw-bold text-danger" style="font-size: 0.7rem; letter-spacing: 0.05em;">
-              <i class="bi bi-telephone-outbound-fill me-1"></i>Tagih Hari Ini (Lewat Jatuh Tempo)
+              <i class="bi bi-telephone-outbound-fill me-1"></i>Lewat Jatuh Tempo
             </div>
             <span class="v3-badge v3-badge-overdue py-0 px-1.5">{{ priorityOverdueInvoices().length }}</span>
           </div>
@@ -4388,7 +4380,7 @@
         <div *ngIf="actionInboxTab() === 'all' || actionInboxTab() === 'draft'">
           <div class="d-flex align-items-center justify-content-between mb-2 mt-2">
             <div class="text-uppercase fw-bold text-secondary" style="font-size: 0.7rem; letter-spacing: 0.05em;">
-              <i class="bi bi-file-earmark-check me-1"></i>Draft Invoice (Menunggu Penerbitan)
+              <i class="bi bi-file-earmark-check me-1"></i>Draft Invoice
             </div>
             <span class="v3-badge v3-badge-draft py-0 px-1.5">{{ draftInvoices().length }}</span>
           </div>
